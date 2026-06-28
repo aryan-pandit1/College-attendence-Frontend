@@ -1,0 +1,19 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+
+  background: var(--bg-color);
+
+  color: var(--text-primary);
+
+  transition:
+    background-color .3s,
+    color .3s;
+}
+
+#root {
+  min-height: 100vh;
+}

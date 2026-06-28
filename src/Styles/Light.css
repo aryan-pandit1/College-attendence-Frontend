@@ -1,0 +1,68 @@
+body.light {
+  background: #f5f7fb;
+  color: #1e293b;
+}
+
+/* NAVBAR */
+
+body.light .navbar {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+body.light .navbar-logo h2 {
+  color: #1e293b;
+}
+
+body.light .navbar-logo p {
+  color: #64748b;
+}
+
+body.light .navbar-links a {
+  color: #64748b;
+}
+
+body.light .navbar-links a.active {
+  color: #2563eb;
+}
+
+/* CARDS */
+
+body.light .card,
+body.light .schedule-card,
+body.light .subject-card,
+body.light .subject-item,
+body.light .calendar-card,
+body.light .login-card,
+body.light .assessment-card,
+body.light .progress-card,
+body.light .note-box {
+  background: white;
+  color: #1e293b;
+  border: 1px solid #e5e7eb;
+}
+
+body.light .alert-box {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+body.light input,
+body.light select {
+  background: white;
+  color: #1e293b;
+  border: 1px solid #d1d5db;
+}
+
+body.light h1,
+body.light h2,
+body.light h3,
+body.light h4{
+  color:#111827;
+}
+
+body.light .theme-card{
+  background:white;
+  color:#1e293b;
+  border:1px solid #e5e7eb;
+}

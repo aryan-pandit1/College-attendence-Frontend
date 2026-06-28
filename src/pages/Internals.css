@@ -1,0 +1,271 @@
+.internals-page {
+  min-height: 100vh;
+  background: #f5f7fb;
+  padding: 25px;
+}
+
+.internals-header {
+  margin-bottom: 25px;
+}
+
+.internals-header h1 {
+  color: #1e293b;
+}
+
+/* SUBJECT TABS */
+
+.subject-tabs {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  margin-bottom: 25px;
+}
+
+.subject-tab {
+  min-width: 150px;
+
+  border: 1px solid #e5e7eb;
+  background: white;
+
+  padding: 14px;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  transition: 0.25s;
+}
+
+.subject-tab:hover {
+  border-color: #2563eb;
+}
+
+.subject-tab.active {
+  border-color: #2563eb;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.subject-tab span {
+  font-size: 12px;
+  margin-top: 5px;
+  color: #64748b;
+}
+
+/* MAIN CONTENT */
+
+.internals-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+/* TABLE CARD */
+
+.assessment-card {
+  background: white;
+  border-radius: 16px;
+  padding: 25px;
+
+  border: 1px solid #e5e7eb;
+}
+
+.assessment-card h2 {
+  margin-bottom: 20px;
+  color: #1e293b;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  padding: 16px 10px;
+  text-align: left;
+  border-bottom: 1px solid #eef2f7;
+}
+
+table th {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+
+  background: #e5e7eb;
+
+  border-radius: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #2563eb;
+  border-radius: 10px;
+}
+
+/* RIGHT CARD */
+
+.progress-card {
+  background: white;
+
+  border-radius: 16px;
+
+  padding: 25px;
+
+  border: 1px solid #e5e7eb;
+}
+
+.progress-card h3 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* CIRCLE */
+
+.circle-progress{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:25px 0;
+}
+
+.circle-progress svg{
+    overflow:visible;
+}
+
+.circle-progress circle{
+    transition:stroke-dashoffset .6s ease;
+}
+
+/* STATS */
+
+.stats {
+  margin-top: 15px;
+}
+
+.stats div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 12px;
+
+  color: #475569;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+
+  border-radius: 50%;
+
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.green {
+  background: #22c55e;
+}
+
+.gray {
+  background: #cbd5e1;
+}
+
+/* SUCCESS */
+
+.success-box {
+  margin-top: 25px;
+
+  background: #f0fdf4;
+
+  padding: 16px;
+
+  border-radius: 12px;
+}
+
+.success-box h4 {
+  color: #16a34a;
+}
+
+.success-box p {
+  margin-top: 5px;
+  color: #166534;
+  font-size: 14px;
+}
+
+/* NOTE */
+
+.note-box {
+  margin-top: 20px;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+
+  padding: 16px;
+
+  border-radius: 12px;
+
+  color: #64748b;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 992px) {
+  .internals-content {
+    grid-template-columns: 1fr;
+  }
+
+  .circle-progress {
+    width: 150px;
+    height: 150px;
+  }
+
+  .circle-inner {
+    width: 110px;
+    height: 110px;
+  }
+}
+
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .subject-tab {
+    min-width: 130px;
+  }
+}
+
+.target-box {
+  margin-top: 20px;
+}
+
+.target-box label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.target-box input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.assessment-card input {
+  width: 70px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
