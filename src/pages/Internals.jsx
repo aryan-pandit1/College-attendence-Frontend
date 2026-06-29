@@ -24,20 +24,54 @@ const Internals = () => {
   const { subjects, editSubject } = useSubjects();
 
   const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedSemester, setSelectedSemester] = useState(null);
   const [targetScore, setTargetScore] = useState(85);
+  const [newAssessmentName, setNewAssessmentName] = useState("");
+const [newAssessmentMarks, setNewAssessmentMarks] = useState("");
+const availableSemesters = useMemo(() => {
+  return [
+    ...new Set(
+      subjects.map((sub) => Number(sub.semester))
+    ),
+  ].sort((a, b) => a - b);
+}, [subjects]);
 
-  useEffect(() => {
-    if (subjects.length > 0) {
-      if (
-        !selectedSubject ||
-        !subjects.find((s) => s.id === selectedSubject.id)
-      ) {
-        setSelectedSubject(subjects[0]);
-      }
-    } else {
-      setSelectedSubject(null);
+ const semesterSubjects = useMemo(() => {
+  return subjects.filter(
+    (sub) =>
+      Number(sub.semester) === Number(selectedSemester)
+  );
+}, [subjects, selectedSemester]);
+
+useEffect(() => {
+  if (availableSemesters.length === 0) return;
+
+  // Select first available semester
+  if (
+    selectedSemester === null ||
+    !availableSemesters.includes(selectedSemester)
+  ) {
+    setSelectedSemester(availableSemesters[0]);
+    return;
+  }
+
+  // Select first subject of that semester
+  if (semesterSubjects.length > 0) {
+    if (
+      !selectedSubject ||
+      selectedSubject.semester !== selectedSemester
+    ) {
+      setSelectedSubject(semesterSubjects[0]);
     }
-  }, [subjects]);
+  } else {
+    setSelectedSubject(null);
+  }
+}, [
+  availableSemesters,
+  semesterSubjects,
+  selectedSemester,
+  selectedSubject,
+]);
 
   const assessments = useMemo(() => {
     if (!selectedSubject) return defaultAssessments;
@@ -74,28 +108,107 @@ const Internals = () => {
     targetScore - totalObtained
   );
 
-  const handleMarksChange = (index, field, value) => {
-    const updatedAssessments = [...assessments];
+const handleMarksChange = (index, field, value) => {
+  const updatedAssessments = [...assessments];
 
-    updatedAssessments[index] = {
-      ...updatedAssessments[index],
-      [field]: Number(value),
-    };
+  let newValue = Number(value);
 
-    const updatedSubject = {
-      ...selectedSubject,
-      internals: {
-        ...selectedSubject.internals,
-        assessments: updatedAssessments,
-      },
-    };
+  if (field === "obtained") {
+    newValue = Math.min(
+      Math.max(newValue, 0),
+      updatedAssessments[index].maxMarks
+    );
+  }
 
-    editSubject(selectedSubject.id, {
-      internals: updatedSubject.internals,
-    });
+  if (field === "maxMarks") {
+    newValue = Math.max(newValue, 1);
 
-    setSelectedSubject(updatedSubject);
+    if (
+      updatedAssessments[index].obtained >
+      newValue
+    ) {
+      updatedAssessments[index].obtained =
+        newValue;
+    }
+  }
+
+  updatedAssessments[index] = {
+    ...updatedAssessments[index],
+    [field]: newValue,
   };
+
+  const updatedSubject = {
+    ...selectedSubject,
+    internals: {
+      ...selectedSubject.internals,
+      assessments: updatedAssessments,
+    },
+  };
+
+  editSubject(selectedSubject.id, {
+    internals: updatedSubject.internals,
+  });
+
+  setSelectedSubject(updatedSubject);
+};
+
+  const addAssessment = () => {
+  if (!newAssessmentName.trim()) {
+    alert("Enter assessment name.");
+    return;
+  }
+
+  const updatedAssessments = [
+    ...assessments,
+    {
+      name: newAssessmentName,
+      maxMarks: Number(newAssessmentMarks) || 10,
+      obtained: 0,
+    },
+  ];
+
+  editSubject(selectedSubject.id, {
+    internals: {
+      ...selectedSubject.internals,
+      assessments: updatedAssessments,
+    },
+  });
+
+  setSelectedSubject({
+    ...selectedSubject,
+    internals: {
+      ...selectedSubject.internals,
+      assessments: updatedAssessments,
+    },
+  });
+
+  setNewAssessmentName("");
+  setNewAssessmentMarks("");
+};
+
+const deleteAssessment = (index) => {
+  if (!window.confirm("Delete this assessment?"))
+    return;
+
+  const updatedAssessments = assessments.filter(
+    (_, i) => i !== index
+  );
+
+  editSubject(selectedSubject.id, {
+    internals: {
+      ...selectedSubject.internals,
+      assessments: updatedAssessments,
+    },
+  });
+
+  setSelectedSubject({
+    ...selectedSubject,
+    internals: {
+      ...selectedSubject.internals,
+      assessments: updatedAssessments,
+    },
+  });
+};
 
   if (subjects.length === 0) {
     return (
@@ -106,7 +219,16 @@ const Internals = () => {
     );
   }
 
-  if (!selectedSubject) return null;
+  if (!selectedSubject) {
+  return (
+    <div className="internals-page">
+      <h2>No Subjects</h2>
+      <p>
+        No subjects available in Semester {selectedSemester}.
+      </p>
+    </div>
+  );
+}
 
   return (
     <div className="internals-page">
@@ -114,8 +236,24 @@ const Internals = () => {
         <h1>Internals</h1>
       </div>
 
+    <div className="semester-tabs">
+  {availableSemesters.map((sem) => (
+    <button
+      key={sem}
+      className={
+        selectedSemester === sem
+          ? "semester-btn active"
+          : "semester-btn"
+      }
+      onClick={() => setSelectedSemester(sem)}
+    >
+      Semester {sem}
+    </button>
+  ))}
+</div>
+
       <div className="subject-tabs">
-        {subjects.map((subject) => (
+        {semesterSubjects.map((subject) => (
           <button
             key={subject.id}
             className={`subject-tab ${
@@ -143,6 +281,7 @@ const Internals = () => {
                 <th>Max Marks</th>
                 <th>Progress</th>
                 <th>Obtained</th>
+<th>Action</th>
               </tr>
             </thead>
 
@@ -182,24 +321,69 @@ const Internals = () => {
                   </td>
 
                   <td>
-                    <input
-                      type="number"
-                      min="0"
-                      max={item.maxMarks}
-                      value={item.obtained}
-                      onChange={(e) =>
-                        handleMarksChange(
-                          index,
-                          "obtained",
-                          e.target.value
-                        )
-                      }
-                    />
+                   <input
+  type="number"
+  min="0"
+  max={item.maxMarks}
+  value={item.obtained}
+  onChange={(e) => {
+    let value = Number(e.target.value);
+
+    if (value > item.maxMarks) {
+      value = item.maxMarks;
+    }
+
+    if (value < 0) {
+      value = 0;
+    }
+
+    handleMarksChange(
+      index,
+      "obtained",
+      value
+    );
+  }}
+/>
                   </td>
+                  <td>
+  <button
+    className="delete-assessment-btn"
+    onClick={() => deleteAssessment(index)}
+  >
+    Delete
+  </button>
+</td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          <div className="add-assessment">
+
+  <input
+    type="text"
+    placeholder="Assessment Name"
+    value={newAssessmentName}
+    onChange={(e) =>
+      setNewAssessmentName(e.target.value)
+    }
+  />
+
+  <input
+    type="number"
+    placeholder="Max Marks"
+    value={newAssessmentMarks}
+    onChange={(e) =>
+      setNewAssessmentMarks(e.target.value)
+    }
+  />
+
+  <button onClick={addAssessment}>
+    + Add Assessment
+  </button>
+
+</div>
+
         </div>
 
         <div className="progress-card">

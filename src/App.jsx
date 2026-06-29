@@ -10,6 +10,7 @@ import Internals from "./pages/Internals";
 import GPA from "./pages/GPA";
 import Calendar from "./pages/Calendar";
 import ProtectedRoute from "./Components/ProtectedRoute";
+import Profile from "./pages/Profile";
 
 function AppContent({ darkMode, setDarkMode }) {
   const location = useLocation();
@@ -37,7 +38,7 @@ function AppContent({ darkMode, setDarkMode }) {
         </ProtectedRoute>
       }
     />
-
+<Route path="/profile" element={<Profile />} />
     <Route
       path="/attendance"
       element={

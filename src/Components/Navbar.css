@@ -253,3 +253,26 @@ body.dark .profile-menu button:hover {
 .profile-dropdown button:hover{
     background:#4f46e510;
 }
+
+.navbar-profile-image{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid #2563eb;
+    cursor:pointer;
+}
+
+.profile-icon{
+    font-size:40px;
+    color:#2563eb;
+}
+
+.navbar-profile-image{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid #2563eb;
+    cursor:pointer;
+}

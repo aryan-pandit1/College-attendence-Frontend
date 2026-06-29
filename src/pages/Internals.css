@@ -269,3 +269,89 @@ table th {
   border-radius: 6px;
   border: 1px solid #ccc;
 }
+
+.add-assessment {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.add-assessment input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.add-assessment button {
+  padding: 10px 18px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.add-assessment button:hover {
+  background: #1d4ed8;
+}
+
+.delete-assessment-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-assessment-btn:hover {
+  background: #dc2626;
+}
+
+/* ===========================
+   Semester Tabs
+=========================== */
+
+.semester-tabs {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.semester-tabs::-webkit-scrollbar {
+  height: 6px;
+}
+
+.semester-tabs::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
+}
+
+.semester-btn {
+  min-width: 140px;
+  padding: 12px 20px;
+  border: 2px solid #2563eb;
+  border-radius: 12px;
+  background: white;
+  color: #2563eb;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+  white-space: nowrap;
+}
+
+.semester-btn:hover {
+  background: #eff6ff;
+  transform: translateY(-2px);
+}
+
+.semester-btn.active {
+  background: #2563eb;
+  color: white;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}

@@ -1,0 +1,203 @@
+.profile-page {
+  min-height: 100vh;
+  background: #f4f7fb;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 900px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.profile-top {
+  background: linear-gradient(135deg,#2563eb,#4f46e5);
+  color: white;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.profile-image {
+  width: 130px;
+  height: 130px;
+  margin: auto;
+  border-radius: 50%;
+  overflow: hidden;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-image svg {
+  font-size: 120px;
+  color: #2563eb;
+}
+
+.profile-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-top h2 {
+  margin-top: 15px;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.profile-top p {
+  margin-top: 5px;
+  opacity: .9;
+}
+
+.profile-options {
+  padding: 30px;
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  gap: 18px;
+}
+
+.profile-options button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: none;
+  background: #f8fafc;
+  padding: 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: .25s;
+}
+
+.profile-options button:hover {
+  background: #6a00ff;
+  color: white;
+  transform: translateY(-3px);
+}
+
+.profile-options svg {
+  font-size: 18px;
+}
+
+.delete-btn {
+  color: #dc2626;
+}
+
+.delete-btn:hover {
+  background: #dc2626 !important;
+  color: white;
+}
+
+.logout-btn {
+  color: #2563eb;
+}
+
+.logout-btn:hover {
+  background: #2563eb !important;
+  color: white;
+}
+
+/* Popup */
+
+.logout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logout-box {
+  width: 350px;
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+}
+
+.logout-box h3 {
+  margin-bottom: 15px;
+}
+
+.logout-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.logout-buttons button {
+  border: none;
+  padding: 10px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.logout-buttons button:first-child {
+  background: #e5e7eb;
+}
+
+.logout-buttons .confirm {
+  background: #2563eb;
+  color: white;
+}
+
+.logout-buttons .confirm:hover {
+  background: #c5d81d;
+}
+
+@media (max-width:768px){
+
+.profile-options{
+grid-template-columns:1fr;
+}
+
+.profile-top{
+padding:30px 20px;
+}
+
+.profile-image{
+width:110px;
+height:110px;
+}
+
+.profile-image svg{
+font-size:100px;
+}
+
+}
+
+.profile-image{
+    width:140px;
+    height:140px;
+    margin:0 auto;
+    cursor:pointer;
+    overflow:hidden;
+    border-radius:50%;
+    border:4px solid #2563eb;
+    transition:.3s;
+}
+
+.profile-image:hover{
+    transform:scale(1.05);
+}
+
+.profile-photo{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.default-icon{
+    font-size:140px;
+    color:#2563eb;
+}

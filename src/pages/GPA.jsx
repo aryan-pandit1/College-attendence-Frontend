@@ -16,12 +16,33 @@ const gradeScale = {
 const GPA = () => {
  const { subjects, editSubject } = useSubjects();
 
-const [selectedSemester, setSelectedSemester] = useState(1);
+const [selectedSemester, setSelectedSemester] = useState(null);
 
-const semesterSubjects = subjects.filter(
-  (subject) =>
-    Number(subject.semester) === selectedSemester
-);
+const availableSemesters = useMemo(() => {
+  return [
+    ...new Set(
+      subjects.map((sub) => Number(sub.semester))
+    ),
+  ].sort((a, b) => a - b);
+}, [subjects]);
+
+const semesterSubjects = useMemo(() => {
+  return subjects.filter(
+    (subject) =>
+      Number(subject.semester) ===
+      Number(selectedSemester)
+  );
+}, [subjects, selectedSemester]);
+
+useMemo(() => {
+  if (
+    availableSemesters.length > 0 &&
+    (selectedSemester === null ||
+      !availableSemesters.includes(selectedSemester))
+  ) {
+    setSelectedSemester(availableSemesters[0]);
+  }
+}, [availableSemesters, selectedSemester]);
 
   // ---------------------------
   // Target Calculator
@@ -69,15 +90,15 @@ const semesterSubjects = subjects.filter(
   // Calculations
   // ---------------------------
 
-  const totalCredits = subjects.reduce(
-    (sum, subject) => sum + subject.credits,
-    0
-  );
+ const totalCredits = semesterSubjects.reduce(
+  (sum, subject) => sum + subject.credits,
+  0
+);
 
   const estimatedSGPA = useMemo(() => {
     if (totalCredits === 0) return "0.00";
 
-    const totalPoints = subjects.reduce(
+    const totalPoints = semesterSubjects.reduce(
       (sum, subject) =>
         sum +
         subject.credits *
@@ -88,7 +109,7 @@ const semesterSubjects = subjects.filter(
     return (
       totalPoints / totalCredits
     ).toFixed(2);
-  }, [subjects, totalCredits]);
+  }, [semesterSubjects, totalCredits]);
 
 const estimatedCGPA = Math.min(
   10,
@@ -122,11 +143,16 @@ const requiredSGPA =
 
     <select
       value={selectedSemester}
-      onChange={(e) =>
-        setSelectedSemester(Number(e.target.value))
-      }
+      onChange={(e) => {
+  let value = Number(e.target.value);
+
+  if (value > 10) value = 10;
+  if (value < 0) value = 0;
+
+  setCurrentCGPA(value);
+}}
     >
-      {[1,2,3,4,5,6,7,8].map((sem) => (
+      {availableSemesters.map((sem) => (
         <option key={sem} value={sem}>
           Semester {sem}
         </option>
@@ -140,7 +166,7 @@ const requiredSGPA =
         {/* CGPA Trend */}
 
         <div className="card trend-card">
-          <h3>CGPA Trend</h3>
+          <h3>SGPA Trend</h3>
 
           <div className="chart">
             {cgpaTrend.map((cgpa, index) => (
@@ -177,11 +203,14 @@ const requiredSGPA =
               max="10"
               step="0.01"
               value={currentCGPA}
-              onChange={(e) =>
-                setCurrentCGPA(
-                  Number(e.target.value)
-                )
-              }
+              onChange={(e) => {
+  let value = Number(e.target.value);
+
+  if (value > 10) value = 10;
+  if (value < 0) value = 0;
+
+  setTargetCGPA(value);
+}}
             />
           </div>
 
@@ -192,11 +221,14 @@ const requiredSGPA =
               type="number"
               min="1"
               value={completedSemesters}
-              onChange={(e) =>
-                setCompletedSemesters(
-                  Number(e.target.value)
-                )
-              }
+              onChange={(e) => {
+  let value = Number(e.target.value);
+
+  if (value > 8) value = 8;
+  if (value < 0) value = 0;
+
+  setCompletedSemesters(value);
+}}
             />
           </div>
 
@@ -224,11 +256,14 @@ const requiredSGPA =
               max="10"
               step="0.01"
               value={targetCGPA}
-              onChange={(e) =>
-                setTargetCGPA(
-                  Number(e.target.value)
-                )
-              }
+              onChange={(e) => {
+  let value = Number(e.target.value);
+
+  if (value > 8) value = 8;
+  if (value < 0) value = 0;
+
+  setRemainingSemesters(value);
+}}
             />
           </div>
 

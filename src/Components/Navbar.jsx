@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import AddSubjectModal from "../pages/AddSubjectModal";
 
@@ -17,6 +17,28 @@ import "./Navbar.css";
 
 const Navbar = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
+
+  const [profileImage, setProfileImage] = useState(
+  localStorage.getItem("profileImage") || ""
+);
+
+
+useEffect(() => {
+  const updateProfile = () => {
+    setProfileImage(
+      localStorage.getItem("profileImage") || ""
+    );
+  };
+
+  window.addEventListener("profileUpdated", updateProfile);
+
+  return () => {
+    window.removeEventListener(
+      "profileUpdated",
+      updateProfile
+    );
+  };
+}, []);
 
   const userName =
     localStorage.getItem("userName") || "Guest";
@@ -92,29 +114,33 @@ const Navbar = ({ darkMode, setDarkMode }) => {
 
           {/* Profile */}
           <div className="profile-wrapper">
-            <div
-              className="profile"
-              onClick={() =>
-                setShowMenu(!showMenu)
-              }
-            >
-              <FaUserCircle className="profile-icon" />
-              <span>{userName}</span>
-            </div>
+   <div
+  className="profile"
+  onClick={() => setShowMenu(!showMenu)}
+>
+  {profileImage ? (
+    <img
+      src={profileImage}
+      alt="Profile"
+      className="navbar-profile-image"
+    />
+  ) : (
+    <FaUserCircle className="profile-icon" />
+  )}
 
+  <span>{userName}</span>
+</div>
             {showMenu && (
               <div className="profile-menu">
                 <button
-                  onClick={() => {
-                    alert(
-                      "Profile page coming soon!"
-                    );
-                    setShowMenu(false);
-                  }}
-                >
-                  <FaUserCircle />
-                  My Profile
-                </button>
+  onClick={() => {
+    setShowMenu(false);
+    navigate("/profile");
+  }}
+>
+  <FaUserCircle />
+  My Profile
+</button>
 
                 <button
   onClick={()=>{

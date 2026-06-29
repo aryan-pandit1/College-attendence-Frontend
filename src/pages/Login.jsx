@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { login, register } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
@@ -9,6 +10,7 @@ const Login = () => {
 
   const [formData, setFormData] = useState({
     fullName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -29,12 +31,12 @@ const Login = () => {
     setSuccess("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
     resetMessages();
 
-    if (!formData.email || !formData.password) {
+    if (!formData.username || !formData.password) {
       setError("Please fill all required fields.");
       return;
     }
@@ -43,6 +45,11 @@ const Login = () => {
       if (!formData.fullName) {
         setError("Full Name is required.");
         return;
+      }
+
+      if (!formData.email) {
+      setError("Email is required.");
+      return;
       }
 
       if (formData.password.length < 6) {
@@ -57,60 +64,78 @@ const Login = () => {
         return;
       }
 
-      const user = {
-        name: formData.fullName,
+      try {
+
+    await register({
+        username: formData.username,
         email: formData.email,
         password: formData.password,
-      };
+    });
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(user)
-      );
+    setSuccess("Account created successfully!");
 
-      localStorage.setItem(
-        "isLoggedIn",
-        "true"
-      );
+   setTimeout(() => {
 
-      setSuccess("Account created successfully!");
+    setIsSignup(false);
 
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
+    setFormData({
+        fullName: "",
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+    });
+
+}, 1000);
+
+} catch (err) {
+    console.log(err.response);
+    console.log(err.response?.data);
+
+    if (err.response?.data) {
+        const errors = Object.values(err.response.data)
+            .flat()
+            .join(" ");
+
+        setError(errors);
+    } else {
+        setError("Registration failed.");
+    }
+}
+
+
 
       return;
     }
 
-    const savedUser = JSON.parse(
-      localStorage.getItem("user")
+    try {
+
+    const response = await login(
+        formData.username,
+        formData.password
     );
 
-    if (!savedUser) {
-      setError(
-        "No account found. Please create an account first."
-      );
-      return;
-    }
-
-    if (
-      savedUser.email !== formData.email ||
-      savedUser.password !== formData.password
-    ) {
-      setError("Invalid email or password.");
-      return;
-    }
+    localStorage.setItem(
+        "access",
+        response.data.access
+    );
 
     localStorage.setItem(
-      "isLoggedIn",
-      "true"
+        "refresh",
+        response.data.refresh
     );
 
     setSuccess("Login successful!");
 
     setTimeout(() => {
-      navigate("/dashboard");
-    }, 0);
+        navigate("/dashboard");
+    }, 500);
+
+} catch (err) {
+
+    setError("Invalid username or password.");
+
+}
   };
 
   return (
@@ -152,16 +177,28 @@ const Login = () => {
           )}
 
           <div className="input-group">
-            <label>Email Address</label>
+            <label>User Name</label>
 
             <input
-              type="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              name="username"
+              value={formData.username}
               onChange={handleChange}
-              placeholder="Enter your email"
+              placeholder="Enter your username"
             />
           </div>
+
+<div className="input-group">
+          <label>Email Address</label>
+
+    <input
+      type="email"
+      name="email"
+      value={formData.email}
+      onChange={handleChange}
+      placeholder="Enter your email"
+    />
+    </div>
 
           <div className="input-group">
             <label>Password</label>
@@ -254,6 +291,7 @@ const Login = () => {
 
               setFormData({
                 fullName: "",
+                username: "",
                 email: "",
                 password: "",
                 confirmPassword: "",
