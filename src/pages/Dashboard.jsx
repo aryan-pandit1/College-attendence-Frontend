@@ -1,128 +1,43 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { getDashboard } from "../services/dashboardService";
 import "./Dashboard.css";
 import { useSubjects } from "../context/SubjectContext";
 
 const Dashboard = () => {
   const { subjects } = useSubjects();
 
-  const studentData = {
-    name: localStorage.getItem("userName") || "Student",
-  };
-
   // ===========================
   // Overall Attendance
   // ===========================
-
-  const totalPresent = subjects.reduce(
-    (sum, subject) => sum + subject.attendance.present,
-    0
-  );
-
-  const totalAbsent = subjects.reduce(
-    (sum, subject) => sum + subject.attendance.absent,
-    0
-  );
-
-  const totalClasses = totalPresent + totalAbsent;
-
-  const attendancePercentage =
-    totalClasses === 0
-      ? 0
-      : Math.round((totalPresent / totalClasses) * 100);
 
   // ===========================
   // Credits
   // ===========================
 
-  const totalCredits = subjects.reduce(
-    (sum, subject) => sum + Number(subject.credits),
-    0
-  );
 
   // ===========================
   // Internals Average
   // ===========================
 
-  const averageInternals =
-    subjects.length === 0
-      ? 0
-      : Math.round(
-          subjects.reduce(
-            (sum, subject) =>
-              sum + subject.internals.obtainedMarks,
-            0
-          ) / subjects.length
-        );
-
   // ===========================
   // CGPA
   // ===========================
 
-  const cgpa =
-    subjects.length === 0
-      ? 0
-      : (
-          subjects.reduce(
-            (sum, subject) =>
-              sum + subject.grades.gradePoint,
-            0
-          ) / subjects.length
-        ).toFixed(2);
 
   // ===========================
   // Safe To Skip
   // ===========================
 
-  const safeToSkip = Math.max(
-    0,
-    Math.floor(
-      (totalPresent -
-        0.75 * totalClasses) /
-        0.75
-    )
-  );
-
   // ===========================
   // Today's Schedule
   // ===========================
+  const [dashboardData, setDashboardData] = useState(null);
 
-  const [schedule, setSchedule] = useState(() => {
-    const saved =
-      localStorage.getItem("schedule");
+const [loading, setLoading] = useState(true);
 
-    return saved
-      ? JSON.parse(saved)
-      : [
-          {
-            id: 1,
-            time: "09:00 AM",
-            subject: "Data Structures",
-            room: "Room 301",
-            marked: false,
-          },
-          {
-            id: 2,
-            time: "11:00 AM",
-            subject: "Discrete Mathematics",
-            room: "Room 202",
-            marked: false,
-          },
-          {
-            id: 3,
-            time: "01:00 PM",
-            subject: "Digital Electronics",
-            room: "Lab 1",
-            marked: false,
-          },
-          {
-            id: 4,
-            time: "03:00 PM",
-            subject: "Operating Systems",
-            room: "Room 303",
-            marked: false,
-          },
-        ];
-  });
+const [error, setError] = useState("");
+
+const schedule = dashboardData?.today_schedule || [];
 
   const [deadlines] = useState([
     {
@@ -139,32 +54,66 @@ const Dashboard = () => {
     },
   ]);
 
-  useEffect(() => {
-    localStorage.setItem(
-      "schedule",
-      JSON.stringify(schedule)
-    );
-  }, [schedule]);
+ useEffect(() => {
 
-  const markAttendance = (id, status) => {
-    setSchedule((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              marked: true,
-              status,
-            }
-          : item
-      )
-    );
-  };
+    const fetchDashboard = async () => {
+
+        try {
+
+            const response = await getDashboard();
+
+            setDashboardData(response.data);
+
+        } catch (err) {
+
+            console.error(err);
+
+            setError("Failed to load dashboard.");
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    };
+
+    fetchDashboard();
+
+}, []);
+
+  // const markAttendance = (id, status) => {
+  //   setSchedule((prev) =>
+  //     prev.map((item) =>
+  //       item.id === id
+  //         ? {
+  //             ...item,
+  //             marked: true,
+  //             status,
+  //           }
+  //         : item
+  //     )
+  //   );
+  // };
 
   const resetDashboard = () => {
     localStorage.removeItem("subjects");
     localStorage.removeItem("schedule");
     window.location.reload();
   };
+
+
+  if (loading) {
+
+    return <h2>Loading Dashboard...</h2>;
+
+}
+
+if (error) {
+
+    return <h2>{error}</h2>;
+
+}
 
     return (
     <div className="dashboard">
@@ -173,7 +122,7 @@ const Dashboard = () => {
         <div>
           <h1>Dashboard</h1>
           <p>
-            Welcome back, {studentData.name} 👋
+            Welcome back, {dashboardData.username} 👋
           </p>
         </div>
 
@@ -192,11 +141,11 @@ const Dashboard = () => {
           <h3>Overall Attendance</h3>
 
           <div className="circle">
-            <span>{attendancePercentage}%</span>
+            <span>{dashboardData.attendance_percentage}%</span>
           </div>
 
           <p>
-            {attendancePercentage >= 75
+            {dashboardData.attendance_percentage >= dashboardData.target_attendance
               ? "Good Standing"
               : "Attendance Low"}
           </p>
@@ -205,7 +154,7 @@ const Dashboard = () => {
         <div className="card">
           <h3>CGPA</h3>
 
-          <h2>{cgpa}</h2>
+          <h2>{dashboardData.cgpa}</h2>
 
           <span>/10</span>
         </div>
@@ -213,27 +162,27 @@ const Dashboard = () => {
         <div className="card">
           <h3>Average Internals</h3>
 
-          <h2>{averageInternals}</h2>
+          <h2>{dashboardData.average_internals}</h2>
 
           <span>/100</span>
         </div>
 
         <div className="card">
-          <h3>Total Credits</h3>
+          <h3>Total Courses</h3>
 
-          <h2>{totalCredits}</h2>
+          <h2>{dashboardData.course_count}</h2>
 
-          <span>Credits</span>
+          <span>Courses</span>
         </div>
       </div>
 
       {/* Attendance Alert */}
 
       <div className="alert-box">
-        {attendancePercentage >= 75 ? (
+        {dashboardData.attendance_percentage >= dashboardData.target_attendance ? (
           <>
             ✅ You can safely skip the next{" "}
-            <strong>{safeToSkip}</strong> classes.
+            <strong>{dashboardData.safe_bunks}</strong> classes.
           </>
         ) : (
           <>
@@ -249,20 +198,20 @@ const Dashboard = () => {
         <div className="schedule-section">
           <h2>Today's Schedule</h2>
 
-          {schedule.map((item) => (
+          {schedule.map((item, index) => (
             <div
-              key={item.id}
+              key={index}
               className="schedule-card"
             >
               <div>
-                <h4>{item.subject}</h4>
+                <h4>{item.course}</h4>
 
-                <p>{item.time}</p>
+                <p>{item.start_time} - {item.end_time}</p>
 
                 <small>{item.room}</small>
               </div>
 
-              <div className="attendance-buttons">
+              {/* <div className="attendance-buttons">
                 {item.marked ? (
                   <span
                     className={
@@ -302,7 +251,17 @@ const Dashboard = () => {
                     </button>
                   </>
                 )}
-              </div>
+              </div> */
+              <div className="attendance-buttons">
+    <button className="present-btn" disabled>
+        Present
+    </button>
+
+    <button className="absent-btn" disabled>
+        Absent
+    </button>
+</div>
+              }
             </div>
           ))}
         </div>
@@ -317,25 +276,25 @@ const Dashboard = () => {
 
             <div className="overview-circle">
               <div className="inner-circle">
-                {attendancePercentage}%
+                {dashboardData.attendance_percentage}%
               </div>
             </div>
 
             <ul>
               <li>
-                Present: {totalPresent}
+                Present: {dashboardData.present_classes}
               </li>
 
               <li>
-                Absent: {totalAbsent}
+                Absent: {dashboardData.absent_classes}
               </li>
 
               <li>
-                Total Classes: {totalClasses}
+                Total Classes: {dashboardData.total_classes}
               </li>
 
               <li>
-                Subjects: {subjects.length}
+                Courses: {dashboardData.course_count}
               </li>
             </ul>
           </div>
