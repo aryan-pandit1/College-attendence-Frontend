@@ -1,16 +1,16 @@
 import { useState } from "react";
-import { useSubjects } from "../context/SubjectContext";
+import { addCourse } from "../services/courseService";
 import "./AddSubjectModal.css";
 
 const AddSubjectModal = ({ closeModal }) => {
-  const { addSubject } = useSubjects();
+  
 
 const [name, setName] = useState("");
 const [code, setCode] = useState("");
 const [semester, setSemester] = useState("1");
 const [credits, setCredits] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!name || !code || !credits) {
@@ -18,14 +18,26 @@ const [credits, setCredits] = useState("");
       return;
     }
 
-    addSubject({
-  name,
-  code: code.toUpperCase(),
-  semester: Number(semester),
-  credits: Number(credits),
+    try {
+
+  await addCourse({
+    course_name: name,
+    course_code: code.toUpperCase(),
+    semester: Number(semester),
+    credits: Number(credits),
 });
 
-    closeModal();
+  alert("Subject added successfully.");
+
+  window.location.reload();
+
+} catch (err) {
+
+  console.error(err);
+
+  alert("Failed to add subject.");
+
+}
   };
 
   return (

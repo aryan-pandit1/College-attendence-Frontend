@@ -12,7 +12,7 @@ export const StudentProvider = ({ children }) => {
       present: 123,
       absent: 28,
       od: 6,
-    },
+    }, 
 
     internals: {
       ds: 75,

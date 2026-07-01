@@ -1,23 +1,67 @@
 import { createContext, useContext, useEffect, useState } from "react";
-
+import { getCourses } from "../services/courseService";
 const SubjectContext = createContext();
 
 export const SubjectProvider = ({ children }) => {
-  const [subjects, setSubjects] = useState(() => {
-    const saved = localStorage.getItem("subjects");
-    return saved ? JSON.parse(saved) : [];
-  });
+ const [subjects, setSubjects] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("subjects", JSON.stringify(subjects));
-    console.log("Subjects Saved:", subjects);
-  }, [subjects]);
+
+    fetchCourses();
+
+}, []);
+
+const fetchCourses = async () => {
+
+    try {
+
+        const response = await getCourses();
+
+        const formattedCourses = response.data.map(course => ({
+
+            id: course.id,
+
+            name: course.course_name,
+
+            code: course.course_code,
+
+            semester: course.semester,
+
+            credits: course.credits,
+
+            attendance: {
+                present: 0,
+                absent: 0,
+                percentage: 0,
+                history: [],
+            },
+
+            internals: {
+                assessments: [],
+            },
+
+            grades: {
+                grade: "",
+                gradePoint: 0,
+            },
+
+        }));
+
+        setSubjects(formattedCourses);
+
+    } catch (err) {
+
+        console.error(err);
+
+    }
+
+};
 
   const addSubject = (subject) => {
   const newSubject = {
     id: Date.now(),
 
-    name: subject.name,
+    name: subject.name, 
     code: subject.code,
     credits: Number(subject.credits),
 
