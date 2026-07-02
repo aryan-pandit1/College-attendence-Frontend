@@ -17,7 +17,7 @@ const fetchCourses = async () => {
 
         const response = await getCourses();
 
-        const formattedCourses = response.data.map(course => ({
+        const formattedCourses = response.data.results.map(course => ({
 
             id: course.id,
 
