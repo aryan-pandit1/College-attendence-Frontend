@@ -1,6 +1,16 @@
-import { useState, useMemo } from "react";
-import { useSubjects } from "../context/SubjectContext";
+import { useState, useEffect, useMemo } from "react";
 import "./GPA.css";
+
+import { getCourses } from "../services/courseService";
+
+import {
+  getSemesters,
+  getGrades,
+  addGrade,
+  updateGrade,
+  getSGPA,
+  getCGPA,
+} from "../services/academicService";
 
 const gradeScale = {
   AA: 10,
@@ -14,41 +24,26 @@ const gradeScale = {
 };
 
 const GPA = () => {
- const { subjects, editSubject } = useSubjects();
 
-const [selectedSemester, setSelectedSemester] = useState(null);
+  const [subjects, setSubjects] = useState([]);
 
-const availableSemesters = useMemo(() => {
-  return [
-    ...new Set(
-      subjects.map((sub) => Number(sub.semester))
-    ),
-  ].sort((a, b) => a - b);
-}, [subjects]);
+  const [semesters, setSemesters] = useState([]);
 
-const semesterSubjects = useMemo(() => {
-  return subjects.filter(
-    (subject) =>
-      Number(subject.semester) ===
-      Number(selectedSemester)
-  );
-}, [subjects, selectedSemester]);
+  const [grades, setGrades] = useState([]);
 
-useMemo(() => {
-  if (
-    availableSemesters.length > 0 &&
-    (selectedSemester === null ||
-      !availableSemesters.includes(selectedSemester))
-  ) {
-    setSelectedSemester(availableSemesters[0]);
-  }
-}, [availableSemesters, selectedSemester]);
+  const [selectedSemester, setSelectedSemester] =
+    useState(null);
 
-  // ---------------------------
+  const [sgpa, setSGPA] = useState(0);
+
+  const [cgpa, setCGPA] = useState(0);
+
+  // -------------------------
   // Target Calculator
-  // ---------------------------
+  // -------------------------
 
-  const [currentCGPA, setCurrentCGPA] = useState(8.2);
+  const [currentCGPA, setCurrentCGPA] =
+    useState(8.2);
 
   const [completedSemesters, setCompletedSemesters] =
     useState(5);
@@ -59,383 +54,590 @@ useMemo(() => {
   const [targetCGPA, setTargetCGPA] =
     useState(9);
 
-  // ---------------------------
-  // CGPA Trend
-  // ---------------------------
+  // -------------------------
+  // Load Data
+  // -------------------------
 
-  const cgpaTrend = [
-    6.45,
-    7.12,
-    7.48,
-    7.89,
-    8.24,
-  ];
+  useEffect(() => {
 
-  const grades = Object.entries(gradeScale);
+    loadCourses();
 
-  // ---------------------------
-  // Update Grade
-  // ---------------------------
+    loadSemesters();
 
-  const handleGradeChange = (id, grade) => {
-    editSubject(id, {
-      grades: {
-        grade,
-        gradePoint: gradeScale[grade],
-      },
-    });
+    loadCGPA();
+
+  }, []);
+
+  useEffect(() => {
+
+    if (selectedSemester) {
+
+      loadGrades();
+
+      loadSGPA();
+
+    }
+
+  }, [selectedSemester]);
+
+  const loadCourses = async () => {
+
+    try {
+
+      const res = await getCourses();
+
+      const data =
+        res.data.results || res.data;
+
+      setSubjects(data);
+
+    } catch (err) {
+
+      console.log(err);
+
+    }
+
   };
 
-  // ---------------------------
+  const loadSemesters = async () => {
+
+    try {
+
+      const res = await getSemesters();
+
+      const data =
+        res.data.results || res.data;
+
+      setSemesters(data);
+
+      if (data.length > 0) {
+
+        setSelectedSemester(data[0].id);
+
+      }
+
+    } catch (err) {
+
+      console.log(err);
+
+    }
+
+  };
+
+  const loadGrades = async () => {
+
+    try {
+
+      const res = await getGrades();
+
+      const data =
+        res.data.results || res.data;
+
+      const filtered = data.filter(
+
+        grade =>
+          grade.semester ===
+          selectedSemester
+
+      );
+
+      setGrades(filtered);
+
+    } catch (err) {
+
+      console.log(err);
+
+    }
+
+  };
+
+  const loadSGPA = async () => {
+
+    try {
+
+      const res =
+        await getSGPA(selectedSemester);
+
+      setSGPA(res.data.sgpa);
+
+    } catch (err) {
+
+      console.log(err);
+
+    }
+
+  };
+
+  const loadCGPA = async () => {
+
+    try {
+
+      const res = await getCGPA();
+
+      setCGPA(res.data.cgpa);
+
+      setCurrentCGPA(res.data.cgpa);
+
+    } catch (err) {
+
+      console.log(err);
+
+    }
+
+  };
+
+  const semesterSubjects = useMemo(() => {
+
+    return grades.map((grade) => {
+
+      const subject =
+        subjects.find(
+          s => s.id === grade.course
+        );
+
+      return {
+
+        ...grade,
+
+        subject,
+
+      };
+
+    });
+
+  }, [grades, subjects]);
+  // -------------------------
+  // Grade Update
+  // -------------------------
+
+  const handleGradeChange = async (
+    grade,
+    gradeLetter
+  ) => {
+
+    try {
+
+      await updateGrade(
+        grade.id,
+        {
+          ...grade,
+          grade_point:
+            gradeScale[gradeLetter],
+        }
+      );
+
+      loadGrades();
+
+      loadSGPA();
+
+      loadCGPA();
+
+    } catch (err) {
+
+      console.log(err);
+
+    }
+
+  };
+
+  // -------------------------
   // Calculations
-  // ---------------------------
+  // -------------------------
 
- const totalCredits = semesterSubjects.reduce(
-  (sum, subject) => sum + subject.credits,
-  0
-);
+  const totalCredits =
+    semesterSubjects.reduce(
 
-  const estimatedSGPA = useMemo(() => {
-    if (totalCredits === 0) return "0.00";
+      (sum, item) =>
 
-    const totalPoints = semesterSubjects.reduce(
-      (sum, subject) =>
         sum +
-        subject.credits *
-          (subject.grades?.gradePoint || 0),
+        (item.subject?.credits || 0),
+
       0
+
     );
 
-    return (
-      totalPoints / totalCredits
-    ).toFixed(2);
-  }, [semesterSubjects, totalCredits]);
+  const estimatedSGPA =
+    sgpa
+      ? Number(sgpa).toFixed(2)
+      : "0.00";
 
-const estimatedCGPA = Math.min(
-  10,
-  (
-    (currentCGPA * completedSemesters +
-      Number(estimatedSGPA)) /
-    (completedSemesters + 1)
-  )
-).toFixed(2);
+  const estimatedCGPA =
+    cgpa
+      ? Number(cgpa).toFixed(2)
+      : "0.00";
 
-const calculatedRequiredSGPA =
-  remainingSemesters === 0
-    ? 0
-    : (
+  const calculatedRequiredSGPA =
+
+    remainingSemesters === 0
+
+      ? 0
+
+      :
+
+      (
+
         targetCGPA *
-          (completedSemesters + remainingSemesters) -
-        currentCGPA * completedSemesters
-      ) / remainingSemesters;
 
-const requiredSGPA =
-  calculatedRequiredSGPA > 10
-    ? "Impossible"
-    : Math.max(0, calculatedRequiredSGPA).toFixed(2);
-  return (
-    <div className="gpa-page">
-      <div className="gpa-header">
-  <h1>GPA Calculator</h1>
+        (
 
-  <div className="semester-select">
-    <label>Semester</label>
+          completedSemesters +
 
-    <select
-      value={selectedSemester}
-      onChange={(e) => {
-  let value = Number(e.target.value);
+          remainingSemesters
 
-  if (value > 10) value = 10;
-  if (value < 0) value = 0;
+        )
 
-  setCurrentCGPA(value);
-}}
-    >
-      {availableSemesters.map((sem) => (
-        <option key={sem} value={sem}>
-          Semester {sem}
-        </option>
-      ))}
-    </select>
-  </div>
-</div>
+        -
 
-      <div className="gpa-top">
+        currentCGPA *
 
-        {/* CGPA Trend */}
+        completedSemesters
 
-        <div className="card trend-card">
-          <h3>SGPA Trend</h3>
+      )
 
-          <div className="chart">
-            {cgpaTrend.map((cgpa, index) => (
+      /
+
+      remainingSemesters;
+
+  const requiredSGPA =
+
+    calculatedRequiredSGPA > 10
+
+      ? "Impossible"
+
+      : Math.max(
+
+          0,
+
+          calculatedRequiredSGPA
+
+        ).toFixed(2);
+
+  // -------------------------
+  // SGPA Trend
+  // -------------------------
+
+  const cgpaTrend =
+    semesters.map(
+
+      (_, index) =>
+
+        index + 1 <= completedSemesters
+
+          ? currentCGPA
+
+          : 0
+
+    );
+
+  const gradeOptions =
+    Object.entries(gradeScale);
+
+    return (
+  <div className="gpa-page">
+
+    <div className="gpa-header">
+
+      <h1>GPA Calculator</h1>
+
+      <div className="semester-select">
+
+        <label>Semester</label>
+
+        <select
+          value={selectedSemester || ""}
+          onChange={(e) =>
+            setSelectedSemester(
+              Number(e.target.value)
+            )
+          }
+        >
+
+          {semesters.map((semester) => (
+
+            <option
+              key={semester.id}
+              value={semester.id}
+            >
+              Semester {semester.semester_number}
+            </option>
+
+          ))}
+
+        </select>
+
+      </div>
+
+    </div>
+
+    {/* ------------------ TOP ------------------ */}
+
+    <div className="gpa-top">
+
+      <div className="card trend-card">
+
+        <h3>SGPA Trend</h3>
+
+        <div className="chart">
+
+          {cgpaTrend.map((value, index) => (
+
+            <div
+              key={index}
+              className="bar-item"
+            >
+
+              <span>{value}</span>
+
               <div
-                className="bar-item"
-                key={index}
-              >
-                <span>{cgpa}</span>
+                className="bar"
+                style={{
+                  height: `${value * 22}px`,
+                }}
+              />
 
-                <div
-                  className="bar"
-                  style={{
-                    height: `${cgpa * 22}px`,
-                  }}
-                />
+              <p>Sem {index + 1}</p>
 
-                <p>Sem {index + 1}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Target Calculator */}
+          ))}
 
-        <div className="card target-card">
-          <h3>🎯 Target CGPA Calculator</h3>
-
-          <div className="target-row">
-            <span>Current CGPA</span>
-
-            <input
-              type="number"
-              min="0"
-              max="10"
-              step="0.01"
-              value={currentCGPA}
-              onChange={(e) => {
-  let value = Number(e.target.value);
-
-  if (value > 10) value = 10;
-  if (value < 0) value = 0;
-
-  setTargetCGPA(value);
-}}
-            />
-          </div>
-
-          <div className="target-row">
-            <span>Completed Semesters</span>
-
-            <input
-              type="number"
-              min="1"
-              value={completedSemesters}
-              onChange={(e) => {
-  let value = Number(e.target.value);
-
-  if (value > 8) value = 8;
-  if (value < 0) value = 0;
-
-  setCompletedSemesters(value);
-}}
-            />
-          </div>
-
-          <div className="target-row">
-            <span>Remaining Semesters</span>
-
-            <input
-              type="number"
-              min="1"
-              value={remainingSemesters}
-              onChange={(e) =>
-                setRemainingSemesters(
-                  Number(e.target.value)
-                )
-              }
-            />
-          </div>
-
-          <div className="target-row">
-            <span>Target CGPA</span>
-
-            <input
-              type="number"
-              min="0"
-              max="10"
-              step="0.01"
-              value={targetCGPA}
-              onChange={(e) => {
-  let value = Number(e.target.value);
-
-  if (value > 8) value = 8;
-  if (value < 0) value = 0;
-
-  setRemainingSemesters(value);
-}}
-            />
-          </div>
-
-          <div className="target-result">
-            <p>Required Average SGPA</p>
-
-            <h2>{requiredSGPA}</h2>
-          </div>
-          <hr />
-
-
-
-          {requiredSGPA > 10 ? (
-            <p className="warning">
-              ⚠️ Target CGPA cannot be achieved.
-            </p>
-          ) : requiredSGPA >= 9 ? (
-            <p className="warning">
-              🔥 You need excellent performance.
-            </p>
-          ) : requiredSGPA >= 8 ? (
-            <p className="good">
-              👍 Strong performance is required.
-            </p>
-          ) : (
-            <p className="good">
-              ✅ Target is achievable.
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="gpa-middle">
-                {/* Current Semester Subjects */}
-
-        <div className="card subjects-card">
-          <div className="subjects-header">
-  <h3>Current Semester Subjects</h3>
-
-  <div className="semester-filter">
-    <label>Semester</label>
-
-    <select
-      value={selectedSemester}
-      onChange={(e) =>
-        setSelectedSemester(Number(e.target.value))
-      }
-    >
-      {[1,2,3,4,5,6,7,8].map((sem) => (
-        <option key={sem} value={sem}>
-          Semester {sem}
-        </option>
-      ))}
-    </select>
-  </div>
-</div>
-
-          {semesterSubjects.length === 0 ? (
-  <div className="empty-subjects">
-    <h3>No Subjects Found</h3>
-    <p>
-      Add subjects for Semester {selectedSemester}
-      from the Profile → Add Subject menu.
-    </p>
-  </div>
-) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Credits</th>
-                  <th>Grade</th>
-                  <th>Grade Point</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {semesterSubjects.map((subject) => (
-                  <tr key={subject.id}>
-                    <td>{subject.name}</td>
-
-                    <td>{subject.credits}</td>
-
-                    <td>
-                      <select
-                        value={subject.grades?.grade || ""}
-                        onChange={(e) =>
-                          handleGradeChange(
-                            subject.id,
-                            e.target.value
-                          )
-                        }
-                      >
-                        <option value="">
-                          Select
-                        </option>
-
-                        {Object.keys(gradeScale).map(
-                          (grade) => (
-                            <option
-                              key={grade}
-                              value={grade}
-                            >
-                              {grade}
-                            </option>
-                          )
-                        )}
-                      </select>
-                    </td>
-
-                    <td>
-                      {subject.grades?.gradePoint || 0}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-
-        {/* Grade Scale */}
-
-        <div className="card grade-card">
-          <h3>Grade Scale</h3>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Grade</th>
-                <th>Point</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {grades.map(([grade, point]) => (
-                <tr key={grade}>
-                  <td>{grade}</td>
-                  <td>{point}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
 
       </div>
 
-            {/* Summary */}
+      <div className="card target-card">
 
-      <div className="summary-card">
+        <h3>🎯 Target CGPA Calculator</h3>
 
-        <div className="summary-item">
-          <span>Estimated SGPA</span>
+        <div className="target-row">
 
-          <h2>{estimatedSGPA}</h2>
+          <span>Current CGPA</span>
+
+          <input
+            type="number"
+            value={currentCGPA}
+            onChange={(e) =>
+              setCurrentCGPA(
+                Number(e.target.value)
+              )
+            }
+          />
+
         </div>
 
-        <div className="summary-item">
-          <span>Total Credits</span>
+        <div className="target-row">
 
-          <h2>{totalCredits}</h2>
+          <span>Completed Semesters</span>
+
+          <input
+            type="number"
+            value={completedSemesters}
+            onChange={(e) =>
+              setCompletedSemesters(
+                Number(e.target.value)
+              )
+            }
+          />
+
         </div>
 
-        <div className="summary-item">
-          <span>Estimated CGPA</span>
+        <div className="target-row">
 
-          <h2>{estimatedCGPA}</h2>
+          <span>Remaining Semesters</span>
+
+          <input
+            type="number"
+            value={remainingSemesters}
+            onChange={(e) =>
+              setRemainingSemesters(
+                Number(e.target.value)
+              )
+            }
+          />
+
+        </div>
+
+        <div className="target-row">
+
+          <span>Target CGPA</span>
+
+          <input
+            type="number"
+            value={targetCGPA}
+            onChange={(e) =>
+              setTargetCGPA(
+                Number(e.target.value)
+              )
+            }
+          />
+
+        </div>
+
+        <div className="target-result">
+
+          <p>Required Average SGPA</p>
+
+          <h2>{requiredSGPA}</h2>
+
         </div>
 
       </div>
 
     </div>
-  );
+
+    {/* ------------------ SUBJECT TABLE ------------------ */}
+
+    <div className="gpa-middle">
+
+      <div className="card subjects-card">
+
+        <h3>Semester Subjects</h3>
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Subject</th>
+
+              <th>Credits</th>
+
+              <th>Grade Point</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {semesterSubjects.map((item) => (
+
+              <tr key={item.id}>
+
+                <td>
+                  {item.subject?.course_name}
+                </td>
+
+                <td>
+                  {item.subject?.credits}
+                </td>
+
+                <td>
+
+                  <select
+                    value={item.grade_point}
+                    onChange={(e) =>
+                      handleGradeChange(
+                        item,
+                        Number(e.target.value)
+                      )
+                    }
+                  >
+
+                    {gradeOptions.map(
+                      ([grade, point]) => (
+
+                        <option
+                          key={grade}
+                          value={point}
+                        >
+                          {grade}
+                        </option>
+
+                      )
+                    )}
+
+                  </select>
+
+                </td>
+
+              </tr>
+
+            ))}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {/* Grade Scale */}
+
+      <div className="card grade-card">
+
+        <h3>Grade Scale</h3>
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Grade</th>
+
+              <th>Point</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {gradeOptions.map(
+              ([grade, point]) => (
+
+                <tr key={grade}>
+
+                  <td>{grade}</td>
+
+                  <td>{point}</td>
+
+                </tr>
+
+              )
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+    {/* ------------------ SUMMARY ------------------ */}
+
+    <div className="summary-card">
+
+      <div className="summary-item">
+
+        <span>SGPA</span>
+
+        <h2>{estimatedSGPA}</h2>
+
+      </div>
+
+      <div className="summary-item">
+
+        <span>Total Credits</span>
+
+        <h2>{totalCredits}</h2>
+
+      </div>
+
+      <div className="summary-item">
+
+        <span>CGPA</span>
+
+        <h2>{estimatedCGPA}</h2>
+
+      </div>
+
+    </div>
+
+  </div>
+);
 };
 
 export default GPA;
