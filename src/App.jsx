@@ -37,7 +37,7 @@ function AppContent({ darkMode, setDarkMode }) {
     </ProtectedRoute>
   }
 />
-<Route path="/profile" element={<Profile />} />
+<Route path="/profile" element={<Profile darkMode={darkMode}/>} />
     <Route
   path="/attendance"
   element={
@@ -69,7 +69,7 @@ function AppContent({ darkMode, setDarkMode }) {
       path="/timetable"
       element={
         <ProtectedRoute>
-          <Timetable />
+          <Timetable darkMode={darkMode}/>
         </ProtectedRoute>
       }
     />

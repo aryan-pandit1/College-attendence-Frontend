@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   FaUserCircle,
   FaCamera,
@@ -17,6 +18,14 @@ import {
 
 import "./Profile.css";
 
+import {
+  getProfile,
+  updateProfile,
+  uploadProfileImage,
+  changePassword,
+  // deleteProfile,
+} from "../services/profileService";
+
 const Profile = () => {
   const navigate = useNavigate();
 
@@ -26,598 +35,397 @@ const Profile = () => {
   const [showLogout, setShowLogout] = useState(false);
   const [editing, setEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
 
   // -----------------------------
   // User Details
   // -----------------------------
-  const [name, setName] = useState(
-    localStorage.getItem("userName") || "Guest"
-  );
-
-  const [email, setEmail] = useState(
-    localStorage.getItem("email") || ""
-  );
-
-  const [phone, setPhone] = useState(
-    localStorage.getItem("phone") || ""
-  );
-
-  const [profileImage, setProfileImage] = useState(
-    localStorage.getItem("profileImage") || ""
-  );
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [profileImage, setProfileImage] = useState("");
 
   // -----------------------------
   // Password
   // -----------------------------
-  const [currentPassword, setCurrentPassword] =
-    useState("");
-
-  const [newPassword, setNewPassword] =
-    useState("");
-
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   // -----------------------------
-  // Verification Status
+  // Verification
   // -----------------------------
-  const [verifiedEmail, setVerifiedEmail] =
-    useState(
-      localStorage.getItem("verifiedEmail") ===
-        "true"
-    );
-
-  const [verifiedPhone, setVerifiedPhone] =
-    useState(
-      localStorage.getItem("verifiedPhone") ===
-        "true"
-    );
+  const [verifiedEmail, setVerifiedEmail] = useState(false);
+  const [verifiedPhone, setVerifiedPhone] = useState(false);
 
   // -----------------------------
   // Privacy
   // -----------------------------
-  const [privateAccount, setPrivateAccount] =
-    useState(
-      localStorage.getItem("privateAccount") ===
-        "true"
-    );
+  const [privateAccount, setPrivateAccount] = useState(false);
+
+  // -----------------------------
+  // Load Profile
+  // -----------------------------
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const res = await getProfile();
+      const data = res.data;
+
+      setName(data.name || "");
+      setEmail(data.email || "");
+      setPhone(data.phone || "");
+      setProfileImage(data.profile_image || "");
+      setVerifiedEmail(data.email_verified || false);
+      setVerifiedPhone(data.phone_verified || false);
+      setPrivateAccount(data.private_account || false);
+    } catch (err) {
+      // Error handled cleanly internally
+    }
+  };
 
   // -----------------------------
   // Logout
   // -----------------------------
   const handleLogout = () => {
-    localStorage.removeItem("loggedIn");
-    navigate("/", { replace: true });
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    navigate("/", {
+      replace: true,
+    });
   };
 
   // -----------------------------
   // Save Profile
   // -----------------------------
-  const saveProfile = () => {
-    if (!name.trim()) {
-      alert("Name cannot be empty.");
-      return;
+  const saveProfile = async () => {
+    try {
+      await updateProfile({
+        name,
+        email,
+        phone,
+      });
+
+      alert("Profile Updated Successfully");
+      setEditing(false);
+      loadProfile();
+    } catch (err) {
+      alert("Unable to update profile.");
     }
+  };
 
-    localStorage.setItem("userName", name);
-    localStorage.setItem("email", email);
-    localStorage.setItem("phone", phone);
+  // -----------------------------
+  // Upload Image
+  // -----------------------------
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    alert("Profile Updated Successfully");
+    const formData = new FormData();
+    formData.append("profile_image", file);
 
-    setEditing(false);
+    try {
+      await uploadProfileImage(formData);
+      loadProfile();
+    } catch (err) {
+      alert("Image upload failed.");
+    }
   };
 
   // -----------------------------
   // Change Password
   // -----------------------------
-  const savePassword = () => {
-    const savedPassword =
-      localStorage.getItem("password") || "";
-
-    if (savedPassword !== currentPassword) {
-      alert("Current Password is incorrect.");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      alert(
-        "Password should contain at least 6 characters."
-      );
-      return;
-    }
-
+  const savePassword = async () => {
     if (newPassword !== confirmPassword) {
       alert("Passwords do not match.");
       return;
     }
 
-    localStorage.setItem(
-      "password",
-      newPassword
-    );
+    try {
+      await changePassword({
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
 
-    alert("Password Changed Successfully");
-
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-
-    setShowPassword(false);
+      alert("Password Changed Successfully");
+      setShowPassword(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      alert("Password change failed.");
+    }
   };
 
   // -----------------------------
   // Delete Account
   // -----------------------------
-  const deleteAccount = () => {
-    const confirmDelete = window.confirm(
-      "Delete your account permanently?"
-    );
+  const deleteAccount = async () => {
+    if (!deletePassword) {
+      alert("Please enter your password.");
+      return;
+    }
 
-    if (!confirmDelete) return;
+    try {
+      await deleteProfile(deletePassword);
+      alert("Account deleted successfully.");
 
-    localStorage.clear();
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
 
-    alert("Account Deleted");
-
-    navigate("/", { replace: true });
+      navigate("/", {
+        replace: true,
+      });
+    } catch (err) {
+      alert(err.response?.data?.error || "Incorrect password.");
+    } finally {
+      setDeletePassword("");
+      setShowDelete(false);
+    }
   };
 
   // -----------------------------
-  // Verification
-  // -----------------------------
-  const verifyEmail = () => {
-    localStorage.setItem(
-      "verifiedEmail",
-      "true"
-    );
-
-    setVerifiedEmail(true);
-
-    alert("Email Verified");
-  };
-
-  const verifyPhone = () => {
-    localStorage.setItem(
-      "verifiedPhone",
-      "true"
-    );
-
-    setVerifiedPhone(true);
-
-    alert("Phone Verified");
-  };
-
-  // -----------------------------
-  // Privacy
+  // Privacy Toggle
   // -----------------------------
   const togglePrivacy = () => {
-    const value = !privateAccount;
-
-    setPrivateAccount(value);
-
-    localStorage.setItem(
-      "privateAccount",
-      value
-    );
+    setPrivateAccount(!privateAccount);
   };
 
-    return (
+  return (
     <div className="profile-page">
       <div className="profile-card">
-
+        {/* ================= TOP ================= */}
         <div className="profile-top">
-
           <div
-  className="profile-image"
-  onClick={() =>
-    document.getElementById("profileUpload").click()
-  }
-  title="Change Profile Picture"
->
-  {profileImage ? (
-    <img
-      src={profileImage}
-      alt="Profile"
-      className="profile-photo"
-    />
-  ) : (
-    <FaUserCircle className="default-icon" />
-  )}
-</div>
+            className="profile-image"
+            onClick={() => document.getElementById("profileUpload").click()}
+            title="Change Profile Picture"
+          >
+            {profileImage ? (
+              <img src={profileImage} alt="Profile" className="profile-photo" />
+            ) : (
+              <FaUserCircle className="default-icon" />
+            )}
+          </div>
+
+          <input
+            id="profileUpload"
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleImageUpload}
+          />
 
           <h2>{name}</h2>
-
           <p>{email || "Email not added"}</p>
-
           <p>{phone || "Phone not added"}</p>
-
         </div>
 
+        {/* ================= BUTTONS ================= */}
         <div className="profile-options">
-
-          {/* Edit Profile */}
-
           <button onClick={() => setEditing(true)}>
             <FaEdit />
             Edit Profile
           </button>
 
-          {/* Change Profile Picture */}
-
-          <button
-            onClick={() =>
-              document
-                .getElementById("profileUpload")
-                .click()
-            }
-          >
+          <button onClick={() => document.getElementById("profileUpload").click()}>
             <FaCamera />
             Change Profile Picture
           </button>
 
-          <input
-  id="profileUpload"
-  type="file"
-  accept="image/*"
-  hidden
-  onChange={(e) => {
-    const file = e.target.files[0];
-
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      const image = reader.result;
-
-      setProfileImage(image);
-
-      localStorage.setItem("profileImage", image);
-
-      window.dispatchEvent(
-        new Event("profileUpdated")
-      );
-    };
-
-    reader.readAsDataURL(file);
-  }}
-/>
-
-<button
-  onClick={() => {
-    if (
-      window.confirm(
-        "Remove Profile Picture?"
-      )
-    ) {
-      localStorage.removeItem("profileImage");
-      setProfileImage("");
-    }
-  }}
->
-  Remove Profile Picture
-</button>
-
-          {/* Password */}
-
-          <button
-            onClick={() =>
-              setShowPassword(true)
-            }
-          >
+          <button onClick={() => setShowPassword(true)}>
             <FaLock />
             Change Password
           </button>
 
-          {/* Verification */}
-
-          <button
-            onClick={() => {
-              verifyEmail();
-              verifyPhone();
-            }}
-          >
+          <button>
             <FaEnvelope />
-            {verifiedEmail && verifiedPhone
-              ? "Verified"
-              : "Verify Email & Phone"}
+            {verifiedEmail ? "Email Verified" : "Email Not Verified"}
           </button>
 
-          {/* Privacy */}
-
-          <button
-            onClick={togglePrivacy}
-          >
+          <button onClick={togglePrivacy}>
             <FaShieldAlt />
-            {privateAccount
-              ? "Private Account"
-              : "Public Account"}
+            {privateAccount ? "Private Account" : "Public Account"}
           </button>
 
-          {/* Help */}
-
-          <button
-            onClick={() =>
-              alert(
-                "Help Center will be available soon."
-              )
-            }
-          >
+          <button onClick={() => alert("Help Center Coming Soon.")}>
             <FaQuestionCircle />
             Help Center
           </button>
 
-          {/* Contact */}
-
-          <button
-            onClick={() =>
-              window.open(
-                "mailto:support@studentcompanion.com"
-              )
-            }
-          >
+          <button onClick={() => window.open("mailto:support@studentcompanion.com")}>
             <FaHeadset />
             Contact Support
           </button>
 
-          {/* Feedback */}
-
           <button
             onClick={() => {
-              const feedback =
-                prompt(
-                  "Enter your feedback"
-                );
-
-              if (feedback) {
-                localStorage.setItem(
-                  "feedback",
-                  feedback
-                );
-
-                alert(
-                  "Thanks for your feedback!"
-                );
-              }
+              const feedback = prompt("Enter your feedback");
+              if (!feedback) return;
+              alert("Thank you for your feedback!");
             }}
           >
             <FaCommentDots />
             Send Feedback
           </button>
 
-          {/* Rating */}
-
           <button
             onClick={() => {
-              const rating =
-                prompt(
-                  "Rate the app (1-5)"
-                );
-
-              if (rating) {
-                localStorage.setItem(
-                  "rating",
-                  rating
-                );
-
-                alert(
-                  "Thank you for rating us!"
-                );
-              }
+              const rating = prompt("Rate us (1-5)");
+              if (!rating) return;
+              alert("Thanks for rating us!");
             }}
           >
             <FaStar />
-            Rate the App
+            Rate App
           </button>
 
-          {/* Delete */}
-
-          <button
-            className="delete-btn"
-            onClick={deleteAccount}
-          >
+          <button className="delete-btn" onClick={() => setShowDelete(true)}>
             <FaTrash />
             Delete Account
           </button>
 
-          {/* Logout */}
-
-          <button
-            className="logout-btn"
-            onClick={() =>
-              setShowLogout(true)
-            }
-          >
+          <button className="logout-btn" onClick={() => setShowLogout(true)}>
             <FaSignOutAlt />
             Logout
           </button>
-
         </div>
       </div>
 
-      {/* ================= EDIT PROFILE POPUP ================= */}
-
-{editing && (
-  <div className="logout-overlay">
-    <div className="logout-box">
-
-      <h3>Edit Profile</h3>
-
-      <input
-        type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-
-      <input
-        type="text"
-        placeholder="Phone Number"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-      />
-
-      <div className="logout-buttons">
-        <button onClick={() => setEditing(false)}>
-          Cancel
-        </button>
-
-        <button
-          className="confirm"
-          onClick={() => {
-
-            if (!name.trim()) {
-              alert("Please enter your name.");
-              return;
-            }
-
-            localStorage.setItem("userName", name);
-            localStorage.setItem("email", email);
-            localStorage.setItem("phone", phone);
-
-            alert("Profile Updated Successfully!");
-
-            setEditing(false);
-          }}
-        >
-          Save
-        </button>
-
-      </div>
-
-    </div>
-  </div>
-)}
-
-{/* ================= CHANGE PASSWORD ================= */}
-
-{showPassword && (
-  <div className="logout-overlay">
-    <div className="logout-box">
-
-      <h3>Change Password</h3>
-
-      <input
-        type="password"
-        placeholder="Current Password"
-        value={currentPassword}
-        onChange={(e) =>
-          setCurrentPassword(e.target.value)
-        }
-      />
-
-      <input
-        type="password"
-        placeholder="New Password"
-        value={newPassword}
-        onChange={(e) =>
-          setNewPassword(e.target.value)
-        }
-      />
-
-      <input
-        type="password"
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        onChange={(e) =>
-          setConfirmPassword(e.target.value)
-        }
-      />
-
-      <div className="logout-buttons">
-
-        <button
-          onClick={() => {
-            setShowPassword(false);
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-          }}
-        >
-          Cancel
-        </button>
-
-        <button
-          className="confirm"
-          onClick={() => {
-
-            const savedPassword =
-              localStorage.getItem("password") || "";
-
-            if (currentPassword !== savedPassword) {
-              alert("Current Password is incorrect.");
-              return;
-            }
-
-            if (newPassword.length < 6) {
-              alert("Password must be at least 6 characters.");
-              return;
-            }
-
-            if (newPassword !== confirmPassword) {
-              alert("Passwords do not match.");
-              return;
-            }
-
-            localStorage.setItem("password", newPassword);
-
-            alert("Password Changed Successfully!");
-
-            setShowPassword(false);
-
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-          }}
-        >
-          Save
-        </button>
-
-      </div>
-
-    </div>
-  </div>
-)}
-
-{/* ================= LOGOUT POPUP ================= */}
-
-      {showLogout && (
+      {/* ================= EDIT PROFILE ================= */}
+      {editing && (
         <div className="logout-overlay">
           <div className="logout-box">
+            <h3>Edit Profile</h3>
 
-            <h3>Logout</h3>
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
 
-            <p>Are you sure you want to logout?</p>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <input
+              type="text"
+              placeholder="Phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
 
             <div className="logout-buttons">
-
-              <button
-                onClick={() => setShowLogout(false)}
-              >
-                Cancel
+              <button onClick={() => setEditing(false)}>Cancel</button>
+              <button className="confirm" onClick={saveProfile}>
+                Save
               </button>
-
-              <button
-                className="confirm"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-
             </div>
-
           </div>
         </div>
       )}
 
+      {/* ================= CHANGE PASSWORD ================= */}
+      {showPassword && (
+        <div className="logout-overlay">
+          <div className="logout-box">
+            <h3>Change Password</h3>
+
+            <input
+              type="password"
+              placeholder="Current Password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+
+            <div className="logout-buttons">
+              <button
+                onClick={() => {
+                  setShowPassword(false);
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                }}
+              >
+                Cancel
+              </button>
+              <button className="confirm" onClick={savePassword}>
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= DELETE ACCOUNT ================= */}
+      {showDelete && (
+        <div className="logout-overlay">
+          <div className="logout-box">
+            <h3>Delete Account</h3>
+            <p>This action cannot be undone.</p>
+
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+            />
+
+            <div className="logout-buttons">
+              <button
+                onClick={() => {
+                  setShowDelete(false);
+                  setDeletePassword("");
+                }}
+              >
+                Cancel
+              </button>
+              <button className="delete-btn" onClick={deleteAccount}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= LOGOUT ================= */}
+      {showLogout && (
+        <div className="logout-overlay">
+          <div className="logout-box">
+            <h3>Logout</h3>
+            <p>Are you sure you want to logout?</p>
+
+            <div className="logout-buttons">
+              <button onClick={() => setShowLogout(false)}>Cancel</button>
+              <button className="confirm" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

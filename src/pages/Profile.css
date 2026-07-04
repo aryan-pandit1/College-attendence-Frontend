@@ -1,203 +1,348 @@
+/* ==========================================
+   FORCED LOCAL DARK STATE TOKENS
+   ========================================== */
+.profile-page.forced-dark {
+  background: #0f172a !important;
+  --bg-resolved: #0f172a;
+  --card-bg-resolved: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-resolved: #334155;
+  --button-bg-hover: #334155;
+}
+
+/* Specificity overrides to force typography colors in dark mode */
+.profile-page.forced-dark h2,
+.profile-page.forced-dark .logout-box h3 {
+  color: #f8fafc !important;
+}
+
+.profile-page.forced-dark p,
+.profile-page.forced-dark .logout-box p {
+  color: #94a3b8 !important;
+}
+
+.profile-page.forced-dark .profile-card,
+.profile-page.forced-dark .logout-box {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.profile-page.forced-dark .profile-options button {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: #334155 !important;
+  color: #cbd5e1 !important;
+}
+
+.profile-page.forced-dark .profile-options button:hover {
+  background: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.profile-page.forced-dark .logout-box input {
+  background: #1e293b !important;
+  border-color: #475569 !important;
+  color: #f8fafc !important;
+}
+
+.profile-page.forced-dark .logout-buttons button:not(.confirm):not(.delete-btn) {
+  background: transparent !important;
+  border-color: #475569 !important;
+  color: #cbd5e1 !important;
+}
+
+.profile-page.forced-dark .logout-buttons button:not(.confirm):not(.delete-btn):hover {
+  background: #334155 !important;
+}
+
+/* ==========================================
+   PAGE STRUCTURAL WIREFRAMES
+   ========================================== */
 .profile-page {
   min-height: 100vh;
-  background: #f4f7fb;
+  background: #f5f7fb;
   display: flex;
   justify-content: center;
-  padding: 40px 20px;
+  align-items: flex-start;
+  padding: 40px 16px;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease;
 }
 
 .profile-card {
   width: 100%;
-  max-width: 900px;
-  background: #fff;
+  max-width: 600px;
+  background: #ffffff;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  overflow: hidden;
+  padding: 40px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
+/* ==========================================
+   PROFILE TOP IDENTIFIER HEADER
+   ========================================== */
 .profile-top {
-  background: linear-gradient(135deg,#2563eb,#4f46e5);
-  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  padding: 40px 20px;
+  margin-bottom: 35px;
 }
 
 .profile-image {
-  width: 130px;
-  height: 130px;
-  margin: auto;
+  position: relative;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  overflow: hidden;
-  background: white;
+  cursor: pointer;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+  transition: transform 0.2s ease;
 }
 
-.profile-image svg {
-  font-size: 120px;
-  color: #2563eb;
+.profile-image:hover {
+  transform: scale(1.03);
 }
 
-.profile-image img {
+.profile-photo {
   width: 100%;
   height: 100%;
+  border-radius: 50%;
   object-fit: cover;
+  border: 3px solid #2563eb;
+}
+
+.default-icon {
+  font-size: 110px;
+  color: #64748b;
 }
 
 .profile-top h2 {
-  margin-top: 15px;
-  font-size: 30px;
+  color: #1e293b;
+  font-size: 24px;
   font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px 0;
 }
 
 .profile-top p {
-  margin-top: 5px;
-  opacity: .9;
+  color: #64748b;
+  font-size: 14px;
+  margin: 2px 0;
 }
 
+/* ==========================================
+   INTERACTIVE OPTIONS MATRIX BUTTONS
+   ========================================== */
 .profile-options {
-  padding: 30px;
   display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 18px;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
 }
 
 .profile-options button {
   display: flex;
   align-items: center;
   gap: 12px;
-  border: none;
-  background: #f8fafc;
-  padding: 18px;
+  padding: 14px 16px;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
   border-radius: 12px;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 16px;
-  transition: .25s;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  text-align: left;
 }
 
 .profile-options button:hover {
-  background: #6a00ff;
-  color: white;
-  transform: translateY(-3px);
-}
-
-.profile-options svg {
-  font-size: 18px;
-}
-
-.delete-btn {
-  color: #dc2626;
-}
-
-.delete-btn:hover {
-  background: #dc2626 !important;
-  color: white;
-}
-
-.logout-btn {
+  border-color: #2563eb;
+  background: #f8fafc;
   color: #2563eb;
 }
 
-.logout-btn:hover {
-  background: #2563eb !important;
+.profile-options button svg {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* Accent Button States */
+.profile-options button.delete-btn {
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.profile-options button.delete-btn:hover {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.profile-page.forced-dark .profile-options button.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+}
+
+.profile-options button.logout-btn {
+  grid-column: span 2;
+  justify-content: center;
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #ef4444;
+}
+
+.profile-options button.logout-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
   color: white;
 }
 
-/* Popup */
-
+/* ==========================================
+   POPUP MODALS OVERLAYS SYSTEM
+   ========================================== */
 .logout-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.45);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 2000;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .logout-box {
-  width: 350px;
-  background: white;
-  border-radius: 15px;
-  padding: 30px;
+  width: 100%;
+  max-width: 400px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   text-align: center;
+  box-sizing: border-box;
+  animation: fadeInModal 0.25s ease-out;
 }
 
 .logout-box h3 {
-  margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
 }
 
+.logout-box p {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+/* Modal Form Inputs */
+.logout-box input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.logout-box input:focus {
+  border-color: #2563eb;
+}
+
+/* Modal Button Actions Rows */
 .logout-buttons {
   display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 25px;
+  gap: 12px;
+  margin-top: 20px;
+  width: 100%;
 }
 
 .logout-buttons button {
-  border: none;
-  padding: 10px 25px;
+  flex: 1;
+  padding: 12px;
   border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 15px;
+  border: 1px solid #dbe2ea;
+  background: white;
+  color: #475569;
+  transition: all 0.15s ease;
 }
 
-.logout-buttons button:first-child {
-  background: #e5e7eb;
+.logout-buttons button:hover {
+  background: #f1f5f9;
 }
 
-.logout-buttons .confirm {
+.logout-buttons button.confirm {
   background: #2563eb;
+  border-color: #2563eb;
   color: white;
 }
 
-.logout-buttons .confirm:hover {
-  background: #c5d81d;
+.logout-buttons button.confirm:hover {
+  background: #1d4ed8;
 }
 
-@media (max-width:768px){
-
-.profile-options{
-grid-template-columns:1fr;
+.logout-buttons button.delete-btn {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
 }
 
-.profile-top{
-padding:30px 20px;
+.logout-buttons button.delete-btn:hover {
+  background: #dc2626;
 }
 
-.profile-image{
-width:110px;
-height:110px;
+/* ==========================================
+   ANIMATIONS & MEDIA BREAKPOINTS
+   ========================================== */
+@keyframes fadeInModal {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
-.profile-image svg{
-font-size:100px;
-}
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 20px 12px;
+  }
 
-}
+  .profile-card {
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
 
-.profile-image{
-    width:140px;
-    height:140px;
-    margin:0 auto;
-    cursor:pointer;
-    overflow:hidden;
-    border-radius:50%;
-    border:4px solid #2563eb;
-    transition:.3s;
-}
+  .profile-options {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 
-.profile-image:hover{
-    transform:scale(1.05);
-}
-
-.profile-photo{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-}
-
-.default-icon{
-    font-size:140px;
-    color:#2563eb;
+  .profile-options button.logout-btn {
+    grid-column: span 1;
+  }
 }
