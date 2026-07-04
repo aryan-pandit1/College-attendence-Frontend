@@ -31,6 +31,9 @@ const Internals = ({ darkMode }) => {
   const [newAssessmentName, setNewAssessmentName] =
     useState("");
 
+
+    
+
   const [newAssessmentMarks, setNewAssessmentMarks] =
     useState("");
 
