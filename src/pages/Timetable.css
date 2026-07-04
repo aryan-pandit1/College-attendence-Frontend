@@ -1,0 +1,270 @@
+.timetable-page {
+  padding: 30px;
+  background: #f4f7fb;
+  min-height: 100vh;
+}
+
+.timetable-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.timetable-header h1 {
+  font-size: 32px;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.semester-select {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.semester-select label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.semester-select select {
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.add-lecture-card {
+  background: white;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.06);
+  margin-bottom: 35px;
+}
+
+.add-lecture-card h2 {
+  margin-bottom: 20px;
+  color: #1f2937;
+}
+
+.lecture-form {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(170px,1fr));
+  gap: 15px;
+}
+
+.lecture-form select,
+.lecture-form input {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  outline: none;
+  font-size: 14px;
+}
+
+.lecture-form select:focus,
+.lecture-form input:focus {
+  border-color: #3b82f6;
+}
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+.day-card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  transition: 0.3s ease;
+}
+
+.day-card:hover {
+  transform: translateY(-3px);
+}
+
+.day-card h2 {
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e5e7eb;
+  color: #2563eb;
+  font-size: 22px;
+}
+
+.day-card p {
+  color: #6b7280;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.lecture-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #f8fafc;
+  border-left: 5px solid #3b82f6;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  transition: 0.3s;
+}
+
+.lecture-card:hover {
+  background: #eff6ff;
+}
+
+.lecture-card h4 {
+  color: #1f2937;
+  margin-bottom: 5px;
+  font-size: 17px;
+}
+
+.lecture-card input {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.lecture-card input:focus {
+  border-color: #2563eb;
+}
+
+.lecture-card input[type="time"] {
+  cursor: pointer;
+}
+/* Buttons */
+
+.lecture-form button {
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.lecture-form button:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+.delete-btn {
+  margin-top: 8px;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #ef4444;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+/* Smooth Animation */
+
+.day-card,
+.add-lecture-card,
+.lecture-card {
+  animation: fadeUp .35s ease;
+}
+
+@keyframes fadeUp {
+
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+}
+
+/* Scrollbar */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive */
+
+@media (max-width: 992px) {
+
+  .week-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .timetable-page {
+    padding: 18px;
+  }
+
+  .timetable-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .semester-select {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .lecture-form {
+    grid-template-columns: 1fr;
+  }
+
+  .week-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lecture-card {
+    padding: 12px;
+  }
+
+}
+
+@media (max-width: 480px) {
+
+  .timetable-header h1 {
+    font-size: 24px;
+  }
+
+  .day-card h2 {
+    font-size: 18px;
+  }
+
+  .lecture-card h4 {
+    font-size: 15px;
+  }
+
+}

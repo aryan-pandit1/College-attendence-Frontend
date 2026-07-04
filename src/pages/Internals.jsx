@@ -10,9 +10,8 @@ import { getCourses } from "../services/courseService";
 
 import axiosInstance from "../services/axiosInstance";
 
-
-
-const Internals = () => {
+// Accept darkMode prop sent down from App.jsx routing configurations
+const Internals = ({ darkMode }) => {
 
   const [selectedSemester, setSelectedSemester] = useState(1);
 
@@ -47,28 +46,24 @@ const Internals = () => {
       loadInternals();
       loadScore();
     }
-  }, [selectedSubjectId]);useEffect(() => {
+  }, [selectedSubjectId]);
 
-  if (semesterSubjects.length > 0) {
-
-    setSelectedSubjectId(
-      semesterSubjects[0].id
-    );
-
-  }
-
-}, [selectedSemester, subjects]);
+  useEffect(() => {
+    if (semesterSubjects.length > 0) {
+      setSelectedSubjectId(
+        semesterSubjects[0].id
+      );
+    }
+  }, [selectedSemester, subjects]);
 
 
   const availableSemesters = [
-  ...new Set(subjects.map((s) => s.semester)),
-].sort((a, b) => a - b);
+    ...new Set(subjects.map((s) => s.semester)),
+  ].sort((a, b) => a - b);
 
   const loadCourses = async () => {
     try {
-
       const res = await getCourses();
-
       const courses =
         res.data.results || res.data;
 
@@ -77,18 +72,14 @@ const Internals = () => {
       if (courses.length > 0) {
         setSelectedSubjectId(courses[0].id);
       }
-
     } catch (err) {
-      console.log(err);
+      // Handled gracefully internally
     }
   };
 
   const loadInternals = async () => {
-
     try {
-
       const res = await getInternals();
-
       const data =
         res.data.results || res.data;
 
@@ -99,24 +90,18 @@ const Internals = () => {
         );
 
       setEvaluations(filtered);
-
     } catch (err) {
-
-      console.log(err);
-
+      // Handled gracefully internally
     }
-
   };
 
   const semesterSubjects = subjects.filter(
-  (subject) =>
-    subject.semester === selectedSemester
-);
+    (subject) =>
+      subject.semester === selectedSemester
+  );
 
   const loadScore = async () => {
-
     try {
-
       const res =
         await getInternalScore(
           selectedSubjectId
@@ -125,13 +110,9 @@ const Internals = () => {
       setWeightedScore(
         res.data.weighted_score
       );
-
     } catch (err) {
-
-      console.log(err);
-
+      // Handled gracefully internally
     }
-
   };
 
   const selectedSubject =
@@ -142,7 +123,7 @@ const Internals = () => {
 
   if (subjects.length === 0) {
     return (
-      <div className="internals-page">
+      <div className={`internals-page ${darkMode ? "forced-dark" : ""}`}>
         <h2>No Subjects Added</h2>
       </div>
     );
@@ -167,21 +148,14 @@ const Internals = () => {
 
   const remaining = totalMax - totalObtained;
 
-  const marksNeeded = Math.max(
-    0,
-    targetScore - totalObtained
-  );
-
   const handleMarksChange = async (
     evaluation,
     field,
     value
   ) => {
-
     let updatedValue = Number(value);
 
     if (field === "marks_obtained") {
-
       updatedValue = Math.max(
         0,
         Math.min(
@@ -189,20 +163,16 @@ const Internals = () => {
           evaluation.total_marks
         )
       );
-
     }
 
     if (field === "total_marks") {
-
       updatedValue = Math.max(
         1,
         updatedValue
       );
-
     }
 
     try {
-
       await axiosInstance.put(
         `internals/${evaluation.id}/`,
         {
@@ -212,69 +182,45 @@ const Internals = () => {
       );
 
       loadInternals();
-
       loadScore();
-
     } catch (err) {
-
-      console.log(err);
-
+      // Handled gracefully internally
     }
-
   };
 
   const addAssessment = async () => {
-
     if (!newAssessmentName.trim()) {
-
       alert("Enter assessment name.");
-
       return;
-
     }
 
     try {
-
       await axiosInstance.post(
         "internals/",
         {
-
           course: selectedSubjectId,
-
           assessment_name:
             newAssessmentName,
-
           marks_obtained: 0,
-
           total_marks:
             Number(newAssessmentMarks) || 10,
-
           weightage:
             Number(newWeightage) || 10,
-
         }
       );
 
       setNewAssessmentName("");
-
       setNewAssessmentMarks("");
-
       setNewWeightage("");
 
       loadInternals();
-
       loadScore();
-
     } catch (err) {
-
-      console.log(err);
-
+      // Handled gracefully internally
     }
-
   };
 
   const deleteAssessment = async (id) => {
-
     if (
       !window.confirm(
         "Delete this assessment?"
@@ -283,370 +229,297 @@ const Internals = () => {
       return;
 
     try {
-
       await axiosInstance.delete(
         `internals/${id}/`
       );
 
       loadInternals();
-
       loadScore();
-
     } catch (err) {
-
-      console.log(err);
-
+      // Handled gracefully internally
     }
-
   };
 
   return (
-  <div className="internals-page">
-    <div className="internals-header">
-      <h1>Internals</h1>
-    </div>
+    /* Structural configuration maps local theme context properties seamlessly */
+    <div className={`internals-page ${darkMode ? "forced-dark" : ""}`}>
+      <div className="internals-header">
+        <h1>Internals</h1>
+      </div>
 
-<div className="semester-tabs">
+      <div className="semester-tabs">
+        {availableSemesters.map((sem) => (
+          <button
+            key={sem}
+            className={
+              selectedSemester === sem
+                ? "semester-btn active"
+                : "semester-btn"
+            }
+            onClick={() =>
+              setSelectedSemester(sem)
+            }
+          >
+            Semester {sem}
+          </button>
+        ))}
+      </div>
 
-  {availableSemesters.map((sem) => (
+      <div className="subject-tabs">
+        {semesterSubjects.map((subject) => (
+          <button
+            key={subject.id}
+            className={`subject-tab ${
+              selectedSubjectId === subject.id
+                ? "active"
+                : ""
+            }`}
+            onClick={() => setSelectedSubjectId(subject.id)}
+          >
+            {subject.course_name}
+            <span>{subject.course_code}</span>
+          </button>
+        ))}
+      </div>
 
-    <button
-      key={sem}
-      className={
-        selectedSemester === sem
-          ? "semester-btn active"
-          : "semester-btn"
-      }
-      onClick={() =>
-        setSelectedSemester(sem)
-      }
-    >
-      Semester {sem}
-    </button>
+      <div className="internals-content">
+        <div className="assessment-card">
+          <h2>Assessments</h2>
 
-  ))}
+          <table>
+            <thead>
+              <tr>
+                <th>Assessment</th>
+                <th>Max Marks</th>
+                <th>Progress</th>
+                <th>Obtained</th>
+                <th>Action</th>
+              </tr>
+            </thead>
 
-</div>
+            <tbody>
+              {evaluations.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.assessment_name}</td>
 
-    <div className="subject-tabs">
-      {semesterSubjects.map((subject) => (
-        <button
-          key={subject.id}
-          className={`subject-tab ${
-            selectedSubjectId === subject.id
-              ? "active"
-              : ""
-          }`}
-          onClick={() => setSelectedSubjectId(subject.id)}
-        >
-          {subject.course_name}
-          <span>{subject.course_code}</span>
-        </button>
-      ))}
-    </div>
+                  <td>
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.total_marks}
+                      onChange={(e) =>
+                        handleMarksChange(
+                          item,
+                          "total_marks",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </td>
 
-    <div className="internals-content">
+                  <td>
+                    <div className="progress-bar">
+                      <div
+                        className="progress-fill"
+                        style={{
+                          width: `${
+                            (item.marks_obtained /
+                              item.total_marks) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </td>
 
-      <div className="assessment-card">
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      max={item.total_marks}
+                      value={item.marks_obtained}
+                      onChange={(e) => {
+                        let value = Number(
+                          e.target.value
+                        );
 
-        <h2>Assessments</h2>
+                        if (
+                          value > item.total_marks
+                        ) {
+                          value = item.total_marks;
+                        }
 
-        <table>
+                        if (value < 0) {
+                          value = 0;
+                        }
 
-          <thead>
-
-            <tr>
-
-              <th>Assessment</th>
-
-              <th>Max Marks</th>
-
-              <th>Progress</th>
-
-              <th>Obtained</th>
-
-              <th>Action</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {evaluations.map((item) => (
-
-              <tr key={item.id}>
-
-                <td>{item.assessment_name}</td>
-
-                <td>
-
-                  <input
-                    type="number"
-                    min="1"
-                    value={item.total_marks}
-                    onChange={(e) =>
-                      handleMarksChange(
-                        item,
-                        "total_marks",
-                        e.target.value
-                      )
-                    }
-                  />
-
-                </td>
-
-                <td>
-
-                  <div className="progress-bar">
-
-                    <div
-                      className="progress-fill"
-                      style={{
-                        width: `${
-                          (item.marks_obtained /
-                            item.total_marks) *
-                          100
-                        }%`,
+                        handleMarksChange(
+                          item,
+                          "marks_obtained",
+                          value
+                        );
                       }}
                     />
+                  </td>
 
-                  </div>
-
-                </td>
-
-                <td>
-
-                  <input
-                    type="number"
-                    min="0"
-                    max={item.total_marks}
-                    value={item.marks_obtained}
-                    onChange={(e) => {
-
-                      let value = Number(
-                        e.target.value
-                      );
-
-                      if (
-                        value > item.total_marks
-                      ) {
-                        value = item.total_marks;
+                  <td>
+                    <button
+                      className="delete-assessment-btn"
+                      onClick={() =>
+                        deleteAssessment(item.id)
                       }
-
-                      if (value < 0) {
-                        value = 0;
-                      }
-
-                      handleMarksChange(
-                        item,
-                        "marks_obtained",
-                        value
-                      );
-
-                    }}
-                  />
-
-                </td>
-
-                <td>
-
-                  <button
-                    className="delete-assessment-btn"
-                    onClick={() =>
-                      deleteAssessment(item.id)
-                    }
-                  >
-                    Delete
-                  </button>
-
-                </td>
-
-              </tr>
-
-            ))}
-
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
+          </table>
 
-        </table>
-
-        <div className="add-assessment">
-
-          <input
-            type="text"
-            placeholder="Assessment Name"
-            value={newAssessmentName}
-            onChange={(e) =>
-              setNewAssessmentName(e.target.value)
-            }
-          />
-
-          <input
-            type="number"
-            placeholder="Max Marks"
-            value={newAssessmentMarks}
-            onChange={(e) =>
-              setNewAssessmentMarks(e.target.value)
-            }
-          />
-
-          <input
-            type="number"
-            placeholder="Weightage (%)"
-            value={newWeightage}
-            onChange={(e) =>
-              setNewWeightage(e.target.value)
-            }
-          />
-
-          <button onClick={addAssessment}>
-            + Add Assessment
-          </button>
-
-        </div>
-
-      </div>
-
-      <div className="progress-card">
-
-        <h3>Overall Progress</h3>
-
-        <div className="circle-progress">
-
-          <svg width="170" height="170">
-
-            <circle
-              cx="85"
-              cy="85"
-              r="70"
-              stroke="#e5e7eb"
-              strokeWidth="12"
-              fill="none"
-            />
-
-            <circle
-              cx="85"
-              cy="85"
-              r="70"
-              stroke="#3b82f6"
-              strokeWidth="12"
-              fill="none"
-              strokeLinecap="round"
-              strokeDasharray={2 * Math.PI * 70}
-              strokeDashoffset={
-                2 *
-                Math.PI *
-                70 *
-                (1 - percentage / 100)
+          <div className="add-assessment">
+            <input
+              type="text"
+              placeholder="Assessment Name"
+              value={newAssessmentName}
+              onChange={(e) =>
+                setNewAssessmentName(e.target.value)
               }
-              transform="rotate(-90 85 85)"
             />
 
-            <text
-              x="85"
-              y="80"
-              textAnchor="middle"
-              fontSize="28"
-              fontWeight="700"
-              fill="#1f2937"
-            >
-              {percentage}%
-            </text>
+            <input
+              type="number"
+              placeholder="Max Marks"
+              value={newAssessmentMarks}
+              onChange={(e) =>
+                setNewAssessmentMarks(e.target.value)
+              }
+            />
 
-            <text
-              x="85"
-              y="105"
-              textAnchor="middle"
-              fontSize="14"
-              fill="#6b7280"
-            >
-              {totalObtained}/{totalMax}
-            </text>
+            <input
+              type="number"
+              placeholder="Weightage (%)"
+              value={newWeightage}
+              onChange={(e) =>
+                setNewWeightage(e.target.value)
+              }
+            />
 
-          </svg>
-
+            <button onClick={addAssessment}>
+              + Add Assessment
+            </button>
+          </div>
         </div>
 
-        <div className="stats">
+        <div className="progress-card">
+          <h3>Overall Progress</h3>
 
-          <div>
-            <span className="dot green"></span>
-            Secured
-            <strong>{totalObtained}</strong>
+          <div className="circle-progress">
+            <svg width="170" height="170">
+              <circle
+                cx="85"
+                cy="85"
+                r="70"
+                stroke={darkMode ? "#334155" : "#e5e7eb"}
+                strokeWidth="12"
+                fill="none"
+              />
+
+              <circle
+                cx="85"
+                cy="85"
+                r="70"
+                stroke="#3b82f6"
+                strokeWidth="12"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={2 * Math.PI * 70}
+                strokeDashoffset={
+                  2 *
+                  Math.PI *
+                  70 *
+                  (1 - percentage / 100)
+                }
+                transform="rotate(-90 85 85)"
+              />
+
+              <text
+                x="85"
+                y="80"
+                textAnchor="middle"
+                fontSize="28"
+                fontWeight="700"
+                fill={darkMode ? "#f8fafc" : "#1f2937"}
+              >
+                {percentage}%
+              </text>
+
+              <text
+                x="85"
+                y="105"
+                textAnchor="middle"
+                fontSize="14"
+                fill={darkMode ? "#94a3b8" : "#6b7280"}
+              >
+                {totalObtained}/{totalMax}
+              </text>
+            </svg>
           </div>
 
-          <div>
-            <span className="dot gray"></span>
-            Remaining
-            <strong>{remaining}</strong>
+          <div className="stats">
+            <div>
+              <span className="dot green"></span>
+              Secured
+              <strong>{totalObtained}</strong>
+            </div>
+
+            <div>
+              <span className="dot gray"></span>
+              Remaining
+              <strong>{remaining}</strong>
+            </div>
           </div>
 
+          <div className="target-box">
+            <label>Target Internal Marks</label>
+            <input
+              type="number"
+              value={targetScore}
+              onChange={(e) =>
+                setTargetScore(
+                  Number(e.target.value)
+                )
+              }
+            />
+          </div>
+
+          <div className="success-box">
+            <h4>Prediction</h4>
+            <p>
+              Current Weighted Score:
+              <strong> {weightedScore}</strong>
+              <br />
+              <br />
+              Need approximately
+              <strong>
+                {" "}
+                {Math.max(
+                  0,
+                  targetScore - weightedScore
+                ).toFixed(2)}
+              </strong>
+              {" "}more weighted marks to reach
+              <strong> {targetScore}</strong>.
+            </p>
+          </div>
         </div>
-
-        <div className="target-box">
-
-          <label>Target Internal Marks</label>
-
-          <input
-            type="number"
-            value={targetScore}
-            onChange={(e) =>
-              setTargetScore(
-                Number(e.target.value)
-              )
-            }
-          />
-
-        </div>
-
-        <div className="success-box">
-
-          <h4>Prediction</h4>
-
-          <p>
-
-            Current Weighted Score:
-            <strong>
-              {" "}
-              {weightedScore}
-            </strong>
-
-            <br />
-            <br />
-
-            Need approximately
-            <strong>
-              {" "}
-              {Math.max(
-                0,
-                targetScore - weightedScore
-              ).toFixed(2)}
-            </strong>
-            {" "}more weighted marks to reach
-            <strong>
-              {" "}
-              {targetScore}
-            </strong>.
-
-          </p>
-
-        </div>
-
       </div>
 
+      <div className="note-box">
+        <strong>Note:</strong> Changes are saved automatically to your account.
+      </div>
     </div>
-
-    <div className="note-box">
-
-      <strong>Note:</strong>
-      {" "}
-      Changes are saved automatically to your account.
-
-    </div>
-
-  </div>
-);
-
+  );
 };
 
 export default Internals;

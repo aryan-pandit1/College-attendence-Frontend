@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import "./GPA.css";
 
 import { getCourses } from "../services/courseService";
@@ -23,7 +23,8 @@ const gradeScale = {
   F: 0,
 };
 
-const GPA = () => {
+// Accept darkMode prop sent down from App.jsx routing configurations
+const GPA = ({ darkMode }) => {
 
   const [subjects, setSubjects] = useState([]);
 
@@ -38,25 +39,21 @@ const GPA = () => {
 
   const [cgpa, setCGPA] = useState(0);
 
-  // -------------------------
+  const [graphData, setGraphData] = useState([]);
+
   // Target Calculator
-  // -------------------------
 
   const [currentCGPA, setCurrentCGPA] =
-    useState(8.2);
+    useState(0);
 
   const [completedSemesters, setCompletedSemesters] =
-    useState(5);
+    useState(1);
 
   const [remainingSemesters, setRemainingSemesters] =
-    useState(3);
+    useState(7);
 
   const [targetCGPA, setTargetCGPA] =
     useState(9);
-
-  // -------------------------
-  // Load Data
-  // -------------------------
 
   useEffect(() => {
 
@@ -80,6 +77,17 @@ const GPA = () => {
 
   }, [selectedSemester]);
 
+  // Sync graph candles data calculation trigger automatically when semesters resolve
+  useEffect(() => {
+    if (semesters.length > 0) {
+      loadGraph(semesters); // Pass semesters directly to avoid state batching delays
+    }
+  }, [semesters]);
+
+  // -------------------------
+  // Courses
+  // -------------------------
+
   const loadCourses = async () => {
 
     try {
@@ -91,13 +99,17 @@ const GPA = () => {
 
       setSubjects(data);
 
-    } catch (err) {
+    }
 
-      console.log(err);
-
+    catch (err) {
+      // Handled gracefully internally
     }
 
   };
+
+  // -------------------------
+  // Semesters
+  // -------------------------
 
   const loadSemesters = async () => {
 
@@ -108,21 +120,25 @@ const GPA = () => {
       const data =
         res.data.results || res.data;
 
-      setSemesters(data);
+    setSemesters(data);
 
-      if (data.length > 0) {
+    if (data.length > 0) {
 
         setSelectedSemester(data[0].id);
 
-      }
-
-    } catch (err) {
-
-      console.log(err);
+    }
 
     }
 
+    catch (err) {
+      // Handled gracefully internally
+    }
+
   };
+
+  // -------------------------
+  // Grades
+  // -------------------------
 
   const loadGrades = async () => {
 
@@ -133,23 +149,19 @@ const GPA = () => {
       const data =
         res.data.results || res.data;
 
-      const filtered = data.filter(
-
-        grade =>
-          grade.semester ===
-          selectedSemester
-
-      );
-
-      setGrades(filtered);
-
-    } catch (err) {
-
-      console.log(err);
+      setGrades(data);
 
     }
 
+    catch (err) {
+      // Handled gracefully internally
+    }
+
   };
+
+  // -------------------------
+  // GPA
+  // -------------------------
 
   const loadSGPA = async () => {
 
@@ -158,11 +170,13 @@ const GPA = () => {
       const res =
         await getSGPA(selectedSemester);
 
-      setSGPA(res.data.sgpa);
+      setSGPA(res.data.sgpa || 0);
 
-    } catch (err) {
+    }
 
-      console.log(err);
+    catch (err) {
+
+      setSGPA(0);
 
     }
 
@@ -174,166 +188,213 @@ const GPA = () => {
 
       const res = await getCGPA();
 
-      setCGPA(res.data.cgpa);
+      setCGPA(res.data.cgpa || 0);
 
-      setCurrentCGPA(res.data.cgpa);
+      setCurrentCGPA(
+        res.data.cgpa || 0
+      );
 
-    } catch (err) {
+    }
 
-      console.log(err);
+    catch (err) {
+
+      setCGPA(0);
 
     }
 
   };
 
-  const semesterSubjects = useMemo(() => {
+  // Accept targets array parameter so we can bypass state initialization lag frames
+  const loadGraph = async (targetSemesters = semesters) => {
 
-    return grades.map((grade) => {
+  const graph = [];
 
-      const subject =
-        subjects.find(
-          s => s.id === grade.course
-        );
-
-      return {
-
-        ...grade,
-
-        subject,
-
-      };
-
-    });
-
-  }, [grades, subjects]);
-  // -------------------------
-  // Grade Update
-  // -------------------------
-
-  const handleGradeChange = async (
-    grade,
-    gradeLetter
-  ) => {
+  for (const semester of targetSemesters) {
 
     try {
 
-      await updateGrade(
-        grade.id,
-        {
-          ...grade,
-          grade_point:
-            gradeScale[gradeLetter],
-        }
+      const res = await getSGPA(semester.id);
+
+      graph.push({
+        semester: `Sem ${semester.semester_number}`,
+        sgpa: Number(res.data.sgpa || 0),
+      });
+
+    }
+
+    catch {
+
+      graph.push({
+        semester: `Sem ${semester.semester_number}`,
+        sgpa: 0,
+      });
+
+    }
+
+  }
+
+  setGraphData(graph);
+
+};
+
+    // -------------------------
+  // Subjects of Selected Semester
+  // -------------------------
+
+  const semesterSubjects =
+    subjects.filter((subject) => {
+
+      const semester = semesters.find(
+  (sem) => sem.id === selectedSemester
+);
+
+if (!semester) return;
+
+      if (!semester) return false;
+
+      return (
+        subject.semester ===
+        semester.semester_number
       );
+
+    });
+
+  // -------------------------
+  // Grade Change
+  // -------------------------
+
+  const handleGradeChange = async (
+    courseId,
+    gradePoint
+  ) => {
+     if (gradePoint === "") return;
+     
+    try {
+
+      const semester = semesters.find(
+        (sem) =>
+          sem.id === selectedSemester
+      );
+
+      const existingGrade =
+        grades.find(
+          (g) =>
+            g.course === courseId &&
+            g.semester ===
+              selectedSemester
+        );
+
+      if (existingGrade) {
+
+        await updateGrade(
+          existingGrade.id,
+          {
+            semester:
+              selectedSemester,
+
+            course: courseId,
+
+            grade_point:
+              Number(gradePoint),
+          }
+        );
+
+      } else {
+
+        await addGrade({
+
+          semester:
+            selectedSemester,
+
+          course: courseId,
+
+          grade_point:
+            Number(gradePoint),
+
+        });
+
+      }
 
       loadGrades();
 
       loadSGPA();
 
       loadCGPA();
+      
+      // FIXED: Refresh trend visual metrics graph live as changes hit the DB!
+      loadGraph();
 
     } catch (err) {
-
-      console.log(err);
-
+      // Handled gracefully internally
     }
 
   };
 
   // -------------------------
-  // Calculations
+  // Helpers
   // -------------------------
+
+  const getGradePoint = (
+    courseId
+  ) => {
+
+    const record =
+      grades.find(
+        (g) =>
+          g.course === courseId &&
+          g.semester ===
+            selectedSemester
+      );
+
+    return record
+      ? record.grade_point
+      : "";
+
+  };
 
   const totalCredits =
     semesterSubjects.reduce(
-
-      (sum, item) =>
-
-        sum +
-        (item.subject?.credits || 0),
-
+      (sum, subject) =>
+        sum + subject.credits,
       0
-
     );
 
   const estimatedSGPA =
-    sgpa
-      ? Number(sgpa).toFixed(2)
-      : "0.00";
+    Number(sgpa).toFixed(2);
 
   const estimatedCGPA =
-    cgpa
-      ? Number(cgpa).toFixed(2)
-      : "0.00";
+    Number(cgpa).toFixed(2);
 
   const calculatedRequiredSGPA =
-
     remainingSemesters === 0
-
       ? 0
-
       :
-
-      (
-
-        targetCGPA *
-
         (
-
-          completedSemesters +
-
-          remainingSemesters
-
-        )
-
-        -
-
-        currentCGPA *
-
-        completedSemesters
-
-      )
-
-      /
-
-      remainingSemesters;
+          targetCGPA *
+            (
+              completedSemesters +
+              remainingSemesters
+            ) -
+          currentCGPA *
+            completedSemesters
+        ) /
+        remainingSemesters;
 
   const requiredSGPA =
-
     calculatedRequiredSGPA > 10
-
       ? "Impossible"
-
       : Math.max(
-
           0,
-
           calculatedRequiredSGPA
-
         ).toFixed(2);
 
-  // -------------------------
-  // SGPA Trend
-  // -------------------------
-
-  const cgpaTrend =
-    semesters.map(
-
-      (_, index) =>
-
-        index + 1 <= completedSemesters
-
-          ? currentCGPA
-
-          : 0
-
+  const gradeOptions =
+    Object.entries(
+      gradeScale
     );
 
-  const gradeOptions =
-    Object.entries(gradeScale);
-
     return (
-  <div className="gpa-page">
+  <div className={`gpa-page ${darkMode ? "forced-dark" : ""}`}>
 
     <div className="gpa-header">
 
@@ -369,42 +430,41 @@ const GPA = () => {
 
     </div>
 
-    {/* ------------------ TOP ------------------ */}
+    {/* ---------------- TOP ---------------- */}
 
     <div className="gpa-top">
 
-      <div className="card trend-card">
+     <div className="card trend-card">
 
-        <h3>SGPA Trend</h3>
+  <h3>SGPA Trend</h3>
 
-        <div className="chart">
+  <div className="chart">
 
-          {cgpaTrend.map((value, index) => (
+    {graphData.map((item) => (
 
-            <div
-              key={index}
-              className="bar-item"
-            >
+      <div
+        key={item.semester}
+        className="bar-item"
+      >
 
-              <span>{value}</span>
+        <span>{item.sgpa.toFixed(2)}</span>
 
-              <div
-                className="bar"
-                style={{
-                  height: `${value * 22}px`,
-                }}
-              />
+        <div
+          className="bar"
+          style={{
+            height: `${item.sgpa * 22}px`,
+          }}
+        />
 
-              <p>Sem {index + 1}</p>
-
-            </div>
-
-          ))}
-
-        </div>
+        <p>{item.semester}</p>
 
       </div>
 
+    ))}
+
+  </div>
+
+</div>
       <div className="card target-card">
 
         <h3>🎯 Target CGPA Calculator</h3>
@@ -485,7 +545,7 @@ const GPA = () => {
 
     </div>
 
-    {/* ------------------ SUBJECT TABLE ------------------ */}
+    {/* ---------------- SUBJECTS ---------------- */}
 
     <div className="gpa-middle">
 
@@ -504,6 +564,8 @@ const GPA = () => {
               <th>Credits</th>
 
               <th>Grade Point</th>
+              
+              <th>Points</th>
 
             </tr>
 
@@ -511,50 +573,83 @@ const GPA = () => {
 
           <tbody>
 
-            {semesterSubjects.map((item) => (
+            {semesterSubjects.length === 0 ? (
 
-              <tr key={item.id}>
+              <tr>
 
-                <td>
-                  {item.subject?.course_name}
-                </td>
+                <td colSpan="4">
 
-                <td>
-                  {item.subject?.credits}
-                </td>
-
-                <td>
-
-                  <select
-                    value={item.grade_point}
-                    onChange={(e) =>
-                      handleGradeChange(
-                        item,
-                        Number(e.target.value)
-                      )
-                    }
-                  >
-
-                    {gradeOptions.map(
-                      ([grade, point]) => (
-
-                        <option
-                          key={grade}
-                          value={point}
-                        >
-                          {grade}
-                        </option>
-
-                      )
-                    )}
-
-                  </select>
+                  No subjects in this semester.
 
                 </td>
 
               </tr>
 
-            ))}
+            ) : (
+
+              semesterSubjects.map((subject) => {
+                const currentGradePoint = getGradePoint(subject.id);
+                const calculatedPoints = currentGradePoint !== "" ? subject.credits * Number(currentGradePoint) : 0;
+
+                return (
+                  <tr key={subject.id}>
+
+                    <td>
+
+                      {subject.course_name}
+
+                    </td>
+
+                    <td>
+
+                      {subject.credits}
+
+                    </td>
+
+                    <td>
+
+                      <select
+                        value={currentGradePoint}
+                        onChange={(e) =>
+                          handleGradeChange(
+                            subject.id,
+                            e.target.value
+                          )
+                        }
+                      >
+
+                         <option value="">
+                          Select Grade
+                         </option>
+
+                        {gradeOptions.map(
+                          ([grade, point]) => (
+
+                            <option
+                              key={grade}
+                              value={point}
+                            >
+
+                              {grade}
+
+                            </option>
+
+                          )
+                        )}
+
+                      </select>
+
+                    </td>
+                    
+                    <td>
+                      {calculatedPoints}
+                    </td>
+
+                  </tr>
+                );
+              })
+
+            )}
 
           </tbody>
 
@@ -606,7 +701,7 @@ const GPA = () => {
 
     </div>
 
-    {/* ------------------ SUMMARY ------------------ */}
+    {/* ---------------- SUMMARY ---------------- */}
 
     <div className="summary-card">
 

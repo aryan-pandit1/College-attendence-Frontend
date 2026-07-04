@@ -1,152 +1,101 @@
-:root {
-  --bg: #f8fafc;
-  --card-bg: #ffffff;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --border: #e5e7eb;
-  --primary: #2563eb;
-}
-
-[data-theme="dark"] {
-  --bg: #0f172a;
-  --card-bg: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --border: #334155;
-  --primary: #60a5fa;
-}
-
+/* ==========================================
+   NAVBAR LIGHT THEME BASELINE (DEFAULT)
+   ========================================== */
 .navbar {
-  height: 75px;
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--border);
-
   display: flex;
-  align-items: center;
   justify-content: space-between;
-
-  padding: 0 30px;
-
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  align-items: center;
+  padding: 16px 48px;
+  background-color: #ffffff;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  width: 100%;
 }
 
-/* Logo */
-
+/* Logo Block Group */
 .navbar-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-
+  gap: 12px;
   text-decoration: none;
   color: inherit;
+  flex-shrink: 0;
 }
 
 .logo-icon {
-  font-size: 32px;
+  font-size: 1.75rem;
 }
 
 .navbar-logo h2 {
-  font-size: 22px;
-  color: var(--text-primary);
   margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .navbar-logo p {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin: 0;
+  margin: 4px 0 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
 }
 
-/* Links */
-
+/* Navigation Central Directory Links */
 .navbar-links {
   display: flex;
-  gap: 30px;
+  gap: 24px;
 }
 
 .navbar-links a {
   text-decoration: none;
-  color: var(--text-secondary);
-  font-weight: 500;
-  transition: 0.3s;
-}
-
-.navbar-links a:hover,
-.navbar-links a.active {
-  color: var(--primary);
+  color: #64748b;
+  font-size: 0.925rem;
   font-weight: 600;
+  transition: color 0.15s ease;
+  white-space: nowrap;
 }
 
-/* Right */
+.navbar-links a:hover {
+  color: #0f172a;
+}
 
+.navbar-links a.active {
+  color: #2563eb; 
+}
+
+/* Action Utility Control Grouping */
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 16px;
+  flex-shrink: 0;
 }
 
 .icon-btn {
-  border: 1px solid var(--border);
-  background: var(--bg);
-
-  color: var(--text-primary);
-
-  width: 40px;
-  height: 40px;
-
-  border-radius: 10px;
+  background: transparent;
+  border: none;
+  font-size: 1.15rem;
+  color: #64748b;
   cursor: pointer;
-  font-size: 16px;
-
+  padding: 8px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
 }
 
 .icon-btn:hover {
-  background: var(--card-bg);
-  border-color: var(--primary);
+  background-color: rgba(15, 23, 42, 0.05);
+  color: #0f172a;
 }
 
 .calendar-link {
   text-decoration: none;
-  color: inherit;
 }
 
-.profile {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-
-  color: var(--text-primary);
-}
-
-.profile-icon {
-  font-size: 32px;
-  color: var(--primary);
-}
-
-/* Responsive */
-
-@media (max-width: 900px) {
-  .navbar-links {
-    display: none;
-  }
-
-  .navbar {
-    padding: 0 15px;
-  }
-
-  .navbar-logo p {
-    display: none;
-  }
-}
-
+/* User Identity Profiles Blocks */
 .profile-wrapper {
   position: relative;
 }
@@ -156,123 +105,198 @@
   align-items: center;
   gap: 10px;
   cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: background-color 0.15s ease;
 }
 
+.profile:hover {
+  background-color: rgba(15, 23, 42, 0.05);
+}
+
+.profile-icon {
+  font-size: 1.5rem;
+  color: #64748b;
+}
+
+.navbar-profile-image {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile span {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Dropdown Context Navigation Panels */
 .profile-menu {
   position: absolute;
-  top: 60px;
+  top: calc(100% + 8px);
   right: 0;
-
-  width: 220px;
-
-  background: white;
-  border-radius: 12px;
-
-  overflow: hidden;
-
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-
-  z-index: 999;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px;
+  min-width: 180px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 1000; /* Force overlay safety on mobile stacks */
 }
 
 .profile-menu button {
-  width: 100%;
-  border: none;
   background: transparent;
-
+  border: none;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  border-radius: 6px;
   display: flex;
   align-items: center;
-  gap: 12px;
-
-  padding: 14px 18px;
-
-  cursor: pointer;
-  font-size: 15px;
-
-  transition: 0.2s;
+  gap: 10px;
+  width: 100%;
+  transition: all 0.15s ease;
 }
 
 .profile-menu button:hover {
-  background: #f3f4f6;
+  background-color: #f1f5f9;
+  color: #0f172a;
 }
 
-.logout-btn {
+.profile-menu button.logout-btn {
   color: #ef4444;
-  font-weight: 600;
 }
 
-/* Dark Mode */
-
-body.dark .profile-menu {
-  background: #1e293b;
-  color: white;
+.profile-menu button.logout-btn:hover {
+  background-color: #fef2f2;
+  color: #dc2626;
 }
 
-body.dark .profile-menu button {
-  color: white;
+/* ==========================================
+   NAVBAR DARK THEME OVERRIDES (.navbar.dark)
+   ========================================== */
+.navbar.dark {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-bottom: 1px solid #334155 !important;
 }
 
-body.dark .profile-menu button:hover {
-  background: #334155;
-}
-.profile-container{
-    position:relative;
+.navbar.dark .navbar-logo p {
+  color: #94a3b8 !important;
 }
 
-.profile{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    cursor:pointer;
+.navbar.dark .navbar-links a {
+  color: #94a3b8 !important;
 }
 
-.profile-dropdown{
-    position:absolute;
-    right:0;
-    top:60px;
-    width:220px;
-    background:var(--card-bg);
-    border-radius:12px;
-    box-shadow:0 10px 30px rgba(0,0,0,.2);
-    overflow:hidden;
-    z-index:999;
+.navbar.dark .navbar-links a:hover {
+  color: #f8fafc !important;
 }
 
-.profile-dropdown button{
-    width:100%;
-    border:none;
-    background:none;
-    padding:15px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    cursor:pointer;
-    color:inherit;
+.navbar.dark .navbar-links a.active {
+  color: #38bdf8 !important; 
 }
 
-.profile-dropdown button:hover{
-    background:#4f46e510;
+.navbar.dark .icon-btn {
+  color: #94a3b8 !important;
 }
 
-.navbar-profile-image{
-    width:40px;
-    height:40px;
-    border-radius:50%;
-    object-fit:cover;
-    border:2px solid #2563eb;
-    cursor:pointer;
+.navbar.dark .icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #f8fafc !important;
 }
 
-.profile-icon{
-    font-size:40px;
-    color:#2563eb;
+.navbar.dark .profile:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-.navbar-profile-image{
-    width:40px;
-    height:40px;
-    border-radius:50%;
-    object-fit:cover;
-    border:2px solid #2563eb;
-    cursor:pointer;
+.navbar.dark .profile-icon {
+  color: #94a3b8 !important;
+}
+
+.navbar.dark .profile span {
+  color: #f8fafc !important;
+}
+
+.navbar.dark .profile-menu {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+}
+
+.navbar.dark .profile-menu button {
+  color: #94a3b8 !important;
+}
+
+.navbar.dark .profile-menu button:hover {
+  background-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+.navbar.dark .profile-menu button.logout-btn {
+  color: #f87171 !important;
+}
+
+.navbar.dark .profile-menu button.logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #ef4444 !important;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN VIEWPORT MEDIA GATES
+   ========================================== */
+@media (max-width: 900px) {
+  .navbar {
+    padding: 16px 24px;
+  }
+  .navbar-links {
+    gap: 16px;
+  }
+}
+
+/* CRITICAL BREAKPOINT FOR SCREEN OVERFLOW PREVENTION */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .navbar-logo {
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+
+  .navbar-links {
+    justify-content: center;
+    gap: 20px;
+    order: 2; /* Positions central links row uniformly */
+  }
+
+  .navbar-right {
+    justify-content: center;
+    width: 100%;
+    order: 3;
+    border-top: 1px solid var(--border-light, #e2e8f0);
+    padding-top: 12px;
+  }
+  
+  .navbar.dark .navbar-right {
+    border-top: 1px solid #334155;
+  }
+
+  .profile-menu {
+    right: 50%;
+    transform: translateX(50%); /* Centers profile submenu popups on narrow screens */
+  }
 }

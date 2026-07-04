@@ -4,7 +4,6 @@ import App from "./App";
 
 import { SubjectProvider } from "./context/SubjectContext";
 
-import "./Styles/global.css";
 import "./Styles/light.css";
 import "./Styles/dark.css";
 

@@ -8,7 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Attendance from "./pages/Attendance";
 import Internals from "./pages/Internals";
 import GPA from "./pages/GPA";
-import Calendar from "./pages/Calendar";
+import Timetable from "./pages/Timetable";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Profile from "./pages/Profile";
 
@@ -27,32 +27,31 @@ function AppContent({ darkMode, setDarkMode }) {
   <Routes>
     <Route
       path="/"
-      element={<Login />}
+      element={<Login darkMode={darkMode}/>}
     />
-
-    <Route
-      path="/dashboard"
-      element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      }
-    />
+<Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute>
+      <Dashboard darkMode={darkMode} />
+    </ProtectedRoute>
+  }
+/>
 <Route path="/profile" element={<Profile />} />
     <Route
-      path="/attendance"
-      element={
-        <ProtectedRoute>
-          <Attendance />
-        </ProtectedRoute>
-      }
-    />
+  path="/attendance"
+  element={
+    <ProtectedRoute>
+      <Attendance darkMode={darkMode} />
+    </ProtectedRoute>
+  }
+/>
 
     <Route
       path="/internals"
       element={
         <ProtectedRoute>
-          <Internals />
+          <Internals darkMode={darkMode}/>
         </ProtectedRoute>
       }
     />
@@ -61,16 +60,16 @@ function AppContent({ darkMode, setDarkMode }) {
       path="/gpa"
       element={
         <ProtectedRoute>
-          <GPA />
+          <GPA darkMode={darkMode}/>
         </ProtectedRoute>
       }
     />
 
     <Route
-      path="/calendar"
+      path="/timetable"
       element={
         <ProtectedRoute>
-          <Calendar />
+          <Timetable />
         </ProtectedRoute>
       }
     />

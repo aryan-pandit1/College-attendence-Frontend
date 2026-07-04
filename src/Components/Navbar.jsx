@@ -11,6 +11,7 @@ import {
   FaSun,
   FaCog,
   FaSignOutAlt,
+  FaTable,
 } from "react-icons/fa";
 
 import "./Navbar.css";
@@ -19,26 +20,25 @@ const Navbar = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
 
   const [profileImage, setProfileImage] = useState(
-  localStorage.getItem("profileImage") || ""
-);
+    localStorage.getItem("profileImage") || ""
+  );
 
+  useEffect(() => {
+    const updateProfile = () => {
+      setProfileImage(
+        localStorage.getItem("profileImage") || ""
+      );
+    };
 
-useEffect(() => {
-  const updateProfile = () => {
-    setProfileImage(
-      localStorage.getItem("profileImage") || ""
-    );
-  };
+    window.addEventListener("profileUpdated", updateProfile);
 
-  window.addEventListener("profileUpdated", updateProfile);
-
-  return () => {
-    window.removeEventListener(
-      "profileUpdated",
-      updateProfile
-    );
-  };
-}, []);
+    return () => {
+      window.removeEventListener(
+        "profileUpdated",
+        updateProfile
+      );
+    };
+  }, []);
 
   const userName =
     localStorage.getItem("userName") || "Guest";
@@ -53,7 +53,8 @@ useEffect(() => {
 
   return (
     <>
-      <nav className="navbar">
+      {/* FIXED: Added a dynamic template literal to append "dark" straight from the prop */}
+      <nav className={`navbar ${darkMode ? "dark" : ""}`}>
         {/* Logo */}
         <Link to="/dashboard" className="navbar-logo">
           <span className="logo-icon">🎓</span>
@@ -92,10 +93,10 @@ useEffect(() => {
 
           {/* Calendar */}
           <Link
-            to="/calendar"
+            to="/timetable"
             className="icon-btn calendar-link"
           >
-            <FaCalendarAlt />
+            <FaTable />
           </Link>
 
           {/* Theme Toggle */}
@@ -114,43 +115,43 @@ useEffect(() => {
 
           {/* Profile */}
           <div className="profile-wrapper">
-   <div
-  className="profile"
-  onClick={() => setShowMenu(!showMenu)}
->
-  {profileImage ? (
-    <img
-      src={profileImage}
-      alt="Profile"
-      className="navbar-profile-image"
-    />
-  ) : (
-    <FaUserCircle className="profile-icon" />
-  )}
+            <div
+              className="profile"
+              onClick={() => setShowMenu(!showMenu)}
+            >
+              {profileImage ? (
+                <img
+                  src={profileImage}
+                  alt="Profile"
+                  className="navbar-profile-image"
+                />
+              ) : (
+                <FaUserCircle className="profile-icon" />
+              )}
 
-  <span>{userName}</span>
-</div>
+              <span>{userName}</span>
+            </div>
             {showMenu && (
               <div className="profile-menu">
                 <button
-  onClick={() => {
-    setShowMenu(false);
-    navigate("/profile");
-  }}
->
-  <FaUserCircle />
-  My Profile
-</button>
+                  onClick={() => {
+                    setShowMenu(false);
+                    navigate("/profile");
+                  }}
+                >
+                  <FaUserCircle />
+                  My Profile
+                </button>
 
                 <button
-  onClick={()=>{
-      setShowMenu(false);
-      setShowModal(true);
-  }}
->
-    <FaPlus/>
-    Add Subject
-</button>
+                  onClick={()=>{
+                      setShowMenu(false);
+                      setShowModal(true);
+                  }}
+                >
+                    <FaPlus/>
+                    Add Subject
+                </button>
 
                 <button
                   onClick={() => {
@@ -196,7 +197,7 @@ useEffect(() => {
         </div>
       </nav>
 
-      {/* Add Subject Modal */}
+      {/* Add Subject Modal (Cleaned up the duplicate rendering block) */}
       {showModal && (
         <AddSubjectModal
           closeModal={() =>
@@ -204,11 +205,6 @@ useEffect(() => {
           }
         />
       )}
-      {showModal && (
-    <AddSubjectModal
-        closeModal={() => setShowModal(false)}
-    />
-)}
     </>
   );
 };
