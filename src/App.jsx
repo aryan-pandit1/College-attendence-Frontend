@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 
 import Navbar from "./Components/Navbar";
 import { SubjectProvider } from "./context/SubjectContext";
+import { StudentProvider } from "./context/StudentContext"; // 1. IMPORT THIS
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Attendance from "./pages/Attendance";
@@ -16,91 +17,94 @@ function AppContent({ darkMode, setDarkMode }) {
   const location = useLocation();
 
   return (
-   <>
-  {location.pathname !== "/" && (
-    <Navbar
-      darkMode={darkMode}
-      setDarkMode={setDarkMode}
-    />
-  )}
+    <>
+      {location.pathname !== "/" && (
+        <Navbar
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
+        />
+      )}
 
-  <Routes>
-    <Route
-      path="/"
-      element={<Login darkMode={darkMode}/>}
-    />
-<Route
-  path="/dashboard"
-  element={
-    <ProtectedRoute>
-      <Dashboard darkMode={darkMode} />
-    </ProtectedRoute>
-  }
-/>
-<Route path="/profile" element={<Profile darkMode={darkMode}/>} />
-    <Route
-  path="/attendance"
-  element={
-    <ProtectedRoute>
-      <Attendance darkMode={darkMode} />
-    </ProtectedRoute>
-  }
-/>
-
-    <Route
-      path="/internals"
-      element={
-        <ProtectedRoute>
-          <Internals darkMode={darkMode}/>
-        </ProtectedRoute>
-      }
-    />
-
-    <Route
-      path="/gpa"
-      element={
-        <ProtectedRoute>
-          <GPA darkMode={darkMode}/>
-        </ProtectedRoute>
-      }
-    />
-
-    <Route
-      path="/timetable"
-      element={
-        <ProtectedRoute>
-          <Timetable darkMode={darkMode}/>
-        </ProtectedRoute>
-      }
-    />
-  </Routes>
-</>
+      <Routes>
+        <Route
+          path="/"
+          element={<Login darkMode={darkMode}/>}
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard darkMode={darkMode} />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/profile" element={<Profile darkMode={darkMode}/>} />
+        <Route
+          path="/attendance"
+          element={
+            <ProtectedRoute>
+              <Attendance darkMode={darkMode} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/internals"
+          element={
+            <ProtectedRoute>
+              <Internals darkMode={darkMode}/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gpa"
+          element={
+            <ProtectedRoute>
+              <GPA darkMode={darkMode}/>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/timetable"
+          element={
+            <ProtectedRoute>
+              <Timetable darkMode={darkMode}/>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </>
   );
 }
 
 function App() {
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("theme") === "dark"
-  );
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
 
   useEffect(() => {
-    document.body.className = darkMode
-      ? "dark"
-      : "light";
-
-    localStorage.setItem(
-      "theme",
-      darkMode ? "dark" : "light"
-    );
+    if (darkMode) {
+      document.documentElement.setAttribute("data-theme", "dark");
+      document.body.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+      document.body.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
   }, [darkMode]);
 
   return (
-    <Router>
-      <AppContent
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-      />
-    </Router>
+    // 2. WRAP EVERYTHING HERE SO NAVBAR CAN ACCESS THE CONTEXT STATE
+    <StudentProvider> 
+      <SubjectProvider>
+        <Router>
+          <AppContent
+            darkMode={darkMode}
+            setDarkMode={setDarkMode}
+          />
+        </Router>
+      </SubjectProvider>
+    </StudentProvider>
   );
 }
 

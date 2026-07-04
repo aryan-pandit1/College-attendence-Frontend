@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useContext } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import AddSubjectModal from "../pages/AddSubjectModal";
+
+// FIXED: Changed path from SubjectContext to your actual StudentContext file
+import { StudentContext } from "../context/StudentContext"; 
 
 import {
   FaPlus,
   FaBell,
-  FaCalendarAlt,
   FaUserCircle,
   FaMoon,
   FaSun,
@@ -19,29 +21,8 @@ import "./Navbar.css";
 const Navbar = ({ darkMode, setDarkMode }) => {
   const navigate = useNavigate();
 
-  const [profileImage, setProfileImage] = useState(
-    localStorage.getItem("profileImage") || ""
-  );
-
-  useEffect(() => {
-    const updateProfile = () => {
-      setProfileImage(
-        localStorage.getItem("profileImage") || ""
-      );
-    };
-
-    window.addEventListener("profileUpdated", updateProfile);
-
-    return () => {
-      window.removeEventListener(
-        "profileUpdated",
-        updateProfile
-      );
-    };
-  }, []);
-
-  const userName =
-    localStorage.getItem("userName") || "Guest";
+  // Hook into your student data state pool safely
+  const { student } = useContext(StudentContext);
 
   const [showMenu, setShowMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -53,7 +34,6 @@ const Navbar = ({ darkMode, setDarkMode }) => {
 
   return (
     <>
-      {/* FIXED: Added a dynamic template literal to append "dark" straight from the prop */}
       <nav className={`navbar ${darkMode ? "dark" : ""}`}>
         {/* Logo */}
         <Link to="/dashboard" className="navbar-logo">
@@ -113,24 +93,26 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             )}
           </button>
 
-          {/* Profile */}
+          {/* Profile Wrapper */}
           <div className="profile-wrapper">
             <div
               className="profile"
               onClick={() => setShowMenu(!showMenu)}
             >
-              {profileImage ? (
+              {student.profileImage ? (
                 <img
-                  src={profileImage}
+                  src={student.profileImage}
                   alt="Profile"
                   className="navbar-profile-image"
+                  style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover" }}
                 />
               ) : (
                 <FaUserCircle className="profile-icon" />
               )}
 
-              <span>{userName}</span>
+              <span>{student.name || "Guest"}</span>
             </div>
+            
             {showMenu && (
               <div className="profile-menu">
                 <button
@@ -197,7 +179,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         </div>
       </nav>
 
-      {/* Add Subject Modal (Cleaned up the duplicate rendering block) */}
+      {/* Add Subject Modal */}
       {showModal && (
         <AddSubjectModal
           closeModal={() =>
