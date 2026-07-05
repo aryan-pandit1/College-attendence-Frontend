@@ -1,0 +1,50 @@
+/* ==========================================
+   SKELETON BASE STATES
+   ========================================== */
+.skeleton-base {
+  /* Default Light Mode Colors */
+  --skel-bg: #e2e8f0;
+  --skel-highlight: rgba(255, 255, 255, 0.6);
+  
+  background-color: var(--skel-bg);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Because your pages use the .forced-dark class at the page level,
+   we use a clever CSS trick to detect if the skeleton is inside a dark page.
+*/
+.forced-dark .skeleton-base {
+  /* Dark Mode Midnight Void Colors */
+  --skel-bg: rgba(30, 41, 59, 0.5); /* Slate 800 with transparency */
+  --skel-highlight: rgba(255, 255, 255, 0.05); /* Very subtle white shimmer */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+/* ==========================================
+   THE SHIMMER ANIMATION
+   ========================================== */
+.skeleton-base::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--skel-highlight) 50%,
+    transparent 100%
+  );
+  animation: premium-shimmer 1.8s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-100%);
+  z-index: 2;
+}
+
+@keyframes premium-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

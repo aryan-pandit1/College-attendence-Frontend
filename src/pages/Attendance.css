@@ -1,104 +1,141 @@
+/* ==========================================
+   THEME VARIABLES & PREMIUM TOKENS
+   ========================================== */
 :root {
   --bg-app-resolved: #f8fafc;
   --card-bg-resolved: #ffffff;
-  --text-main: #1e293b;
+  --text-main: #0f172a;
   --text-muted: #64748b;
-  --border-color: #e5e7eb;
-  --table-border: #eef2f7;
+  --border-color: #e2e8f0;
+  --table-border: #f1f5f9;
   --select-bg: #ffffff;
   --progress-track: #f1f5f9;
   
-  /* Status Colors */
-  --color-success: #16a34a;
-  --color-success-bg: #f0fdf4;
-  --color-success-text: #166534;
-  --color-error: #ef4444;
-  --color-error-bg: #fef2f2;
+  --color-success: #10b981;
+  --color-success-bg: #ecfdf5;
+  --color-success-text: #059669;
+  --color-error: #f43f5e;
+  --color-error-bg: #fff1f2;
+  --color-error-text: #e11d48;
+
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-flat: 0 4px 20px rgba(15, 23, 42, 0.04);
+  --shadow-elevated: 0 20px 40px -10px rgba(15, 23, 42, 0.08);
+  --shadow-inner: inset 0 2px 4px rgba(0,0,0,0.02);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ==========================================
-   FORCED LOCAL DARK STATE TOKENS
+   FORCED LOCAL DARK STATE (PERFECT DASHBOARD MATCH)
    ========================================== */
 .attendance-page.forced-dark {
-  background: #0f172a !important;
-  --bg-app-resolved: #0f172a;
-  --card-bg-resolved: #1e293b;
+  background-color: #050814 !important; /* Restored the Dashboard's deep midnight void */
+  --bg-app-resolved: #050814;
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
-  --border-color: #334155;
-  --table-border: #334155;
-  --select-bg: #1e293b;
-  --progress-track: #334155;
+  --border-color: rgba(255, 255, 255, 0.06); /* Synced with Dashboard */
+  --table-border: rgba(255, 255, 255, 0.06);
+  --select-bg: #0b1121;
+  --progress-track: #131c2e; /* Synced with Dashboard */
   
-  /* Swapped Low-light Status Blocks colors */
-  --color-success-bg: rgba(22, 163, 74, 0.15);
-  --color-success-text: #4ade80;
-  --color-error-bg: rgba(239, 68, 68, 0.15);
+  --color-success-bg: rgba(16, 185, 129, 0.1);
+  --color-success-text: #34d399;
+  --color-error-bg: rgba(244, 63, 94, 0.1);
+  --color-error-text: #fb7185;
+
+  /* Synced Dashboard Shadows */
+  --shadow-flat: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-elevated: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+  --shadow-inner: inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
-/* Specificity overrides forcing inner content text to stay white in dark mode */
 .attendance-page.forced-dark h1,
 .attendance-page.forced-dark h2,
 .attendance-page.forced-dark h3,
 .attendance-page.forced-dark h4,
 .attendance-page.forced-dark table td,
 .attendance-page.forced-dark .subject-item h3 {
-  color: var(--text-main) !important;
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
 .attendance-page.forced-dark p,
 .attendance-page.forced-dark table th,
 .attendance-page.forced-dark .subject-item p,
 .attendance-page.forced-dark .attendance-count {
-  color: var(--text-muted) !important;
+  color: #94a3b8 !important;
+}
+
+/* ==========================================
+   PERFECT DASHBOARD MATCH (CARDS)
+   ========================================== */
+.attendance-page.forced-dark .subject-card,
+.attendance-page.forced-dark .subject-item {
+  /* Exactly matches the Dashboard card gradient */
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-flat), var(--shadow-inner) !important;
+}
+
+/* Make sure inner elements like the history table rows blend well */
+.attendance-page.forced-dark table td {
+  border-bottom: 1px dashed var(--table-border) !important;
 }
 
 /* ==========================================
    PAGE STRUCTURAL WIREFRAMES
    ========================================== */
 .attendance-page {
-  padding: 32px 48px;
+  padding: 48px 5%;
   background: var(--bg-app-resolved);
   min-height: 100vh;
   width: 100%;
   box-sizing: border-box;
-  transition: background-color 0.15s ease;
+  transition: background-color 0.4s var(--ease-smooth);
+  position: relative;
+  z-index: 1;
 }
 
 .attendance-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
+  align-items: flex-end;
+  margin-bottom: 40px;
 }
 
 .attendance-header h1 {
-  color: var(--text-main);
+  font-size: 2.75rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
   margin: 0;
+  background: linear-gradient(135deg, var(--text-main) 0%, #64748b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.attendance-header select {
-  padding: 10px 14px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--select-bg);
-  color: var(--text-main);
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
+.attendance-page.forced-dark .attendance-header h1 {
+  background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* ==========================================
-   SUBJECT CARDS & INTERACTIVE LISTS
+   SUBJECT CARDS
    ========================================== */
 .subject-card {
   background: var(--card-bg-resolved);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: var(--radius-xl);
+  padding: 32px;
   border: 1px solid var(--border-color);
-  margin-bottom: 25px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-flat);
+  transition: all 0.4s var(--ease-spring);
 }
 
 .subject-top {
@@ -107,221 +144,117 @@
   align-items: center;
 }
 
-.subject-top h2 {
-  color: var(--text-main);
-  margin: 0;
-}
+.subject-top h2 { font-size: 1.5rem; font-weight: 900; margin: 0; }
+.subject-top p { font-weight: 500; margin: 4px 0 0 0; }
 
-.subject-top p {
-  color: var(--text-muted);
-  margin: 4px 0 0 0;
-}
+.attendance-value { text-align: right; }
+.attendance-value h3 { font-size: 1.25rem; font-weight: 800; margin: 0; }
+.attendance-value span { color: var(--color-success); font-weight: 800; text-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
 
-.attendance-value {
-  text-align: right;
-}
-
-.attendance-value h3,
-.attendance-value h4 {
-  color: var(--text-main);
-  margin: 0;
-}
-
-.attendance-value span {
-  color: var(--color-success);
-  font-weight: 600;
-}
-
-/* Safe calculation badge indicator container */
 .safe-box {
-  margin: 20px 0;
-  padding: 15px;
+  margin: 24px 0;
+  padding: 16px 20px;
   background: var(--color-success-bg) !important;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: var(--color-success-text) !important;
-  font-weight: 500;
+  font-weight: 700;
+  border-left: 4px solid var(--color-success);
+}
+.safe-box p { margin: 4px 0 0 0; font-size: 0.9rem; color: inherit !important; opacity: 0.9; }
+
+.progress-wrapper { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.progress-bar { flex: 1; height: 12px; background: var(--progress-track); border-radius: 20px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 20px; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); transition: width 0.8s var(--ease-spring); }
+
+.attendance-count { display: flex; gap: 25px; font-weight: 600; font-size: 0.9rem; margin-bottom: 25px; }
+
+.attendance-actions { display: flex; gap: 16px; margin-top: 24px; }
+.present-btn, .absent-btn { border: none; padding: 12px 20px; border-radius: var(--radius-sm); color: #ffffff; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; cursor: pointer; transition: all 0.3s var(--ease-spring); }
+.present-btn { background: var(--color-success); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+.present-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); }
+.absent-btn { background: var(--color-error); box-shadow: 0 4px 12px rgba(244, 63, 94, 0.2); }
+.absent-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3); }
+
+/* ==========================================
+   HISTORY LOG TABLES SCHEMA & ABSOLUTE ALIGNMENT
+   ========================================== */
+.history-section h3 { margin-bottom: 20px; font-weight: 800; font-size: 1.25rem; }
+
+table { width: 100%; border-collapse: collapse; }
+table th { text-align: left; padding: 16px 20px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 800; }
+
+/* Force standard vertical alignment on all cells */
+table td { 
+  padding: 16px 20px !important; 
+  border-bottom: 1px dashed var(--table-border); 
+  vertical-align: middle !important; 
+}
+table tr:last-child td { border-bottom: none; }
+
+/* 🟢 / 🔴 MATHEMATICALLY CENTERED DOTS (NO FLEXBOX) */
+.status-badge {
+  display: inline-block;
+  position: relative;
+  padding-left: 18px; /* Creates exact space for the dot to sit */
+  font-weight: 800;
 }
 
-.safe-box p {
-  margin: 5px 0 0 0;
-  font-size: 14px;
-  color: inherit !important;
+.status-badge.present { color: var(--color-success) !important; }
+.status-badge.present::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%); /* Locks dot directly to the vertical middle of the text */
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-success);
+  border-radius: 50%;
+  box-shadow: 0 0 8px 2px rgba(16, 185, 129, 0.4);
+}
+
+.status-badge.absent { color: var(--color-error) !important; }
+.status-badge.absent::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%); /* Locks dot directly to the vertical middle of the text */
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-error);
+  border-radius: 50%;
+  box-shadow: 0 0 8px 2px rgba(244, 63, 94, 0.4);
 }
 
 /* ==========================================
-   PROGRESS GAUGES / CHANNELS
+   BUTTON ENTRIES & LIST UTILITIES
    ========================================== */
-.progress-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 15px;
+.delete-history-btn { background: transparent; color: var(--color-error); border: 1px solid rgba(244, 63, 94, 0.3); padding: 6px 14px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 700; font-size: 0.8rem; transition: all 0.3s ease; }
+.delete-history-btn:hover { background: var(--color-error); color: #ffffff; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3); }
+
+.history-footer { margin-top: 24px; text-align: center; }
+.read-more-btn { background: #6366f1; color: white; border: none; padding: 10px 24px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; transition: all 0.3s var(--ease-spring); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+.read-more-btn:hover { background: #4f46e5; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4); }
+
+.subject-list { display: flex; flex-direction: column; gap: 16px; margin-top: 40px; }
+.subject-item { background: var(--card-bg-resolved); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.3s var(--ease-spring); }
+.subject-item h3 { font-weight: 800; margin: 0 0 4px 0; }
+.subject-item:hover { transform: translateX(6px); box-shadow: var(--shadow-elevated); border-color: rgba(99, 102, 241, 0.4) !important; }
+
+/* Dark Mode Active Subject Highlight */
+.attendance-page.forced-dark .active-subject {
+  border: 2px solid #818cf8 !important; 
+  background: rgba(99, 102, 241, 0.15) !important; 
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), inset 0 0 10px rgba(99, 102, 241, 0.1) !important; 
+  transform: translateX(6px); 
+}
+.attendance-page.forced-dark .active-subject h3 {
+  color: #818cf8 !important;
+  text-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
 }
 
-.progress-bar {
-  flex: 1;
-  height: 10px;
-  background: var(--progress-track);
-  border-radius: 20px;
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--color-success);
-  border-radius: 20px;
-}
-
-.attendance-count {
-  display: flex;
-  gap: 25px;
-  color: var(--text-muted);
-  margin-bottom: 25px;
-}
-
-/* ==========================================
-   HISTORY LOG TABLES SCHEMA
-   ========================================== */
-.history-section h3 {
-  margin-bottom: 15px;
-  color: var(--text-main);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-table th,
-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--table-border);
-}
-
-table th {
-  color: var(--text-muted);
-  font-weight: 600;
-}
-
-.present {
-  color: var(--color-success) !important;
-  font-weight: 600;
-}
-
-.absent {
-  color: var(--color-error) !important;
-  font-weight: 600;
-}
-
-/* ==========================================
-   BUTTON ENTRIES UTILITIES
-   ========================================== */
-.view-btn {
-  margin-top: 20px;
-  border: none;
-  background: var(--progress-track);
-  color: #2563eb;
-  padding: 10px 20px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: opacity 0.15s ease;
-}
-
-.view-btn:hover {
-  opacity: 0.85;
-}
-
-.subject-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.subject-item {
-  background: var(--card-bg-resolved);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 18px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, background-color 0.15s;
-}
-
-.subject-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-}
-
-.active-subject {
-  border: 2px solid #6366f1 !important;
-}
-
-.delete-history-btn {
-  background: var(--color-error);
-  color: white;
-  border: none;
-  padding: 5px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.delete-history-btn:hover {
-  background: #dc2626;
-}
-
-.history-footer {
-  margin-top: 15px;
-  text-align: center;
-}
-
-.read-more-btn {
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.15s;
-}
-
-.read-more-btn:hover {
-  background: #1d4ed8;
-}
-
-.attendance-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-/* ==========================================
-   RESPONSIVE DESIGN SYSTEM MEDIA BREAKPOINTS
-   ========================================== */
 @media (max-width: 768px) {
-  .attendance-page {
-    padding: 24px 16px;
-  }
-
-  .subject-top,
-  .subject-item,
-  .attendance-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-  }
-  
-  .attendance-value {
-    text-align: left;
-  }
-
-  table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
+  .attendance-page { padding: 24px 16px; }
+  table { display: block; overflow-x: auto; white-space: nowrap; }
 }

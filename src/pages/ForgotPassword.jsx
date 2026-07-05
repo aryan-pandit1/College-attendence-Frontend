@@ -1,4 +1,4 @@
-import axiosInstance from "./axiosInstance";
+import axiosInstance from "../services/axiosInstance";
 
 export const getProfile = () =>
   axiosInstance.get("accounts/profile/");
@@ -32,22 +32,23 @@ export const deleteProfile = (password) =>
       },
     }
   );
-//   export const forgotPassword = (email) =>
-//   axiosInstance.post(
-//     "accounts/forgot-password/",
-//     {
-//       email,
-//     }
-//   );
 
-// export const verifyOTP = (data) =>
-//   axiosInstance.post(
-//     "accounts/verify-otp/",
-//     data
-//   );
+  export const forgotPassword = (email) =>
+  axiosInstance.post(
+    "accounts/forgot-password/",
+    {
+      email,
+    }
+  );
 
-// export const resetPassword = (data) =>
-//   axiosInstance.post(
-//     "accounts/reset-password/",
-//     data
-//   );
+export const verifyOTP = (data) =>
+  axiosInstance.post(
+    "accounts/verify-otp/",
+    data
+  );
+
+export const resetPassword = (data) =>
+  axiosInstance.post(
+    "accounts/reset-password/",
+    data
+  );

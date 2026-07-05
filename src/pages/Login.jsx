@@ -194,7 +194,12 @@ const Login = ({ darkMode }) => {
                 <input type="checkbox" />
                 Remember me
               </label>
-              <a href="/">Forgot Password?</a>
+              <span
+                className="forgot-password-link"
+                onClick={() => navigate("/forgot-password")}
+              >
+                Forgot Password?
+              </span>
             </div>
           )}
 

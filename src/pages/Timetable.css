@@ -1,118 +1,239 @@
+/* ==========================================
+   THEME VARIABLES & PREMIUM TOKENS
+   ========================================== */
+:root {
+  --bg-app-resolved: #f4f7fb;
+  --card-bg-resolved: #ffffff;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --border-resolved: #e5e7eb;
+  --input-border: #d1d5db;
+  --select-bg: #ffffff;
+  
+  /* Color Accents */
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-error: #ef4444;
+  --color-error-hover: #dc2626;
+
+  /* Structural Curves */
+  --radius-xl: 18px;
+  --radius-md: 12px;
+  --radius-sm: 10px;
+  --shadow-flat: 0 10px 25px rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================================
+   FORCED LOCAL DARK STATE (DASHBOARD VOID MATCH)
+   ========================================== */
+.timetable-page.forced-dark {
+  background-color: #050814 !important; /* Deepest midnight void dashboard match */
+  --bg-app-resolved: #050814;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-resolved: rgba(255, 255, 255, 0.06);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --select-bg: #0b1121;
+  
+  --color-primary: #6366f1; /* Vibrant Indigo Blue */
+  --color-primary-hover: #4f46e5;
+  --shadow-flat: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Typography Overrides for Dark Void Context */
+.timetable-page.forced-dark h1,
+.timetable-page.forced-dark h2,
+.timetable-page.forced-dark h3,
+.timetable-page.forced-dark h4,
+.timetable-page.forced-dark label,
+.timetable-page.forced-dark strong {
+  color: #ffffff !important;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.timetable-page.forced-dark p,
+.timetable-page.forced-dark .day-card p {
+  color: #94a3b8 !important;
+}
+
+/* Glassmorphic Material Synchronization */
+.timetable-page.forced-dark .add-lecture-card,
+.timetable-page.forced-dark .day-card {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-resolved) !important;
+  box-shadow: var(--shadow-flat), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Form Inputs & Options Controls */
+.timetable-page.forced-dark select,
+.timetable-page.forced-dark input {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-color: var(--input-border) !important;
+  color: #ffffff !important;
+}
+
+/* Inner Lecture Items */
+.timetable-page.forced-dark .lecture-card {
+  background: rgba(15, 23, 42, 0.4) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.timetable-page.forced-dark .lecture-card:hover {
+  background: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* ==========================================
+   PAGE STRUCTURAL WIREFRAMES
+   ========================================== */
 .timetable-page {
-  padding: 30px;
-  background: #f4f7fb;
+  padding: 48px 5%;
+  background: var(--bg-app-resolved);
   min-height: 100vh;
+  box-sizing: border-box;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
 }
 
 .timetable-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
 }
 
 .timetable-header h1 {
-  font-size: 32px;
-  color: #1f2937;
-  font-weight: 700;
+  font-size: 2.75rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  margin: 0;
+  color: var(--text-main);
 }
 
+/* Navigation & Select Frameworks */
 .semester-select {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 25px;
+  margin-bottom: 32px;
 }
 
 .semester-select label {
-  font-weight: 600;
-  color: #374151;
+  font-weight: 800;
+  font-size: 0.95rem;
 }
 
 .semester-select select {
   padding: 10px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
-  background: white;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  background: var(--select-bg);
+  color: var(--text-main);
   cursor: pointer;
+  font-weight: 700;
   font-size: 15px;
+  outline: none;
+  transition: border-color 0.3s ease;
 }
 
+.semester-select select:hover {
+  border-color: var(--color-primary);
+}
+
+/* Add Card Block Container */
 .add-lecture-card {
-  background: white;
-  border-radius: 18px;
-  padding: 25px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.06);
-  margin-bottom: 35px;
+  background: var(--card-bg-resolved);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  border: 1px solid var(--border-resolved);
+  box-shadow: var(--shadow-flat);
+  margin-bottom: 40px;
 }
 
 .add-lecture-card h2 {
-  margin-bottom: 20px;
-  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin: 0 0 24px 0;
 }
 
 .lecture-form {
   display: grid;
-  grid-template-columns:
-    repeat(auto-fit, minmax(170px,1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
 }
 
 .lecture-form select,
 .lecture-form input {
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #d1d5db;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--input-border);
   outline: none;
   font-size: 14px;
+  font-weight: 600;
+  background: var(--card-bg-resolved);
+  color: var(--text-main);
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
 }
 
 .lecture-form select:focus,
 .lecture-form input:focus {
-  border-color: #3b82f6;
+  border-color: var(--color-primary);
 }
+
+/* ==========================================
+   WEEKGRID MATRIX PANELS
+   ========================================== */
 .week-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
 }
 
 .day-card {
-  background: white;
-  border-radius: 18px;
-  padding: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-  transition: 0.3s ease;
+  background: var(--card-bg-resolved);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  border: 1px solid var(--border-resolved);
+  box-shadow: var(--shadow-flat);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
 }
 
 .day-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
 }
 
 .day-card h2 {
-  margin-bottom: 18px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #e5e7eb;
-  color: #2563eb;
-  font-size: 22px;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-resolved);
+  color: var(--color-primary);
+  font-size: 1.35rem;
+  font-weight: 900;
 }
 
 .day-card p {
-  color: #6b7280;
+  color: var(--text-muted);
   text-align: center;
-  margin-top: 30px;
+  margin-top: 32px;
+  font-weight: 600;
 }
 
+/* Inner Lecture Entry Component Block */
 .lecture-card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   background: #f8fafc;
-  border-left: 5px solid #3b82f6;
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 15px;
-  transition: 0.3s;
+  border-left: 5px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
 }
 
 .lecture-card:hover {
@@ -120,42 +241,43 @@
 }
 
 .lecture-card h4 {
-  color: #1f2937;
-  margin-bottom: 5px;
-  font-size: 17px;
+  color: var(--text-main);
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 800;
 }
 
 .lecture-card input {
-  padding: 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
   font-size: 14px;
+  font-weight: 600;
   outline: none;
 }
 
 .lecture-card input:focus {
-  border-color: #2563eb;
+  border-color: var(--color-primary);
 }
 
-.lecture-card input[type="time"] {
-  cursor: pointer;
-}
-/* Buttons */
-
+/* Action Trigger Buttons */
 .lecture-form button {
   padding: 12px;
   border: none;
-  border-radius: 10px;
-  background: #2563eb;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
   color: white;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 800;
   cursor: pointer;
-  transition: 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
 }
 
 .lecture-form button:hover {
-  background: #1d4ed8;
+  background: var(--color-primary-hover);
   transform: translateY(-2px);
 }
 
@@ -163,20 +285,22 @@
   margin-top: 8px;
   padding: 10px;
   border: none;
-  border-radius: 8px;
-  background: #ef4444;
+  border-radius: var(--radius-sm);
+  background: var(--color-error);
   color: white;
   font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   cursor: pointer;
-  transition: 0.3s;
+  transition: background-color 0.3s ease;
 }
 
 .delete-btn:hover {
-  background: #dc2626;
+  background: var(--color-error-hover);
 }
 
-/* Smooth Animation */
-
+/* Component Cascading Mount Animations */
 .day-card,
 .add-lecture-card,
 .lecture-card {
@@ -184,87 +308,49 @@
 }
 
 @keyframes fadeUp {
-
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Scrollbar */
+/* Global Custom Utilities Scrollbar Layout */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.2); border-radius: 20px; }
 
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 20px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Responsive */
-
+/* ==========================================
+   RESPONSIVE DESIGN SYSTEM MEDIA BREAKPOINTS
+   ========================================== */
 @media (max-width: 992px) {
-
-  .week-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+  .week-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
-
-  .timetable-page {
-    padding: 18px;
-  }
-
-  .timetable-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-
-  .semester-select {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .lecture-form {
-    grid-template-columns: 1fr;
-  }
-
-  .week-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .lecture-card {
-    padding: 12px;
-  }
-
+  .timetable-page { padding: 24px 16px; }
+  .timetable-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .semester-select { flex-direction: column; align-items: flex-start; width: 100%; }
+  .semester-select select { width: 100%; }
+  .lecture-form { grid-template-columns: 1fr; }
+  .week-grid { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 480px) {
+/* ==========================================
+   FIX: NATIVE TIME PICKER ICON & DROPDOWN THEME
+   ========================================== */
+/* Force the operating system's native popup to render a dark mode overlay style */
+.timetable-page.forced-dark input[type="time"] {
+  color-scheme: dark !important; 
+}
 
-  .timetable-header h1 {
-    font-size: 24px;
-  }
+/* Restyle the native calendar/clock picker icon button */
+.timetable-page.forced-dark input[type="time"]::-webkit-calendar-picker-indicator {
+  /* Inverts the dark icon to light gray, then forces an indigo hue tint match */
+  filter: invert(0.7) sepia(1) saturate(5) hue-rotate(200deg) !important;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: all 0.2s ease;
+}
 
-  .day-card h2 {
-    font-size: 18px;
-  }
-
-  .lecture-card h4 {
-    font-size: 15px;
-  }
-
+/* Accentuate icon glow on hover */
+.timetable-page.forced-dark input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  filter: invert(0.8) sepia(1) saturate(8) hue-rotate(200deg) drop-shadow(0 0 4px rgba(99, 102, 241, 0.6)) !important;
 }

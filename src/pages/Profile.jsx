@@ -71,27 +71,37 @@ const Profile = ({ darkMode }) => {
   // -----------------------------
   // Load Profile Data
   // -----------------------------
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
+// -----------------------------
+  // Load Profile Data
+  // -----------------------------
   const loadProfile = async () => {
     try {
       const res = await getProfile();
       const data = res.data;
 
-      setName(data.name || "");
+      // FIX: Map the backend's 'username' to your React 'name' state
+      const actualName = data.username || "";
+
+      setName(actualName);
       setEmail(data.email || "");
       setPhone(data.phone || "");
       setProfileImage(data.profile_image || "");
       setVerifiedEmail(data.email_verified || false);
       setVerifiedPhone(data.phone_verified || false);
       setPrivateAccount(data.private_account || false);
+
+      // Sync it immediately with global context
+      setStudent((prevStudent) => ({
+        ...prevStudent,
+        name: actualName,
+        profileImage: data.profile_image || "",
+        email: data.email || "",
+        phone: data.phone || "",
+      }));
     } catch (err) {
-      // Handled gracefully internally
+      console.error("Failed to load profile", err);
     }
   };
-
   // -----------------------------
   // Logout Handler
   // -----------------------------
@@ -100,14 +110,20 @@ const Profile = ({ darkMode }) => {
     navigate("/", { replace: true });
   };
 
-  // -----------------------------
+ // -----------------------------
   // Save Profile Logic
   // -----------------------------
   const saveProfile = async () => {
     try {
-      await updateProfile({ name, email, phone });
+      // Sending the update to the backend
+      const response = await updateProfile({ 
+        username: name, 
+        email: email, 
+        phone: phone 
+      });
 
-      // FIX: Force context re-render by pushing local modifications directly into student state object
+      console.log("BACKEND SAVE SUCCESS:", response.data);
+
       setStudent((prevStudent) => ({
         ...prevStudent,
         name: name,
@@ -120,8 +136,12 @@ const Profile = ({ darkMode }) => {
 
       if (refreshStudentProfile) await refreshStudentProfile();
       loadProfile();
+
     } catch (err) {
-      alert("Unable to update profile.");
+      // 👇 THIS IS THE MAGIC LINE. It will tell us exactly what Django is mad about!
+      console.error("BACKEND REJECTED SAVE. Reason:", err.response?.data || err.message);
+      
+      alert(`Backend Error: ${JSON.stringify(err.response?.data || "Unknown Error")}`);
     }
   };
 
