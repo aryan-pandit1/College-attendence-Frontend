@@ -1,11 +1,14 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("access");
+
+  const token =
+    localStorage.getItem("access") ||
+    sessionStorage.getItem("access");
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -15,3 +18,4 @@ axiosInstance.interceptors.request.use((config) => {
 });
 
 export default axiosInstance;
+

@@ -1,230 +1,223 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { getDashboard } from "../services/dashboardService";
 import "./Dashboard.css";
-// Adjust these imports to match your actual service files
-import { getTimetable } from "../services/timetableService"; 
-import { getCourses } from "../services/courseService";
-import { addAttendance } from "../services/attendanceService";
-import Skeleton from "../Components/Skeleton"; // 👈 Imported our new Skeleton component!
+import { useSubjects } from "../context/SubjectContext";
 
+// Accept the darkMode prop passed down from App.jsx
 const Dashboard = ({ darkMode }) => {
-  // 1. Added loading state to track when data is being fetched
-  const [isLoading, setIsLoading] = useState(true);
+  const { subjects } = useSubjects();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [schedule, setSchedule] = useState([]);
 
-  // Mock standard data matching your screenshot
-  const [stats, setStats] = useState({
-    attendancePercentage: 82.98,
-    cgpa: 8.5,
-    internals: 35,
-    courses: 2,
-    present: 39,
-    absent: 8,
-    totalClasses: 47,
-  });
+  const [deadlines] = useState([
+    { title: "DBMS Assignment", date: "May 18" },
+    { title: "CN Lab Record", date: "May 20" },
+    { title: "OS Quiz", date: "May 21" },
+  ]);
 
-  const [todayClasses, setTodayClasses] = useState([]);
-
-  // Fetch today's dynamic schedule from the backend timetable
   useEffect(() => {
-    const fetchTodaySchedule = async () => {
-      setIsLoading(true); // 👈 Start loading animation
-
+    const fetchDashboard = async () => {
       try {
-        // Run both fetches simultaneously
-        const [coursesRes, timetableRes] = await Promise.all([
-          getCourses(),
-          getTimetable()
-        ]);
-
-        const courses = coursesRes.data?.results || coursesRes.data || [];
-        const timetable = timetableRes.data?.results || timetableRes.data || [];
-
-        // Get the current day name (e.g., "Monday", "Tuesday")
-        const currentDay = new Date().toLocaleDateString("en-US", { weekday: "long" });
-
-        // Filter and merge course data with the timetable entry
-        const todaySchedule = timetable
-          .filter(entry => entry.day === currentDay)
-          .map(entry => {
-            const course = courses.find(c => c.id === entry.course);
-            return {
-              ...entry,
-              courseName: course ? (course.course_name || course.name) : "Unknown Course",
-              courseCode: course ? course.code : ""
-            };
-          })
-          .sort((a, b) => a.start_time.localeCompare(b.start_time));
-
-        setTodayClasses(todaySchedule);
-      } catch (error) {
-        console.error("Error fetching today's schedule:", error);
+        const response = await getDashboard();
+        setDashboardData(response.data);
+        setSchedule(response.data?.today_schedule || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load dashboard.");
       } finally {
-        setIsLoading(false); // 👈 Stop loading animation once done (or if it fails)
+        setLoading(false);
       }
     };
-
-    fetchTodaySchedule();
+    fetchDashboard();
   }, []);
 
-  // Utility to truncate "09:00:00" to "09:00"
-  const formatTime = (timeStr) => {
-    if (!timeStr) return "";
-    return timeStr.length > 5 ? timeStr.slice(0, 5) : timeStr;
+  const markAttendance = (id, status) => {
+    setSchedule((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, marked: true, status } : item
+      )
+    );
   };
 
-  // Quick mark attendance from the dashboard
-  const handleQuickAttendance = async (courseId, status) => {
-    try {
-      await addAttendance({
-        course: courseId,
-        date: new Date().toISOString().split("T")[0],
-        status: status === "present" ? "Present" : "Absent",
-      });
-      alert(`Successfully marked ${status}!`);
-      // You can add logic here to refresh stats
-    } catch (err) {
-      console.error(err);
-      alert("Failed to mark attendance.");
-    }
+  const resetDashboard = () => {
+    localStorage.removeItem("subjects");
+    localStorage.removeItem("schedule");
+    window.location.reload();
   };
+
+  if (loading) return <h2 className="loading-state">Loading Dashboard...</h2>;
+  if (error) return <h2 className="error-state">{error}</h2>;
+
+  const attendanceRate = dashboardData.attendance_percentage || 0;
+  const isLowAttendance = attendanceRate < 75;
+
+  const cgpaValue = parseFloat(dashboardData.cgpa) || 0;
+  const isLowCgpa = cgpaValue < 6.0;
 
   return (
+    /* Consumes the darkMode prop directly to force immediate white/dark switching */
     <div className={`dashboard full-screen-layout ${darkMode ? "forced-dark" : ""}`}>
-      
       {/* Header */}
-      <div className="dashboard-header">
+      <header className="dashboard-header">
         <div>
           <h1>Dashboard</h1>
-          <p>Welcome back, @aryan 👋</p>
+          <p>Welcome back, {dashboardData.username || "Guest"} 👋</p>
         </div>
-        <button className="reset-btn">RESET DATA</button>
-      </div>
+        <button className="reset-btn" onClick={resetDashboard}>
+          Reset Data
+        </button>
+      </header>
 
-      {/* Top 4 Stat Cards */}
+      {/* Stats Cards */}
       <div className="stats-grid">
-        <div className="card status-healthy text-center">
-          <h3>OVERALL ATTENDANCE</h3>
-          {/* 👈 Skeleton check for Circular Graph */}
-          {isLoading ? (
-            <div style={{ display: "flex", justifyContent: "center", margin: "20px 0" }}>
-              <Skeleton width="140px" height="140px" variant="circular" />
-            </div>
-          ) : (
-            <div 
-              className="circle dynamic-gauge" 
-              style={{ "--progress-deg": `${(stats.attendancePercentage / 100) * 360}deg` }}
-            >
-              <span>{stats.attendancePercentage}%</span>
-            </div>
-          )}
-          <p>GOOD STANDING</p>
+        <div className={`card attendance-card ${isLowAttendance ? "status-critical" : "status-healthy"}`}>
+          <h3>Overall Attendance</h3>
+          <div 
+            className="circle dynamic-gauge" 
+            style={{ 
+              "--progress-deg": `${(attendanceRate / 100) * 360}deg` 
+            }}
+          >
+            <span>{attendanceRate}%</span>
+          </div>
+          <p>{!isLowAttendance ? "Good Standing" : "Attendance Low"}</p>
         </div>
 
-        <div className="card">
+        <div className={`card cgpa-card ${isLowCgpa ? "status-critical" : "status-healthy"}`}>
           <h3>CGPA</h3>
-          <br/><br/>
-          {isLoading ? <Skeleton width="100px" height="48px" /> : <><h2>{stats.cgpa}</h2><span className="label">/10</span></>}
+          <h2 className={isLowCgpa ? "text-critical-force" : ""}>{dashboardData.cgpa}</h2>
+          <span>/10</span>
         </div>
 
         <div className="card">
-          <h3>AVERAGE INTERNALS</h3>
-          <br/><br/>
-          {isLoading ? <Skeleton width="100px" height="48px" /> : <><h2>{stats.internals}</h2><span className="label">/100</span></>}
+          <h3>Average Internals</h3>
+          <h2>{dashboardData.average_internals}</h2>
+          <span>/100</span>
         </div>
 
         <div className="card">
-          <h3>TOTAL COURSES</h3>
-          <br/><br/>
-          {isLoading ? <Skeleton width="100px" height="48px" /> : <><h2>{stats.courses}</h2><span className="label">Courses</span></>}
+          <h3>Total Courses</h3>
+          <h2>{dashboardData.course_count}</h2>
+          <span>Courses</span>
         </div>
       </div>
 
-      {/* Alert Notification */}
-      <div className="alert-box">
-        ✅ You can safely skip the next <b>5</b> classes.
+      {/* Attendance Alert */}
+      <div className={`alert-box ${isLowAttendance ? "alert-danger" : "alert-success"}`}>
+        {!isLowAttendance ? (
+          <>
+            ✅ You can safely skip the next <strong>{dashboardData.safe_bunks}</strong> classes.
+          </>
+        ) : (
+          <>
+            ⚠️ Your attendance is below 75%. Attend upcoming classes.
+          </>
+        )}
       </div>
 
-      {/* Main Bottom Grid */}
       <div className="dashboard-content">
-        
-        {/* Left Side: Dynamic Today's Schedule */}
+        {/* Today's Schedule */}
         <div className="schedule-section">
           <h2>Today's Schedule</h2>
-          
-          {/* 👈 Skeleton check for Schedule Cards */}
-          {isLoading ? (
-            <>
-              <div className="schedule-card" style={{ padding: 0, border: 'none' }}>
-                <Skeleton width="100%" height="100px" borderRadius="16px" />
-              </div>
-              <div className="schedule-card" style={{ padding: 0, border: 'none' }}>
-                <Skeleton width="100%" height="100px" borderRadius="16px" />
-              </div>
-            </>
-          ) : todayClasses.length > 0 ? (
-            todayClasses.map((cls) => (
-              <div key={cls.id} className="schedule-card">
+          {schedule.length > 0 ? (
+            schedule.map((item, index) => (
+              <div key={item.id || index} className="schedule-card">
                 <div>
-                  <h4>{cls.courseName}</h4>
-                  <p>
-                    {formatTime(cls.start_time)} - {formatTime(cls.end_time)} 
-                    {cls.room && ` • Room: ${cls.room}`}
-                  </p>
-                  {cls.courseCode && <small>{cls.courseCode}</small>}
+                  <h4>{item.course}</h4>
+                  <p>{item.start_time} - {item.end_time}</p>
+                  <small>{item.room}</small>
                 </div>
+
                 <div className="attendance-buttons">
-                  <button 
-                    className="present-btn"
-                    onClick={() => handleQuickAttendance(cls.course, "present")}
-                  >
-                    Mark Present
-                  </button>
-                  <button 
-                    className="absent-btn"
-                    onClick={() => handleQuickAttendance(cls.course, "absent")}
-                  >
-                    Mark Absent
-                  </button>
+                  {item.marked ? (
+                    <span className={item.status === "present" ? "marked-present" : "marked-absent"}>
+                      {item.status === "present" ? "● Present" : "● Absent"}
+                    </span>
+                  ) : (
+                    <>
+                      <button className="present-btn" onClick={() => markAttendance(item.id, "present")}>
+                        Present
+                      </button>
+                      <button className="absent-btn" onClick={() => markAttendance(item.id, "absent")}>
+                        Absent
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))
           ) : (
-            <p style={{ color: "var(--text-muted)", fontWeight: "500", marginTop: "10px" }}>
-              No classes scheduled for today. Enjoy your day!
-            </p>
+            <p>No classes scheduled for today.</p>
           )}
         </div>
 
-        {/* Right Side: Overview Details */}
+        {/* Right Panel */}
         <div className="right-panel">
+          {/* Attendance Overview */}
           <div className="card">
-            <h2>ATTENDANCE OVERVIEW</h2>
-            
-            {/* 👈 Skeleton check for Right Panel Elements */}
-            {isLoading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', marginTop: '20px' }}>
-                <Skeleton width="140px" height="140px" variant="circular" />
-                <Skeleton width="100%" height="150px" borderRadius="12px" />
-              </div>
-            ) : (
-              <>
-                <div 
-                  className="overview-circle dynamic-gauge" 
-                  style={{ "--progress-deg": `${(stats.attendancePercentage / 100) * 360}deg` }}
-                >
-                  <span>{stats.attendancePercentage}%</span>
-                </div>
+            <h3>Attendance Overview</h3>
+            <div 
+              className="overview-circle dynamic-gauge"
+              style={{ 
+                "--progress-deg": `${(attendanceRate / 100) * 360}deg` 
+              }}
+            >
+              <div className="inner-circle">{attendanceRate}%</div>
+            </div>
+            <ul className="overview-list">
+              <li>Present: <span>{dashboardData.present_classes}</span></li>
+              <li>Absent: <span>{dashboardData.absent_classes}</span></li>
+              <li>Total Classes: <span>{dashboardData.total_classes}</span></li>
+              <li>Courses: <span>{dashboardData.course_count}</span></li>
+            </ul>
+          </div>
 
-                <ul className="overview-list">
-                  <li>Present: <span>{stats.present}</span></li>
-                  <li>Absent: <span>{stats.absent}</span></li>
-                  <li>Total Classes: <span>{stats.totalClasses}</span></li>
-                  <li>Courses: <span>{stats.courses}</span></li>
-                </ul>
-              </>
+          {/* Upcoming Deadlines */}
+          <div className="card">
+            <h3>Upcoming Deadlines</h3>
+            {deadlines.length > 0 ? (
+              <ul className="deadlines">
+                {deadlines.map((item, index) => (
+                  <li key={index}>
+                    <strong>{item.title}</strong>
+                    <br />
+                    <small>{item.date}</small>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No upcoming deadlines.</p>
+            )}
+          </div>
+
+          {/* Subject Overview */}
+          <div className="card">
+            <h3>Subject Overview</h3>
+            {subjects && subjects.length === 0 ? (
+              <p>No subjects added.</p>
+            ) : (
+              <div className="subject-overview">
+                {subjects?.map((subject) => {
+                  const total = subject.attendance.present + subject.attendance.absent;
+                  const percentage = total === 0 ? 0 : Math.round((subject.attendance.present / total) * 100);
+                  return (
+                    <div key={subject.id} className="subject-summary">
+                      <div>
+                        <h4>{subject.name}</h4>
+                        <small>{subject.code}</small>
+                      </div>
+                      <span className={percentage < 75 ? "badge-low" : "badge-good"}>
+                        {percentage}%
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
-
       </div>
     </div>
   );

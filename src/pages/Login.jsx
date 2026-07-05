@@ -7,6 +7,8 @@ import "./Login.css";
 const Login = ({ darkMode }) => {
   const navigate = useNavigate();
 
+  const [rememberMe, setRememberMe] = useState(false);
+
   const [isSignup, setIsSignup] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -97,6 +99,10 @@ const Login = ({ darkMode }) => {
 
     try {
       const response = await login(formData.username, formData.password);
+
+      const storage = rememberMe
+  ? localStorage
+  : sessionStorage;
 
       localStorage.setItem("access", response.data.access);
       localStorage.setItem("refresh", response.data.refresh);
@@ -190,16 +196,22 @@ const Login = ({ darkMode }) => {
 
           {!isSignup && (
             <div className="login-options">
-              <label>
-                <input type="checkbox" />
-                Remember me
-              </label>
-              <span
-                className="forgot-password-link"
-                onClick={() => navigate("/forgot-password")}
-              >
-                Forgot Password?
-              </span>
+             <label>
+  <input
+    type="checkbox"
+    checked={rememberMe}
+    onChange={(e) =>
+      setRememberMe(e.target.checked)
+    }
+  />
+  Remember me
+</label>
+               <span
+      className="forgot-password-link"
+      onClick={() => navigate("/forgot-password")}
+    >
+      Forgot Password?
+    </span>
             </div>
           )}
 

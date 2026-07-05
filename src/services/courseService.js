@@ -1,21 +1,13 @@
-import axios from "axios";
-
-const API = "http://127.0.0.1:8000/api/courses/";
-
-const authHeader = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("access")}`,
-  },
-});
+import axiosInstance from "./axiosInstance";
 
 export const getCourses = () =>
-  axios.get(API, authHeader());
+  axiosInstance.get("courses/");
 
 export const addCourse = (course) =>
-  axios.post(API, course, authHeader());
+  axiosInstance.post("courses/", course);
 
 export const updateCourse = (id, course) =>
-  axios.put(`${API}${id}/`, course, authHeader());
+  axiosInstance.put(`courses/${id}/`, course);
 
 export const deleteCourse = (id) =>
-  axios.delete(`${API}${id}/`, authHeader());
+  axiosInstance.delete(`courses/${id}/`);

@@ -1,6 +1,5 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { StudentContext } from "../context/StudentContext"; // Hooked into centralized data engine
 
 import {
   FaUserCircle,
@@ -24,14 +23,11 @@ import {
   updateProfile,
   uploadProfileImage,
   changePassword,
-  // deleteProfile,
+  deleteProfile,
 } from "../services/profileService";
 
-const Profile = ({ darkMode }) => {
+const Profile = () => {
   const navigate = useNavigate();
-
-  // Connect state updates straight to the existing global student provider controls
-  const { student, setStudent, refreshStudentProfile } = useContext(StudentContext);
 
   // -----------------------------
   // Popups
@@ -43,7 +39,7 @@ const Profile = ({ darkMode }) => {
   const [deletePassword, setDeletePassword] = useState("");
 
   // -----------------------------
-  // User Details Input States
+  // User Details
   // -----------------------------
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -69,84 +65,65 @@ const Profile = ({ darkMode }) => {
   const [privateAccount, setPrivateAccount] = useState(false);
 
   // -----------------------------
-  // Load Profile Data
+  // Load Profile
   // -----------------------------
-// -----------------------------
-  // Load Profile Data
-  // -----------------------------
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
   const loadProfile = async () => {
     try {
       const res = await getProfile();
       const data = res.data;
 
-      // FIX: Map the backend's 'username' to your React 'name' state
-      const actualName = data.username || "";
-
-      setName(actualName);
+      setName(data.name || "");
       setEmail(data.email || "");
       setPhone(data.phone || "");
       setProfileImage(data.profile_image || "");
       setVerifiedEmail(data.email_verified || false);
       setVerifiedPhone(data.phone_verified || false);
       setPrivateAccount(data.private_account || false);
-
-      // Sync it immediately with global context
-      setStudent((prevStudent) => ({
-        ...prevStudent,
-        name: actualName,
-        profileImage: data.profile_image || "",
-        email: data.email || "",
-        phone: data.phone || "",
-      }));
     } catch (err) {
-      console.error("Failed to load profile", err);
+      // Error handled cleanly internally
     }
   };
+
   // -----------------------------
-  // Logout Handler
+  // Logout
   // -----------------------------
   const handleLogout = () => {
-    localStorage.clear();
-    navigate("/", { replace: true });
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+
+     sessionStorage.removeItem("access");
+    sessionStorage.removeItem("refresh");
+
+    navigate("/", {
+      replace: true,
+    });
   };
 
- // -----------------------------
-  // Save Profile Logic
+  // -----------------------------
+  // Save Profile
   // -----------------------------
   const saveProfile = async () => {
     try {
-      // Sending the update to the backend
-      const response = await updateProfile({ 
-        username: name, 
-        email: email, 
-        phone: phone 
+      await updateProfile({
+        name,
+        email,
+        phone,
       });
-
-      console.log("BACKEND SAVE SUCCESS:", response.data);
-
-      setStudent((prevStudent) => ({
-        ...prevStudent,
-        name: name,
-        email: email,
-        phone: phone,
-      }));
 
       alert("Profile Updated Successfully");
       setEditing(false);
-
-      if (refreshStudentProfile) await refreshStudentProfile();
       loadProfile();
-
     } catch (err) {
-      // 👇 THIS IS THE MAGIC LINE. It will tell us exactly what Django is mad about!
-      console.error("BACKEND REJECTED SAVE. Reason:", err.response?.data || err.message);
-      
-      alert(`Backend Error: ${JSON.stringify(err.response?.data || "Unknown Error")}`);
+      alert("Unable to update profile.");
     }
   };
 
   // -----------------------------
-  // Upload Image Handler
+  // Upload Image
   // -----------------------------
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -157,19 +134,6 @@ const Profile = ({ darkMode }) => {
 
     try {
       await uploadProfileImage(formData);
-
-      // FIX: Sync new avatar picture across context immediately
-      if (refreshStudentProfile) {
-        await refreshStudentProfile();
-      } else {
-        // Fallback context mutation if background fetch hasn't completed
-        const res = await getProfile();
-        setStudent((prevStudent) => ({
-          ...prevStudent,
-          profileImage: res.data.profile_image || ""
-        }));
-      }
-      
       loadProfile();
     } catch (err) {
       alert("Image upload failed.");
@@ -177,7 +141,7 @@ const Profile = ({ darkMode }) => {
   };
 
   // -----------------------------
-  // Change Password Handler
+  // Change Password
   // -----------------------------
   const savePassword = async () => {
     if (newPassword !== confirmPassword) {
@@ -202,7 +166,7 @@ const Profile = ({ darkMode }) => {
   };
 
   // -----------------------------
-  // Delete Account Handler
+  // Delete Account
   // -----------------------------
   const deleteAccount = async () => {
     if (!deletePassword) {
@@ -211,10 +175,15 @@ const Profile = ({ darkMode }) => {
     }
 
     try {
-      // await deleteProfile(deletePassword);
+      await deleteProfile(deletePassword);
       alert("Account deleted successfully.");
-      localStorage.clear();
-      navigate("/", { replace: true });
+
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+
+      navigate("/", {
+        replace: true,
+      });
     } catch (err) {
       alert(err.response?.data?.error || "Incorrect password.");
     } finally {
@@ -227,28 +196,21 @@ const Profile = ({ darkMode }) => {
   // Privacy Toggle
   // -----------------------------
   const togglePrivacy = () => {
-    const nextPrivacy = !privateAccount;
-    setPrivateAccount(nextPrivacy);
-    
-    setStudent((prevStudent) => ({
-      ...prevStudent,
-      privateAccount: nextPrivacy,
-    }));
+    setPrivateAccount(!privateAccount);
   };
 
   return (
-    <div className={`profile-page ${darkMode ? "forced-dark" : ""}`}>
+    <div className="profile-page">
       <div className="profile-card">
-        
-        {/* ================= HEADER WRAPPER ================= */}
+        {/* ================= TOP ================= */}
         <div className="profile-top">
           <div
             className="profile-image"
             onClick={() => document.getElementById("profileUpload").click()}
             title="Change Profile Picture"
           >
-            {student.profileImage ? (
-              <img src={student.profileImage} alt="Profile" className="profile-photo" />
+            {profileImage ? (
+              <img src={profileImage} alt="Profile" className="profile-photo" />
             ) : (
               <FaUserCircle className="default-icon" />
             )}
@@ -262,137 +224,212 @@ const Profile = ({ darkMode }) => {
             onChange={handleImageUpload}
           />
 
-          <h2>{student.name || "Guest"}</h2>
+          <h2>{name}</h2>
           <p>{email || "Email not added"}</p>
           <p>{phone || "Phone not added"}</p>
         </div>
 
-        {/* ================= INSTA/FB APP STYLE CONTROLS ================= */}
-        <div className="profile-options-container">
-          
-          <div className="profile-section">
-            <h3>Profile Management</h3>
-            <div className="profile-options">
-              <button type="button" onClick={() => setEditing(true)}>
-                <div className="btn-content"><FaEdit className="icon-blue" /> <span>Edit Profile</span></div>
-              </button>
-              <button type="button" onClick={() => document.getElementById("profileUpload").click()}>
-                <div className="btn-content"><FaCamera className="icon-pink" /> <span>Change Photo</span></div>
-              </button>
-            </div>
-          </div>
+        {/* ================= BUTTONS ================= */}
+        <div className="profile-options">
+          <button onClick={() => setEditing(true)}>
+            <FaEdit />
+            Edit Profile
+          </button>
 
-          <div className="profile-section">
-            <h3>Privacy & Security</h3>
-            <div className="profile-options">
-              <button type="button" onClick={() => setShowPassword(true)}>
-                <div className="btn-content"><FaLock className="icon-orange" /> <span>Change Password</span></div>
-              </button>
-              <button type="button">
-                <div className="btn-content"><FaEnvelope className="icon-emerald" /> <span>Email Status</span></div>
-                <strong className="status-badge badge-emerald">{verifiedEmail ? "Verified" : "Unverified"}</strong>
-              </button>
-              <button type="button" onClick={togglePrivacy}>
-                <div className="btn-content"><FaShieldAlt className="icon-indigo" /> <span>Account Access</span></div>
-                <strong className="status-badge badge-indigo">{privateAccount ? "Private" : "Public"}</strong>
-              </button>
-            </div>
-          </div>
+          <button onClick={() => document.getElementById("profileUpload").click()}>
+            <FaCamera />
+            Change Profile Picture
+          </button>
 
-          <div className="profile-section">
-            <h3>Support & Feedback</h3>
-            <div className="profile-options">
-              <button type="button" onClick={() => alert("Help Center Coming Soon.")}>
-                <div className="btn-content"><FaQuestionCircle className="icon-teal" /> <span>Help Center</span></div>
-              </button>
-              <button type="button" onClick={() => window.open("mailto:support@studentcompanion.com")}>
-                <div className="btn-content"><FaHeadset className="icon-violet" /> <span>Contact Support</span></div>
-              </button>
-              <button type="button" onClick={() => { const f = prompt("Enter feedback"); if(f) alert("Thanks!"); }}>
-                <div className="btn-content"><FaCommentDots className="icon-cyan" /> <span>Send Feedback</span></div>
-              </button>
-              <button type="button" onClick={() => { const r = prompt("Rate 1-5"); if(r) alert("Thanks!"); }}>
-                <div className="btn-content"><FaStar className="icon-yellow" /> <span>Rate App</span></div>
-              </button>
-            </div>
-          </div>
+          <button onClick={() => setShowPassword(true)}>
+            <FaLock />
+            Change Password
+          </button>
 
-          <div className="profile-section lifecycle-section">
-            <h3>Account Settings</h3>
-            <div className="profile-options">
-              <button type="button" className="logout-btn" onClick={() => setShowLogout(true)}>
-                <FaSignOutAlt /> Logout
-              </button>
-              <button type="button" className="delete-btn" onClick={() => setShowDelete(true)}>
-                <FaTrash /> Delete Account
-              </button>
-            </div>
-          </div>
+          <button>
+            <FaEnvelope />
+            {verifiedEmail ? "Email Verified" : "Email Not Verified"}
+          </button>
 
+          <button onClick={togglePrivacy}>
+            <FaShieldAlt />
+            {privateAccount ? "Private Account" : "Public Account"}
+          </button>
+
+          <button onClick={() => alert("Help Center Coming Soon.")}>
+            <FaQuestionCircle />
+            Help Center
+          </button>
+
+          <button onClick={() => window.open("mailto:support@studentcompanion.com")}>
+            <FaHeadset />
+            Contact Support
+          </button>
+
+          <button
+            onClick={() => {
+              const feedback = prompt("Enter your feedback");
+              if (!feedback) return;
+              alert("Thank you for your feedback!");
+            }}
+          >
+            <FaCommentDots />
+            Send Feedback
+          </button>
+
+          <button
+            onClick={() => {
+              const rating = prompt("Rate us (1-5)");
+              if (!rating) return;
+              alert("Thanks for rating us!");
+            }}
+          >
+            <FaStar />
+            Rate App
+          </button>
+
+          <button className="delete-btn" onClick={() => setShowDelete(true)}>
+            <FaTrash />
+            Delete Account
+          </button>
+
+          <button className="logout-btn" onClick={() => setShowLogout(true)}>
+            <FaSignOutAlt />
+            Logout
+          </button>
         </div>
       </div>
 
-      {/* ================= EDIT PROFILE OVERLAY ================= */}
+      {/* ================= EDIT PROFILE ================= */}
       {editing && (
         <div className="logout-overlay">
           <div className="logout-box">
             <h3>Edit Profile</h3>
-            <input type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <input type="text" placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+
+            <input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <input
+              type="text"
+              placeholder="Phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+
             <div className="logout-buttons">
-              <button type="button" onClick={() => setEditing(false)}>Cancel</button>
-              <button type="button" className="confirm" onClick={saveProfile}>Save</button>
+              <button onClick={() => setEditing(false)}>Cancel</button>
+              <button className="confirm" onClick={saveProfile}>
+                Save
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ================= CHANGE PASSWORD OVERLAY ================= */}
+      {/* ================= CHANGE PASSWORD ================= */}
       {showPassword && (
         <div className="logout-overlay">
           <div className="logout-box">
             <h3>Change Password</h3>
-            <input type="password" placeholder="Current Password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-            <input type="password" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-            <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+
+            <input
+              type="password"
+              placeholder="Current Password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+
             <div className="logout-buttons">
-              <button type="button" onClick={() => { setShowPassword(false); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }}>Cancel</button>
-              <button type="button" className="confirm" onClick={savePassword}>Save</button>
+              <button
+                onClick={() => {
+                  setShowPassword(false);
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                }}
+              >
+                Cancel
+              </button>
+              <button className="confirm" onClick={savePassword}>
+                Save
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ================= DELETE ACCOUNT OVERLAY ================= */}
+      {/* ================= DELETE ACCOUNT ================= */}
       {showDelete && (
         <div className="logout-overlay">
           <div className="logout-box">
             <h3>Delete Account</h3>
             <p>This action cannot be undone.</p>
-            <input type="password" placeholder="Enter your password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} />
+
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+            />
+
             <div className="logout-buttons">
-              <button type="button" onClick={() => { setShowDelete(false); setDeletePassword(""); }}>Cancel</button>
-              <button type="button" className="delete-btn" onClick={deleteAccount}>Delete</button>
+              <button
+                onClick={() => {
+                  setShowDelete(false);
+                  setDeletePassword("");
+                }}
+              >
+                Cancel
+              </button>
+              <button className="delete-btn" onClick={deleteAccount}>
+                Delete
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ================= LOGOUT OVERLAY ================= */}
+      {/* ================= LOGOUT ================= */}
       {showLogout && (
         <div className="logout-overlay">
           <div className="logout-box">
             <h3>Logout</h3>
             <p>Are you sure you want to logout?</p>
+
             <div className="logout-buttons">
-              <button type="button" onClick={() => setShowLogout(false)}>Cancel</button>
-              <button type="button" className="confirm" onClick={handleLogout}>Logout</button>
+              <button onClick={() => setShowLogout(false)}>Cancel</button>
+              <button className="confirm" onClick={handleLogout}>
+                Logout
+              </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 };

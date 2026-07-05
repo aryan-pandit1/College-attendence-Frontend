@@ -27,10 +27,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
-  };
+  
 
   return (
     <>
@@ -166,13 +163,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                   )}
                 </button>
 
-                <button
-                  className="logout-btn"
-                  onClick={handleLogout}
-                >
-                  <FaSignOutAlt />
-                  Logout
-                </button>
+                
               </div>
             )}
           </div>
