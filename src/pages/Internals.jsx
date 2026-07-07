@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Internals.css";
-import Skeleton from "../Components/Skeleton"; // 👈 Imported the Skeleton
+import Skeleton from "../Components/Skeleton"; 
 
 import {
   getInternals,
@@ -9,9 +9,8 @@ import {
 import { getCourses } from "../services/courseService";
 import axiosInstance from "../services/axiosInstance";
 
-// Accept darkMode prop sent down from App.jsx routing configurations
 const Internals = ({ darkMode }) => {
-  // 1. Added loading state
+  // 1. Loading state tracks original course fetching too
   const [isLoading, setIsLoading] = useState(true);
 
   const [selectedSemester, setSelectedSemester] = useState(1);
@@ -24,19 +23,25 @@ const Internals = ({ darkMode }) => {
   const [newAssessmentMarks, setNewAssessmentMarks] = useState("");
   const [newWeightage, setNewWeightage] = useState("");
 
+  // Load courses initially
   useEffect(() => {
-    loadCourses();
+    const initCourses = async () => {
+      setIsLoading(true);
+      await loadCourses();
+      setIsLoading(false);
+    };
+    initCourses();
   }, []);
 
-  // 2. Wrapped the fetches to perfectly control the Skeleton Loading
+  // Fetch metrics when active subject updates
   useEffect(() => {
     if (selectedSubjectId) {
       const fetchSubjectData = async () => {
-        setIsLoading(true); // Start loading animation
+        setIsLoading(true); 
         try {
           await Promise.all([loadInternals(), loadScore()]);
         } finally {
-          setIsLoading(false); // Stop loading animation
+          setIsLoading(false); 
         }
       };
       fetchSubjectData();
@@ -86,7 +91,8 @@ const Internals = ({ darkMode }) => {
 
   const selectedSubject = subjects.find((sub) => sub.id === selectedSubjectId);
 
-  if (subjects.length === 0) {
+  // ⚡ FIXED: Prevent early string output if still pulling data from your backend
+  if (!isLoading && subjects.length === 0) {
     return (
       <div className={`internals-page ${darkMode ? "forced-dark" : ""}`}>
         <h2>No Subjects Added</h2>
@@ -94,7 +100,8 @@ const Internals = ({ darkMode }) => {
     );
   }
 
-  if (!selectedSubject) return null;
+  // Fallback trap to keep skeletons visible until the active subject loads
+  if (!selectedSubject && !isLoading) return null;
 
   const totalObtained = evaluations.reduce(
     (sum, item) => sum + Number(item.marks_obtained),
@@ -170,28 +177,39 @@ const Internals = ({ darkMode }) => {
       </div>
 
       <div className="semester-tabs">
-        {availableSemesters.map((sem) => (
-          <button
-            key={sem}
-            className={selectedSemester === sem ? "semester-btn active" : "semester-btn"}
-            onClick={() => setSelectedSemester(sem)}
-          >
-            Semester {sem}
-          </button>
-        ))}
+        {isLoading && availableSemesters.length === 0 ? (
+          <Skeleton width="120px" height="38px" borderRadius="20px" />
+        ) : (
+          availableSemesters.map((sem) => (
+            <button
+              key={sem}
+              className={selectedSemester === sem ? "semester-btn active" : "semester-btn"}
+              onClick={() => setSelectedSemester(sem)}
+            >
+              Semester {sem}
+            </button>
+          ))
+        )}
       </div>
 
       <div className="subject-tabs">
-        {semesterSubjects.map((subject) => (
-          <button
-            key={subject.id}
-            className={`subject-tab ${selectedSubjectId === subject.id ? "active" : ""}`}
-            onClick={() => setSelectedSubjectId(subject.id)}
-          >
-            {subject.course_name}
-            <span>{subject.course_code}</span>
-          </button>
-        ))}
+        {isLoading && semesterSubjects.length === 0 ? (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Skeleton width="140px" height="42px" borderRadius="8px" />
+            <Skeleton width="140px" height="42px" borderRadius="8px" />
+          </div>
+        ) : (
+          semesterSubjects.map((subject) => (
+            <button
+              key={subject.id}
+              className={`subject-tab ${selectedSubjectId === subject.id ? "active" : ""}`}
+              onClick={() => setSelectedSubjectId(subject.id)}
+            >
+              {subject.course_name}
+              <span>{subject.course_code}</span>
+            </button>
+          ))
+        )}
       </div>
 
       <div className="internals-content">
@@ -200,18 +218,17 @@ const Internals = ({ darkMode }) => {
         <div className="assessment-card">
           <h2>Assessments</h2>
 
-          {/* 3. Skeleton Loading Map for Left Column */}
           {isLoading ? (
             <>
-              <Skeleton width="100%" height="40px" borderRadius="8px" />
-              <br />
-              <Skeleton width="100%" height="60px" borderRadius="8px" />
-              <br />
-              <Skeleton width="100%" height="60px" borderRadius="8px" />
-              <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
-                 <Skeleton width="100%" height="40px" borderRadius="8px" />
-                 <Skeleton width="100%" height="40px" borderRadius="8px" />
-                 <Skeleton width="100%" height="40px" borderRadius="8px" />
+              {/* Refined text-level inline mock elements */}
+              <div style={{ padding: '12px 0' }}><Skeleton width="100%" height="24px" /></div>
+              <div style={{ padding: '12px 0' }}><Skeleton width="100%" height="32px" /></div>
+              <div style={{ padding: '12px 0' }}><Skeleton width="100%" height="32px" /></div>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                 <Skeleton width="30%" height="38px" borderRadius="6px" />
+                 <Skeleton width="20%" height="38px" borderRadius="6px" />
+                 <Skeleton width="20%" height="38px" borderRadius="6px" />
+                 <Skeleton width="30%" height="38px" borderRadius="6px" />
               </div>
             </>
           ) : (
@@ -299,18 +316,17 @@ const Internals = ({ darkMode }) => {
         <div className="progress-card">
           <h3>Overall Progress</h3>
 
-          {/* 4. Skeleton Loading Map for Right Column */}
           {isLoading ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <Skeleton width="170px" height="170px" variant="circular" />
               <br /><br />
-              <Skeleton width="100%" height="24px" />
+              <Skeleton width="80%" height="20px" />
               <br />
-              <Skeleton width="100%" height="24px" />
+              <Skeleton width="50%" height="16px" />
               <br /><br />
-              <Skeleton width="100%" height="70px" borderRadius="8px" />
+              <Skeleton width="100%" height="54px" borderRadius="6px" />
               <br />
-              <Skeleton width="100%" height="120px" borderRadius="12px" />
+              <Skeleton width="100%" height="110px" borderRadius="10px" />
             </div>
           ) : (
             <>

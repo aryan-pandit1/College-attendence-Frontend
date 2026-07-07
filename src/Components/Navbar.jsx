@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react"; // ⚡ Added useEffect
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import AddSubjectModal from "../pages/AddSubjectModal";
 
@@ -14,6 +14,7 @@ import {
   FaCog,
   FaSignOutAlt,
   FaTable,
+  FaInfoCircle 
 } from "react-icons/fa";
 
 import "./Navbar.css";
@@ -27,11 +28,50 @@ const Navbar = ({ darkMode, setDarkMode }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  
+  // ⚡ 1. SMART AUTO-HIDE STATES
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  // ⚡ 2. SCROLL & MOUSE DIRECTION LISTENER ENGINE
+  useEffect(() => {
+    // Graceful exit for mobile screens to keep layout perfectly stable
+    if (window.innerWidth <= 768) return;
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // HIDE if scrolling downwards past a baseline threshold
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        setIsVisible(false);
+        setShowMenu(false); // Clean utility fallback: snaps dropdown close if user flies down page
+      } 
+      // SHOW instantly upon any upward thumb traction
+      else {
+        setIsVisible(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    const handleMouseMove = (e) => {
+      // BUMPER MECHANIC: Drops down automatically if cursor touches top 60px viewport threshold
+      if (e.clientY < 60) {
+        setIsVisible(true);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [lastScrollY]);
 
   return (
     <>
-      <nav className={`navbar ${darkMode ? "dark" : ""}`}>
+      {/* ⚡ 3. DYNAMICALLY APPLIED HIDING CLASS */}
+      <nav className={`navbar ${darkMode ? "dark" : ""} ${!isVisible ? "nav-hidden" : ""}`}>
         {/* Logo */}
         <Link to="/dashboard" className="navbar-logo">
           <span className="logo-icon">🎓</span>
@@ -163,7 +203,15 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                   )}
                 </button>
 
-                
+                <button
+                  onClick={() => {
+                    navigate("/about");
+                    setShowMenu(false);
+                  }}
+                >
+                  <FaInfoCircle />
+                  <span>About</span>
+                </button>
               </div>
             )}
           </div>

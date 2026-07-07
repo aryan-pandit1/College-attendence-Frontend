@@ -27,7 +27,7 @@ body.dark .bubble,
 .forced-dark .bubble {
   opacity: 0.15; 
   filter: blur(8px);
-}
+} a
 
 /* 20 Custom Small Bubbles */
 .bubble:nth-child(1) { width: 35px; height: 35px; left: 5%; background: radial-gradient(circle, #ec4899, #be185d); animation-duration: 22s; animation-delay: 0s; }
@@ -69,4 +69,59 @@ body.dark .bubble,
   z-index: 9999; /* <--- CHANGED FROM -1 */
   overflow: hidden;
   pointer-events: none; 
+}
+
+/* =======================================================
+   RESPONSIVE GLOBAL PAGE PADDING
+   ======================================================= */
+/* Desktop Base: Pushes content down clear of the floating pill */
+.dashboard,
+.profile-page,
+.internals-page,
+.gpa-page,
+.about-page {
+  padding-top: 120px !important; 
+  transition: padding 0.4s ease;
+}
+
+/* Mobile Screens: The floating pill is taller here, so we push down further */
+@media (max-width: 768px) {
+  .dashboard,
+  .profile-page,
+  .internals-page,
+  .gpa-page,
+  .about-page {
+    padding-top: 190px !important; 
+  }
+}
+
+/* =======================================================
+   ⚡ NUCLEAR FIX FOR RIGHT-SIDE WHITE SPACE
+   ======================================================= */
+html, body, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden !important; /* This permanently kills horizontal scrolling/gaps */
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+.bubble-wrapper-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  
+  /* ⚡ CHANGE THIS FROM 100vw TO 100% */
+  width: 100%; 
+  
+  height: 100vh;
+  z-index: -1; 
+  overflow: hidden;
+  pointer-events: none; 
+  background-color: #f8fafc; 
+  transition: background-color 0.4s ease;
 }

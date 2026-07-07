@@ -1,19 +1,23 @@
-import React from 'react';
-import './Skeleton.css';
+// src/Components/Skeleton.jsx
+import React from "react";
+import "./Skeleton.css";
 
-const Skeleton = ({ width, height, borderRadius, variant = "rectangular", className = "" }) => {
-  const style = {
-    width: width || "100%",
-    height: height || "100%",
-    borderRadius: borderRadius || (variant === "circular" ? "50%" : "8px"),
+const Skeleton = ({ 
+  width = "100%", 
+  height = "20px", 
+  borderRadius = "8px", 
+  variant = "text", // "text", "rectangular", or "circular"
+  style = {} 
+}) => {
+  
+  const styles = {
+    width,
+    height,
+    borderRadius: variant === "circular" ? "50%" : borderRadius,
+    ...style
   };
 
-  return (
-    <div 
-      className={`skeleton-base ${variant === "circular" ? "skeleton-circle" : ""} ${className}`} 
-      style={style}
-    />
-  );
+  return <div className={`skeleton-loader variant-${variant}`} style={styles}></div>;
 };
 
 export default Skeleton;

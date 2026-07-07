@@ -1,72 +1,51 @@
 /* ==========================================
-   FORCED LOCAL DARK STATE TOKENS
+   THEME VARIABLES & PREMIUM TOKENS
    ========================================== */
+:root {
+  /* Light Mode (Default) */
+  --profile-bg: #f8fafc;
+  --profile-card-bg: #ffffff;
+  --profile-section-bg: #f8fafc;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  
+  --btn-bg: #ffffff;
+  --btn-hover-bg: #2563eb;
+  --btn-hover-text: #ffffff;
+  
+  --shadow-flat: 0 20px 40px -15px rgba(15, 23, 42, 0.05);
+  --shadow-elevated: 0 12px 30px rgba(37, 99, 235, 0.15);
+  --shadow-inner: inset 0 0 0 rgba(0,0,0,0);
+  
+  --ring-color: #2563eb;
+}
+
+/* ==========================================
+   BULLETPROOF DARK MODE (MIDNIGHT VOID)
+   ========================================== */
+/* Catches forced-dark, body.dark, and data-theme="dark" globally */
+html[data-theme="dark"] .profile-page,
+body.dark .profile-page,
 .profile-page.forced-dark {
-  background: #0f172a !important;
-  --bg-resolved: #0f172a;
-  --card-bg-resolved: #1e293b;
+  --profile-bg: #050814;
+  /* Glassmorphic Gradient for Cards */
+  --profile-card-bg: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+  --profile-section-bg: rgba(255, 255, 255, 0.03);
+  
   --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --border-resolved: #334155;
-  --section-bg: #1e293b;
-}
+  --text-muted: #cbd5e1;
+  --border-color: rgba(255, 255, 255, 0.08);
+  
+  --btn-bg: rgba(30, 41, 59, 0.5);
+  --btn-hover-bg: #3b82f6;
+  --btn-hover-text: #ffffff;
 
-/* Specificity overrides to force typography colors in dark mode */
-.profile-page.forced-dark h2,
-.profile-page.forced-dark h3,
-.profile-page.forced-dark .logout-box h3 {
-  color: #f8fafc !important;
-}
-
-.profile-page.forced-dark p,
-.profile-page.forced-dark .logout-box p {
-  color: #94a3b8 !important;
-}
-
-.profile-page.forced-dark .profile-card,
-.profile-page.forced-dark .logout-box {
-  background: #1e293b !important;
-  border-color: #334155 !important;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
-}
-
-.profile-page.forced-dark .profile-section {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border-color: #334155 !important;
-}
-
-/* Base button overrides for standard items in dark mode */
-.profile-page.forced-dark .profile-options button:not(.delete-btn):not(.logout-btn) {
-  background: #1e293b !important;
-  border-color: #334155 !important;
-  color: #cbd5e1 !important;
-}
-
-.profile-page.forced-dark .profile-options button:not(.delete-btn):not(.logout-btn):hover {
-  background: #2563eb !important;
-  border-color: #2563eb !important;
-  color: #ffffff !important;
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35) !important;
-}
-
-.profile-page.forced-dark .profile-options button:not(.delete-btn):not(.logout-btn):hover svg {
-  color: #ffffff !important;
-}
-
-.profile-page.forced-dark .logout-box input {
-  background: #0f172a !important;
-  border-color: #475569 !important;
-  color: #f8fafc !important;
-}
-
-.profile-page.forced-dark .logout-buttons button:not(.confirm):not(.delete-btn) {
-  background: transparent !important;
-  border-color: #475569 !important;
-  color: #cbd5e1 !important;
-}
-
-.profile-page.forced-dark .logout-buttons button:not(.confirm):not(.delete-btn):hover {
-  background: #334155 !important;
+  --shadow-flat: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+  --shadow-elevated: 0 8px 24px rgba(59, 130, 246, 0.3);
+  --shadow-inner: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  
+  --ring-color: #3b82f6;
 }
 
 /* ==========================================
@@ -74,28 +53,29 @@
    ========================================== */
 .profile-page {
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--profile-bg);
   display: flex;
   justify-content: center;
   align-items: flex-start;
   padding: 60px 16px;
   width: 100%;
-  max-width: 100%;
   box-sizing: border-box;
-  transition: background-color 0.3s ease;
-  overflow-x: hidden; /* Complete block against side-scrolling */
+  transition: background-color 0.4s ease;
+  overflow-x: hidden;
 }
 
 .profile-card {
   width: 100%;
   max-width: 680px;
-  background: #ffffff;
+  background: var(--profile-card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: 24px;
   padding: 48px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-flat), var(--shadow-inner);
   box-sizing: border-box;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
 }
 
 /* ==========================================
@@ -112,21 +92,22 @@
 
 .profile-image {
   position: relative;
-  width: 124px;
-  height: 124px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin-bottom: 24px;
+  /* Soft glowing ring effect */
+  box-shadow: 0 0 0 4px var(--profile-bg), 0 0 0 8px var(--ring-color), 0 8px 24px rgba(0,0,0,0.2);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .profile-image:hover {
-  transform: scale(1.05) rotate(2deg);
-  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.25);
+  transform: scale(1.05) translateY(-4px);
+  box-shadow: 0 0 0 4px var(--profile-bg), 0 0 0 10px var(--ring-color), 0 16px 32px rgba(59, 130, 246, 0.4);
 }
 
 .profile-photo {
@@ -134,41 +115,36 @@
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #2563eb;
 }
 
 .default-icon {
   font-size: 124px;
-  color: #cbd5e1;
+  color: var(--text-muted);
 }
 
 .profile-top h2 {
-  color: #0f172a;
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.025em;
+  color: var(--text-main);
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
   margin: 0 0 6px 0;
-  max-width: 100%;
-  overflow-wrap: break-word;
 }
 
 .profile-top p {
-  color: #64748b;
-  font-size: 14.5px;
-  font-weight: 500;
-  margin: 2px 0;
-  max-width: 100%;
-  overflow-wrap: break-word;
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
 }
 
 /* ==========================================
    SEMANTIC UX LAYOUT SECTIONS
    ========================================== */
 .profile-section {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--profile-section-bg);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px;
   margin-bottom: 24px;
   width: 100%;
   box-sizing: border-box;
@@ -177,17 +153,17 @@
 .profile-section h3 {
   font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #64748b;
-  margin: 0 0 14px 0;
-  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin: 0 0 16px 0;
+  font-weight: 800;
 }
 
 /* Interactive Options Matrix Layout Grid */
 .profile-options {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)); /* STRICT: Forces grid cells to remain within equal structural limits */
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -196,46 +172,44 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 18px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  padding: 16px 20px;
+  background: var(--btn-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  color: #334155;
-  font-size: 14px;
+  color: var(--text-main);
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
   box-sizing: border-box;
   text-align: left;
-  min-width: 0; /* Prevents cell expansion from forcing side-scrolling */
+  min-width: 0;
   width: 100%;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .profile-options button span {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap; /* Tightly shields labels from overflowing boundaries */
+  white-space: nowrap;
 }
 
 /* Standard Button UX Interactive Transformations */
 .profile-options button:not(.delete-btn):not(.logout-btn):hover {
-  border-color: #2563eb;
-  background: #2563eb;
-  color: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.2);
+  border-color: var(--btn-hover-bg);
+  background: var(--btn-hover-bg);
+  color: var(--btn-hover-text);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-elevated);
 }
 
 .profile-options button svg {
-  font-size: 16px;
+  font-size: 18px;
   flex-shrink: 0;
-  transition: color 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 /* Custom Icon Tone Palette Allocations */
-.profile-options button:not(:hover) svg {
-  color: var(--icon-color, #64748b);
-}
+.profile-options button:not(:hover) svg { color: var(--icon-color, var(--text-muted)); }
 .profile-options button:nth-child(1) { --icon-color: #3b82f6; } /* Edit Info - Blue */
 .profile-options button:nth-child(2) { --icon-color: #ec4899; } /* Avatar Upload - Pink */
 .profile-options button:nth-child(3) { --icon-color: #f59e0b; } /* Pass Control - Orange */
@@ -248,6 +222,7 @@
 
 .profile-options button:not(.delete-btn):not(.logout-btn):hover svg {
   color: #ffffff !important;
+  transform: scale(1.1);
 }
 
 /* ==========================================
@@ -257,40 +232,28 @@
   grid-template-columns: 1fr;
 }
 
-/* Soft Alert Soft Border Accent (Logout Option) */
+/* Soft Alert (Logout Option) */
 .profile-options button.logout-btn {
   justify-content: center;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  color: #b45309;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #d97706;
 }
 
 .profile-options button.logout-btn:hover {
-  background: #d97706;
-  border-color: #d97706;
+  background: #f59e0b;
+  border-color: #f59e0b;
   color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.2);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25);
 }
 
-.profile-page.forced-dark .profile-options button.logout-btn {
-  background: rgba(217, 119, 6, 0.06) !important;
-  border-color: rgba(217, 119, 6, 0.2) !important;
-  color: #fbbf24 !important;
-}
-
-.profile-page.forced-dark .profile-options button.logout-btn:hover {
-  background: #d97706 !important;
-  border-color: #d97706 !important;
-  color: #ffffff !important;
-}
-
-/* Critical Pure Crimson Destructive Action (Delete Option) */
+/* Critical Action (Delete Option) */
 .profile-options button.delete-btn {
   justify-content: center;
-  background: #fef2f2;
-  border: 1px solid #fee2e2;
-  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
 }
 
 .profile-options button.delete-btn:hover {
@@ -298,19 +261,7 @@
   border-color: #ef4444;
   color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.25);
-}
-
-.profile-page.forced-dark .profile-options button.delete-btn {
-  background: rgba(239, 68, 68, 0.06) !important;
-  border-color: rgba(239, 68, 68, 0.2) !important;
-  color: #f87171 !important;
-}
-
-.profile-page.forced-dark .profile-options button.delete-btn:hover {
-  background: #ef4444 !important;
-  border-color: #ef4444 !important;
-  color: #ffffff !important;
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.25);
 }
 
 /* ==========================================
@@ -322,8 +273,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
+  background: rgba(5, 8, 20, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -335,127 +287,122 @@
 .logout-box {
   width: 100%;
   max-width: 420px;
-  background: #ffffff;
-  border-radius: 20px;
-  padding: 32px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  background: var(--profile-card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
   text-align: center;
   box-sizing: border-box;
-  animation: fadeInModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: fadeInModal 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
 }
 
 .logout-box h3 {
-  font-size: 22px;
-  font-weight: 800;
-  color: #0f172a;
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--text-main);
   margin-bottom: 12px;
-  letter-spacing: -0.02em;
 }
 
 .logout-box p {
-  font-size: 14.5px;
-  color: #64748b;
-  margin-bottom: 24px;
-  line-height: 1.5;
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  line-height: 1.6;
 }
 
 /* Modal Form Inputs */
 .logout-box input {
   width: 100%;
-  padding: 14px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  padding: 16px;
+  background: var(--profile-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: 12px;
   font-size: 15px;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   outline: none;
   box-sizing: border-box;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .logout-box input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
 }
 
 /* Modal Button Actions Rows */
 .logout-buttons {
   display: flex;
-  gap: 12px;
-  margin-top: 24px;
+  gap: 16px;
   width: 100%;
 }
 
 .logout-buttons button {
   flex: 1;
-  padding: 14px;
-  border-radius: 10px;
-  font-size: 14.5px;
-  font-weight: 700;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 800;
   cursor: pointer;
-  border: 1px solid #e2e8f0;
-  background: white;
-  color: #475569;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
-.logout-buttons button:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+.logout-buttons button:not(.confirm):not(.delete-btn) {
+  background: var(--btn-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.logout-buttons button:not(.confirm):not(.delete-btn):hover {
+  background: var(--border-color);
 }
 
 .logout-buttons button.confirm {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: #3b82f6;
+  border: none;
   color: white;
 }
 
 .logout-buttons button.confirm:hover {
-  background: #1d4ed8;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
 .logout-buttons button.delete-btn {
   background: #ef4444;
-  border-color: #ef4444;
+  border: none;
   color: white;
 }
 
 .logout-buttons button.delete-btn:hover {
   background: #dc2626;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
 }
 
 /* ==========================================
    CROSS-DEVICE MEDIA BREAKPOINTS
    ========================================== */
 @keyframes fadeInModal {
-  from {
-    opacity: 0;
-    transform: scale(0.92) translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+  from { opacity: 0; transform: scale(0.9) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 @media (max-width: 768px) {
-  .profile-page {
-    padding: 30px 12px;
-  }
-
-  .profile-card {
-    padding: 32px 20px;
-    border-radius: 20px;
-  }
-
-  /* Safely drop layout grids to a single stacked layout column on phone sizes */
+  .profile-page { padding: 24px 16px; }
+  .profile-card { padding: 32px 24px; border-radius: 20px; }
+  
   .profile-options {
     grid-template-columns: 1fr;
     gap: 12px;
   }
   
   .profile-options button {
-    white-space: normal; /* Permits button labels to wrap cleanly on phone viewports instead of clipping */
+    white-space: normal;
+    padding: 14px 16px;
   }
+  
+  .logout-buttons { flex-direction: column; gap: 12px; }
 }

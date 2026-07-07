@@ -26,7 +26,8 @@ import {
   deleteProfile,
 } from "../services/profileService";
 
-const Profile = () => {
+// Accept darkMode prop for the premium styling
+const Profile = ({ darkMode }) => {
   const navigate = useNavigate();
 
   // -----------------------------
@@ -94,13 +95,10 @@ const Profile = () => {
   const handleLogout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
-
-     sessionStorage.removeItem("access");
+    sessionStorage.removeItem("access");
     sessionStorage.removeItem("refresh");
 
-    navigate("/", {
-      replace: true,
-    });
+    navigate("/", { replace: true });
   };
 
   // -----------------------------
@@ -108,12 +106,7 @@ const Profile = () => {
   // -----------------------------
   const saveProfile = async () => {
     try {
-      await updateProfile({
-        name,
-        email,
-        phone,
-      });
-
+      await updateProfile({ name, email, phone });
       alert("Profile Updated Successfully");
       setEditing(false);
       loadProfile();
@@ -181,9 +174,7 @@ const Profile = () => {
       localStorage.removeItem("access");
       localStorage.removeItem("refresh");
 
-      navigate("/", {
-        replace: true,
-      });
+      navigate("/", { replace: true });
     } catch (err) {
       alert(err.response?.data?.error || "Incorrect password.");
     } finally {
@@ -200,9 +191,10 @@ const Profile = () => {
   };
 
   return (
-    <div className="profile-page">
+    <div className={`profile-page ${darkMode ? "forced-dark" : ""}`}>
       <div className="profile-card">
-        {/* ================= TOP ================= */}
+        
+        {/* ================= TOP HEADER ================= */}
         <div className="profile-top">
           <div
             className="profile-image"
@@ -224,105 +216,120 @@ const Profile = () => {
             onChange={handleImageUpload}
           />
 
-          <h2>{name}</h2>
+          <h2>{name || "Loading..."}</h2>
           <p>{email || "Email not added"}</p>
-          <p>{phone || "Phone not added"}</p>
+          <p style={{ marginTop: "4px" }}>{phone || "Phone not added"}</p>
         </div>
 
-        {/* ================= BUTTONS ================= */}
-        <div className="profile-options">
-          <button onClick={() => setEditing(true)}>
-            <FaEdit />
-            Edit Profile
-          </button>
+        {/* ================= CATEGORY 1: ACCOUNT SETTINGS ================= */}
+        <div className="profile-section">
+          <h3>Account Settings</h3>
+          <div className="profile-options">
+            <button onClick={() => setEditing(true)}>
+              <FaEdit />
+              <span>Edit Profile Info</span>
+            </button>
 
-          <button onClick={() => document.getElementById("profileUpload").click()}>
-            <FaCamera />
-            Change Profile Picture
-          </button>
+            <button onClick={() => document.getElementById("profileUpload").click()}>
+              <FaCamera />
+              <span>Change Avatar</span>
+            </button>
 
-          <button onClick={() => setShowPassword(true)}>
-            <FaLock />
-            Change Password
-          </button>
+            <button onClick={() => setShowPassword(true)}>
+              <FaLock />
+              <span>Change Password</span>
+            </button>
 
-          <button>
-            <FaEnvelope />
-            {verifiedEmail ? "Email Verified" : "Email Not Verified"}
-          </button>
-
-          <button onClick={togglePrivacy}>
-            <FaShieldAlt />
-            {privateAccount ? "Private Account" : "Public Account"}
-          </button>
-
-          <button onClick={() => alert("Help Center Coming Soon.")}>
-            <FaQuestionCircle />
-            Help Center
-          </button>
-
-          <button onClick={() => window.open("mailto:support@studentcompanion.com")}>
-            <FaHeadset />
-            Contact Support
-          </button>
-
-          <button
-            onClick={() => {
-              const feedback = prompt("Enter your feedback");
-              if (!feedback) return;
-              alert("Thank you for your feedback!");
-            }}
-          >
-            <FaCommentDots />
-            Send Feedback
-          </button>
-
-          <button
-            onClick={() => {
-              const rating = prompt("Rate us (1-5)");
-              if (!rating) return;
-              alert("Thanks for rating us!");
-            }}
-          >
-            <FaStar />
-            Rate App
-          </button>
-
-          <button className="delete-btn" onClick={() => setShowDelete(true)}>
-            <FaTrash />
-            Delete Account
-          </button>
-
-          <button className="logout-btn" onClick={() => setShowLogout(true)}>
-            <FaSignOutAlt />
-            Logout
-          </button>
+            <button>
+              <FaEnvelope />
+              <span>{verifiedEmail ? "Email Verified" : "Email Not Verified"}</span>
+            </button>
+          </div>
         </div>
+
+        {/* ================= CATEGORY 2: APP PREFERENCES ================= */}
+        <div className="profile-section">
+          <h3>App Preferences</h3>
+          <div className="profile-options">
+            <button onClick={togglePrivacy}>
+              <FaShieldAlt />
+              <span>{privateAccount ? "Private Account" : "Public Account"}</span>
+            </button>
+
+            <button onClick={() => alert("Help Center Coming Soon.")}>
+              <FaQuestionCircle />
+              <span>Help Center</span>
+            </button>
+
+            <button onClick={() => window.open("mailto:support@studentcompanion.com")}>
+              <FaHeadset />
+              <span>Contact Support</span>
+            </button>
+
+            <button
+              onClick={() => {
+                const feedback = prompt("Enter your feedback");
+                if (feedback) alert("Thank you for your feedback!");
+              }}
+            >
+              <FaCommentDots />
+              <span>Send Feedback</span>
+            </button>
+
+            <button
+              onClick={() => {
+                const rating = prompt("Rate us (1-5)");
+                if (rating) alert("Thanks for rating us!");
+              }}
+            >
+              <FaStar />
+              <span>Rate App</span>
+            </button>
+          </div>
+        </div>
+
+        {/* ================= CATEGORY 3: DANGER ZONE ================= */}
+        <div className="profile-section lifecycle-section">
+          <h3>Account Actions</h3>
+          <div className="profile-options">
+            <button className="logout-btn" onClick={() => setShowLogout(true)}>
+              <FaSignOutAlt />
+              <span>Logout Securely</span>
+            </button>
+
+            <button className="delete-btn" onClick={() => setShowDelete(true)}>
+              <FaTrash />
+              <span>Delete Account Data</span>
+            </button>
+          </div>
+        </div>
+
       </div>
 
-      {/* ================= EDIT PROFILE ================= */}
+      {/* ================= MODALS OVERLAYS ================= */}
+
+      {/* EDIT PROFILE MODAL */}
       {editing && (
         <div className="logout-overlay">
           <div className="logout-box">
             <h3>Edit Profile</h3>
+            <p>Update your personal information below.</p>
 
             <input
               type="text"
-              placeholder="Name"
+              placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-
             <input
               type="email"
-              placeholder="Email"
+              placeholder="Email Address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-
             <input
               type="text"
-              placeholder="Phone"
+              placeholder="Phone Number"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
@@ -330,18 +337,19 @@ const Profile = () => {
             <div className="logout-buttons">
               <button onClick={() => setEditing(false)}>Cancel</button>
               <button className="confirm" onClick={saveProfile}>
-                Save
+                Save Changes
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ================= CHANGE PASSWORD ================= */}
+      {/* CHANGE PASSWORD MODAL */}
       {showPassword && (
         <div className="logout-overlay">
           <div className="logout-box">
             <h3>Change Password</h3>
+            <p>Ensure your new password is at least 8 characters long.</p>
 
             <input
               type="password"
@@ -349,17 +357,15 @@ const Profile = () => {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
             />
-
             <input
               type="password"
               placeholder="New Password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
-
             <input
               type="password"
-              placeholder="Confirm Password"
+              placeholder="Confirm New Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
             />
@@ -376,23 +382,23 @@ const Profile = () => {
                 Cancel
               </button>
               <button className="confirm" onClick={savePassword}>
-                Save
+                Update Password
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ================= DELETE ACCOUNT ================= */}
+      {/* DELETE ACCOUNT MODAL */}
       {showDelete && (
         <div className="logout-overlay">
           <div className="logout-box">
-            <h3>Delete Account</h3>
-            <p>This action cannot be undone.</p>
+            <h3>Delete Account?</h3>
+            <p>This action is permanent and cannot be undone. All your data will be wiped.</p>
 
             <input
               type="password"
-              placeholder="Enter your password"
+              placeholder="Enter your password to confirm"
               value={deletePassword}
               onChange={(e) => setDeletePassword(e.target.value)}
             />
@@ -407,24 +413,24 @@ const Profile = () => {
                 Cancel
               </button>
               <button className="delete-btn" onClick={deleteAccount}>
-                Delete
+                Permanently Delete
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ================= LOGOUT ================= */}
+      {/* LOGOUT MODAL */}
       {showLogout && (
         <div className="logout-overlay">
           <div className="logout-box">
-            <h3>Logout</h3>
-            <p>Are you sure you want to logout?</p>
+            <h3>Ready to leave?</h3>
+            <p>You will need to log back in to access your dashboard and data.</p>
 
             <div className="logout-buttons">
               <button onClick={() => setShowLogout(false)}>Cancel</button>
               <button className="confirm" onClick={handleLogout}>
-                Logout
+                Yes, Logout
               </button>
             </div>
           </div>

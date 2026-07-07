@@ -12,6 +12,8 @@ import Timetable from "./pages/Timetable";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Profile from "./pages/Profile";
 // import ForgotPassword from "./pages/ForgotPassword";
+import "./Styles/Global.css";
+import About from "./pages/About";
 
 function AppContent({ darkMode, setDarkMode }) {
   const location = useLocation();
@@ -95,6 +97,15 @@ function AppContent({ darkMode, setDarkMode }) {
   path="/forgot-password"
   element={<ForgotPassword />}
 /> */}
+
+       <Route
+          path="/About"
+          element={
+            <ProtectedRoute>
+              <About darkMode={darkMode}/>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );

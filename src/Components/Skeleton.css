@@ -48,3 +48,38 @@
     transform: translateX(100%);
   }
 }
+
+/* src/Components/Skeleton.css */
+
+.skeleton-loader {
+  display: inline-block;
+  background-color: #cbd5e1; /* Very visible light gray for Light Mode */
+  position: relative;
+  z-index: 10;
+  /* Instead of a sweeping shimmer, we use a smooth opacity fade */
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* ==========================================
+   ⚡ BRIGHT SLATE DARK MODE (PULSE FIX) ⚡
+   ========================================== */
+.forced-dark .skeleton-loader,
+body.dark .skeleton-loader,
+html[data-theme="dark"] .skeleton-loader {
+  /* A bright, solid slate color that cannot blend into the dark blue card */
+  background-color: #64748b !important; 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* The Pulse Animation - Works perfectly over Glassmorphism */
+@keyframes skeleton-pulse {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
