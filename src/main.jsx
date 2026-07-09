@@ -4,8 +4,8 @@ import App from "./App";
 
 import { SubjectProvider } from "./context/SubjectContext";
 
-import "./Styles/light.css";
-import "./Styles/dark.css";
+import "./Styles/Light.css";
+import "./Styles/Dark.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
