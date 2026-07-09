@@ -7,13 +7,16 @@ import {
   getInternalScore,
 } from "../services/internalService";
 import { getCourses } from "../services/courseService";
+import { getProfile } from "../services/profileService";
+// ⚡ ADDED MISSING IMPORT:
+import { getSemesters } from "../services/academicService"; 
 import axiosInstance from "../services/axiosInstance";
 
+
 const Internals = ({ darkMode }) => {
-  // 1. Loading state tracks original course fetching too
   const [isLoading, setIsLoading] = useState(true);
 
-  const [selectedSemester, setSelectedSemester] = useState(1);
+  const [selectedSemester, setSelectedSemester] = useState(null);
   const [subjects, setSubjects] = useState([]);
   const [evaluations, setEvaluations] = useState([]);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
@@ -48,25 +51,38 @@ const Internals = ({ darkMode }) => {
     }
   }, [selectedSubjectId]);
 
-  useEffect(() => {
-    if (semesterSubjects.length > 0) {
-      setSelectedSubjectId(semesterSubjects[0].id);
-    }
-  }, [selectedSemester, subjects]);
-
-  const availableSemesters = [
-    ...new Set(subjects.map((s) => s.semester)),
-  ].sort((a, b) => a - b);
-
   const loadCourses = async () => {
     try {
-      const res = await getCourses();
-      const courses = res.data.results || res.data;
+      const [courseRes, profileRes, semesterRes] = await Promise.all([
+        getCourses(),
+        getProfile(),
+        getSemesters(), // ⚡ Now cleanly fetched in parallel
+      ]);
+
+      const courses = courseRes.data.results || courseRes.data;
+      const semesters = semesterRes.data.results || semesterRes.data;
+      
       setSubjects(courses);
-      if (courses.length > 0) {
+
+      const currentSemesterId = profileRes.data.current_semester;
+      const selectedSemesterObj = semesters.find((s) => s.id === currentSemesterId);
+
+      if (selectedSemesterObj) {
+        const semesterNumber = selectedSemesterObj.semester_number;
+        setSelectedSemester(semesterNumber);
+
+        const semesterCourse = courses.find((course) => course.semester === semesterNumber);
+
+        if (semesterCourse) {
+          setSelectedSubjectId(semesterCourse.id);
+        }
+      } else if (courses.length > 0) {
+        setSelectedSemester(courses[0].semester);
         setSelectedSubjectId(courses[0].id);
       }
-    } catch (err) {}
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const loadInternals = async () => {
@@ -85,13 +101,27 @@ const Internals = ({ darkMode }) => {
     } catch (err) {}
   };
 
+  // ⚡ Ensure calculated arrays exist BEFORE the dependent useEffect runs
+  const availableSemesters = [
+    ...new Set(subjects.map((s) => s.semester)),
+  ].sort((a, b) => a - b);
+
   const semesterSubjects = subjects.filter(
     (subject) => subject.semester === selectedSemester
   );
 
   const selectedSubject = subjects.find((sub) => sub.id === selectedSubjectId);
 
-  // ⚡ FIXED: Prevent early string output if still pulling data from your backend
+  useEffect(() => {
+    if (
+      semesterSubjects.length > 0 &&
+      !semesterSubjects.some((s) => s.id === selectedSubjectId)
+    ) {
+      setSelectedSubjectId(semesterSubjects[0].id);
+    }
+  }, [selectedSemester, subjects, semesterSubjects, selectedSubjectId]);
+
+  // Prevent early string output if still pulling data from your backend
   if (!isLoading && subjects.length === 0) {
     return (
       <div className={`internals-page ${darkMode ? "forced-dark" : ""}`}>

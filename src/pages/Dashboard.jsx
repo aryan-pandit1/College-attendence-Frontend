@@ -147,10 +147,10 @@ const Dashboard = ({ darkMode }) => {
       <header className="dashboard-header">
         <div>
           <h1>Dashboard</h1>
-          <p style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             Welcome back, 
             {loading ? <Skeleton width="120px" height="18px" /> : `${dashboardData?.username || "Guest"} 👋`}
-          </p>
+          </div>
         </div>
       </header>
 

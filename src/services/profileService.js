@@ -51,3 +51,6 @@ export const deleteProfile = (password) =>
 //     "accounts/reset-password/",
 //     data
 //   );
+
+export const getSemesters = () =>
+  axiosInstance.get("academics/semesters/");
