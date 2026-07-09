@@ -130,14 +130,12 @@ function App() {
 
   return (
     <StudentProvider> 
-      <SubjectProvider>
         <Router>
           <AppContent
             darkMode={darkMode}
             setDarkMode={setDarkMode}
           />
         </Router>
-      </SubjectProvider>
     </StudentProvider>
   );
 }
