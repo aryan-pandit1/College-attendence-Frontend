@@ -11,7 +11,7 @@ import GPA from "./pages/GPA";
 import Timetable from "./pages/Timetable";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Profile from "./pages/Profile";
-// import ForgotPassword from "./pages/ForgotPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 import "./Styles/Global.css";
 import About from "./pages/About";
 
@@ -93,10 +93,10 @@ function AppContent({ darkMode, setDarkMode }) {
             </ProtectedRoute>
           }
         />
-        {/* <Route
+        <Route
   path="/forgot-password"
   element={<ForgotPassword />}
-/> */}
+/>
 
        <Route
           path="/About"
