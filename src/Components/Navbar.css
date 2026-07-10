@@ -241,60 +241,105 @@
 /* ==========================================
    MOBILE RESPONSIVENESS (Retains Floating Effect!)
    ========================================== */
-@media (max-width: 900px) {
-  .navbar { padding: 12px 20px; width: 95%; }
-  .navbar-links { gap: 4px; }
-  .navbar-links a { padding: 8px 12px; }
-}
-
 @media (max-width: 768px) {
   .navbar {
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
-    align-items: stretch;
-    text-align: center;
-    border-radius: 20px; /* Still a pill, just taller */
-    top: 15px; /* Floats slightly closer to top on mobile */
+    flex-direction: row;       
+    flex-wrap: wrap;           
+    padding: 12px 16px;        
+    top: 12px;                 
+    width: 95%;
+    border-radius: 18px; 
+    align-items: center;
   }
 
-  /* Must explicitly define the hover transform here so it doesn't jump */
   .navbar:hover {
-    transform: translateX(-50%) translateY(-2px); 
+    transform: translateX(-50%) translateY(0px); 
   }
 
-  .navbar-logo { justify-content: center; margin-bottom: 4px; }
-  .navbar-links {
-    justify-content: center;
-    gap: 8px;
-    order: 2;
-    flex-wrap: wrap; /* Allows links to wrap elegantly if screen is very thin */
+  /* ⚡ ROW 1 LEFT: Logo */
+  .navbar-logo { 
+    order: 1; 
+    margin-bottom: 0; 
   }
+
+  /* ⚡ ROW 1 RIGHT: Push Profile to the edge */
   .navbar-right {
-    justify-content: center;
-    width: 100%;
-    order: 3;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    padding-top: 12px;
+    order: 2;
+    margin-left: auto; 
+    gap: 0; 
+    border-top: none;
+    padding-top: 0;
   }
-  .navbar.dark .navbar-right { border-top: 1px solid rgba(255, 255, 255, 0.1); }
+
+  /* Hide the user's name to save space */
+  .navbar-right .profile span {
+    display: none; 
+  }
+
+  /* HIDE DESKTOP ICONS ON MOBILE */
+  .navbar-right > .icon-btn {
+    display: none; 
+  }
+
+  /* ⚡ ROW 2: Swipeable Links */
+  .navbar-links {
+    order: 3;
+    width: 100%;
+    margin-top: 12px;           
+    justify-content: flex-start;
+    flex-wrap: nowrap;         
+    overflow-x: auto;          
+    -webkit-overflow-scrolling: touch; 
+  }
+
+  .navbar-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navbar-links a { 
+    padding: 6px 12px; 
+    font-size: 0.85rem;
+  }
+
   .profile-menu {
-    right: 50%;
-    transform: translateX(50%);
-    transform-origin: top center;
+    right: 0;
+    transform: none;
+    transform-origin: top right;
+  }
+
+  /* Show the mobile icons inside the dropdown */
+  .mobile-dropdown-icons {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+  }
+  
+  .navbar.dark .mobile-dropdown-icons {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
   }
 }
 
+/* Hide the mobile dropdown icons when on a laptop/desktop */
+/* ==========================================
+   DESKTOP BEHAVIORS (Auto-Hide & Cleanup)
+   ========================================== */
 @media (min-width: 769px) {
-  .navbar {
-    /* Guarantees clean physics acceleration curves when moving */
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease !important;
+  /* 1. Hide the mobile-only menu items */
+  .mobile-dropdown-icons {
+    display: none;
   }
 
+  /* 2. Ensure smooth physics for the hide/show animation */
+  .navbar {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease !important;
+  }
+
+  /* 3. The Auto-Hide state (triggered by React on scroll) */
   .navbar.nav-hidden {
-    /* Elevates the fixed node upwards past boundary view limits */
     transform: translateX(-50%) translateY(-150%) !important;
     opacity: 0;
-    pointer-events: none; /* Disables hitboxes while invisible */
+    pointer-events: none; /* Prevents accidental clicks while hidden */
   }
 }
