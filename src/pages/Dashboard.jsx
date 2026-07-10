@@ -3,7 +3,9 @@ import { getDashboard } from "../services/dashboardService";
 import { addAttendance } from "../services/attendanceService";
 import { useSubjects } from "../context/SubjectContext";
 import Skeleton from "../Components/Skeleton"; 
+import { FaTrash, FaTimes } from "react-icons/fa"; // ⚡ Added Icons
 import "./Dashboard.css";
+import { deleteCourse } from "../services/courseService"; // ⚡ Added deleteSubject import
 
 // ==========================================
 // ⚡ BULLETPROOF DAILY MEMORY SYSTEM
@@ -47,6 +49,9 @@ const Dashboard = ({ darkMode }) => {
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState("");
   const [schedule, setSchedule] = useState([]);
+  
+  // ⚡ MODAL STATE FOR COURSES
+  const [showCourseModal, setShowCourseModal] = useState(false);
 
   const [deadlines] = useState([
     { title: "DBMS Assignment", date: "May 18" },
@@ -127,11 +132,32 @@ const Dashboard = ({ darkMode }) => {
     }
   };
 
-  const resetDashboard = () => {
-    localStorage.removeItem("subjects");
-    localStorage.removeItem("schedule");
-    localStorage.removeItem("hiddenClasses"); 
-    window.location.reload();
+  // ⚡ GROUP SUBJECTS BY SEMESTER LOGIC
+  const coursesBySemester = subjects.reduce((acc, course) => {
+    const sem = course.semester || "Other";
+    if (!acc[sem]) acc[sem] = [];
+    acc[sem].push(course);
+    return acc;
+  }, {});
+
+  // ⚡ HANDLE DELETE COURSE
+// ⚡ HANDLE DELETE COURSE (LINKED TO DJANGO)
+  const handleDeleteCourse = async (courseId, courseName) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${courseName}?`);
+    if (!confirmDelete) return;
+
+    try {
+      // Calls the deleteCourse function from your axios service
+      await deleteCourse(courseId); 
+      
+      alert(`Successfully deleted ${courseName}!`);
+      
+      // Forces the dashboard to reload so the deleted course disappears visually
+      window.location.reload(); 
+    } catch (error) {
+      console.error("Backend Delete Error:", error);
+      alert("Failed to delete course. Please check your network or backend logs.");
+    }
   };
 
   if (error) return <h2 className="error-state">{error}</h2>;
@@ -184,10 +210,16 @@ const Dashboard = ({ darkMode }) => {
           {loading ? <Skeleton width="80px" height="48px" /> : <><h2>{dashboardData?.average_internals}</h2><span>/100</span></>}
         </div>
 
-        <div className="card">
+        {/* ⚡ CLICKABLE TOTAL COURSES CARD */}
+        <div 
+          className="card clickable-card" 
+          onClick={() => setShowCourseModal(true)}
+          title="Click to view all courses"
+        >
           <h3>Total Courses</h3>
           <br/><br/>
           {loading ? <Skeleton width="80px" height="48px" /> : <><h2>{dashboardData?.course_count}</h2><span>Courses</span></>}
+          <p style={{ marginTop: "12px", fontSize: "0.8rem", color: "var(--text-muted)" }}>👉 Click to view & manage</p>
         </div>
       </div>
 
@@ -213,7 +245,6 @@ const Dashboard = ({ darkMode }) => {
         <div className="schedule-section">
           <h2>Today's Schedule</h2>
           {loading ? (
-            /* 🔥 Text Skeletons inside actual cards! */
             <>
               {[1, 2].map((i) => (
                 <div key={i} className="schedule-card">
@@ -258,7 +289,6 @@ const Dashboard = ({ darkMode }) => {
             {loading ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Skeleton width="140px" height="140px" variant="circular" style={{margin: '20px 0'}} />
-                {/* 🔥 Text Skeletons for the list items! */}
                 <ul className="overview-list" style={{ width: "100%" }}>
                   {[1, 2, 3, 4].map(i => (
                     <li key={i} style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -286,7 +316,6 @@ const Dashboard = ({ darkMode }) => {
           <div className="card">
             <h3>Upcoming Deadlines</h3>
             {loading ? (
-              /* 🔥 Text Skeletons for deadlines */
               <ul className="deadlines">
                 {[1, 2].map(i => (
                   <li key={i}>
@@ -306,9 +335,52 @@ const Dashboard = ({ darkMode }) => {
               <p>No upcoming deadlines.</p>
             )}
           </div>
-
         </div>
       </div>
+
+      {/* ⚡ ALL COURSES MODAL OVERLAY */}
+      {showCourseModal && (
+        <div className="modal-overlay" onClick={() => setShowCourseModal(false)}>
+          <div className="courses-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>My Courses</h2>
+              <button className="close-btn" onClick={() => setShowCourseModal(false)}>
+                <FaTimes />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              {Object.keys(coursesBySemester).length === 0 ? (
+                <p>No courses found. Add some to get started!</p>
+              ) : (
+                Object.keys(coursesBySemester).sort().map((sem) => (
+                  <div key={sem} className="semester-group">
+                    <h3>Semester {sem}</h3>
+                    <ul className="course-list">
+                      {coursesBySemester[sem].map((course) => (
+                        <li key={course.id} className="course-list-item">
+                          <div className="course-info">
+                            <strong>{course.name}</strong> 
+                            <small className="course-code">({course.code})</small>
+                          </div>
+                          <button 
+                            className="delete-icon-btn" 
+                            title="Delete Course"
+                            onClick={() => handleDeleteCourse(course.id, course.name)}
+                          >
+                            <FaTrash />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
