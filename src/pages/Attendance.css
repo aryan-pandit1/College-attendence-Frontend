@@ -92,7 +92,8 @@
    PAGE STRUCTURAL WIREFRAMES
    ========================================== */
 .attendance-page {
-  padding: 48px 5%;
+  /* ⚡ padding: TOP RIGHT BOTTOM LEFT */
+  padding: 120px 5% 48px 5%; 
   background: var(--bg-app-resolved);
   min-height: 100vh;
   width: 100%;
@@ -101,7 +102,6 @@
   position: relative;
   z-index: 1;
 }
-
 .attendance-header {
   display: flex;
   justify-content: space-between;
@@ -255,6 +255,13 @@ table tr:last-child td { border-bottom: none; }
 }
 
 @media (max-width: 768px) {
-  .attendance-page { padding: 24px 16px; }
-  table { display: block; overflow-x: auto; white-space: nowrap; }
+  .attendance-page { 
+    /* ⚡ 100px top clearance for mobile, 16px sides */
+    padding: 175px 16px 24px 16px; 
+  }
+  table { 
+    display: block; 
+    overflow-x: auto; 
+    white-space: nowrap; 
+  }
 }
