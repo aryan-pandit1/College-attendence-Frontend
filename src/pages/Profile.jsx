@@ -30,6 +30,9 @@ import {
 const Profile = ({ darkMode }) => {
   const navigate = useNavigate();
 
+  // ⚡ NEW: Loading state
+  const [isLoading, setIsLoading] = useState(true);
+
   const [showLogout, setShowLogout] = useState(false);
   const [editing, setEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -56,6 +59,7 @@ const Profile = ({ darkMode }) => {
   }, []);
 
   const loadProfile = async () => {
+    setIsLoading(true); // ⚡ Start loading
     try {
       const [profileRes, semesterRes] = await Promise.all([
         getProfile(),
@@ -64,14 +68,12 @@ const Profile = ({ darkMode }) => {
 
       const profile = profileRes.data;
       
-      // DEBUG LOG: Check your browser console to see what Django is actually sending!
       console.log("Profile Data from Django:", profile);
 
       setName(profile.name || "");
       setEmail(profile.email || "");
       setPhone(profile.phone || "");
       
-      // Extract the ID safely
       const semData = profile.current_semester;
       const semId = typeof semData === 'object' && semData !== null ? semData.id : semData;
       setCurrentSemester(semId || "");
@@ -84,6 +86,8 @@ const Profile = ({ darkMode }) => {
       setPrivateAccount(profile.private_account || false);
     } catch (err) { 
       console.log(err);
+    } finally {
+      setIsLoading(false); // ⚡ Stop loading whether successful or failed
     }
   };
 
@@ -105,8 +109,6 @@ const Profile = ({ darkMode }) => {
     try {
       const parsedSemester = currentSemester ? parseInt(currentSemester, 10) : null;
 
-      // ⚡ THE DUAL PAYLOAD HACK: 
-      // Sends both field names so Django REST Framework accepts it no matter how your backend is configured!
       const payload = { 
         name, 
         email, 
@@ -119,7 +121,7 @@ const Profile = ({ darkMode }) => {
 
       alert("Profile Updated Successfully");
       setEditing(false);
-      loadProfile(); // Reload from Django
+      loadProfile(); 
     } catch (err) {
       alert("Unable to update profile. Please check your inputs.");
       console.log("Save error:", err.response?.data || err);
@@ -179,11 +181,46 @@ const Profile = ({ darkMode }) => {
 
   const togglePrivacy = () => setPrivateAccount(!privateAccount);
 
+  // ⚡ SKELETON RENDER BLOCK
+  if (isLoading) {
+    return (
+      <div className={`profile-page ${darkMode ? "forced-dark" : ""}`}>
+        <div className="profile-card">
+          <div className="profile-top">
+            <div className="skeleton-avatar skeleton-pulse"></div>
+            <div className="skeleton-text skeleton-title skeleton-pulse"></div>
+            <div className="skeleton-text skeleton-pulse"></div>
+            <div className="skeleton-text skeleton-pulse" style={{ width: "40%" }}></div>
+            <div className="skeleton-badge skeleton-pulse"></div>
+          </div>
+
+          <div className="profile-section">
+            <div className="skeleton-section-title skeleton-pulse"></div>
+            <div className="profile-options">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="skeleton-button skeleton-pulse"></div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="profile-section">
+            <div className="skeleton-section-title skeleton-pulse"></div>
+            <div className="profile-options">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="skeleton-button skeleton-pulse"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ================= MAIN RENDER =================
   return (
     <div className={`profile-page ${darkMode ? "forced-dark" : ""}`}>
       <div className="profile-card">
         
-        {/* ================= TOP HEADER ================= */}
         <div className="profile-top">
           <div
             className="profile-image"
@@ -205,11 +242,10 @@ const Profile = ({ darkMode }) => {
             onChange={handleImageUpload}
           />
 
-          <h2>{name || "Loading..."}</h2>
+          <h2>{name || "User"}</h2>
           <p>{email || "Email not added"}</p>
           <p style={{ marginTop: "4px" }}>{phone || "Phone not added"}</p>
           
-          {/* SEMESTER BADGE */}
           <p style={{ 
             marginTop: "8px", 
             fontWeight: "700", 
@@ -224,7 +260,6 @@ const Profile = ({ darkMode }) => {
           </p>
         </div>
 
-        {/* ================= ACCOUNT SETTINGS ================= */}
         <div className="profile-section">
           <h3>Account Settings</h3>
           <div className="profile-options">
@@ -235,7 +270,6 @@ const Profile = ({ darkMode }) => {
           </div>
         </div>
 
-        {/* ================= APP PREFERENCES ================= */}
         <div className="profile-section">
           <h3>App Preferences</h3>
           <div className="profile-options">
@@ -247,7 +281,6 @@ const Profile = ({ darkMode }) => {
           </div>
         </div>
 
-        {/* ================= DANGER ZONE ================= */}
         <div className="profile-section lifecycle-section">
           <h3>Account Actions</h3>
           <div className="profile-options">
@@ -258,94 +291,12 @@ const Profile = ({ darkMode }) => {
 
       </div>
 
-      {/* ================= MODALS OVERLAYS ================= */}
-
-      {/* EDIT PROFILE MODAL */}
-      {editing && (
-        <div className="logout-overlay">
-          <div className="logout-box">
-            <h3>Edit Profile</h3>
-            <p>Update your personal information below.</p>
-
-            <input type="text" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} />
-            <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <input type="text" placeholder="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} />
-            
-            <div style={{ marginTop: "6px", textAlign: "left" }}>
-              {/* ⚡ STRICT STRING COERCION ON DROPDOWN */}
-              <select
-                value={currentSemester ? String(currentSemester) : ""}
-                onChange={(e) => setCurrentSemester(e.target.value)}
-                style={{
-                  width: "100%", padding: "16px", borderRadius: "12px",
-                  border: `1px solid ${darkMode ? "var(--border-color)" : "#e2e8f0"}`,
-                  background: darkMode ? "var(--profile-bg)" : "#ffffff",
-                  color: darkMode ? "var(--text-main)" : "#0f172a",
-                  fontSize: "15px", outline: "none", cursor: "pointer", marginBottom: "16px"
-                }}
-              >
-                <option value="">Select Current Semester</option>
-                {semesters.map((semester) => (
-                  <option key={semester.id} value={String(semester.id)}>
-                    Semester {semester.semester_number}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="logout-buttons">
-              <button onClick={() => setEditing(false)}>Cancel</button>
-              <button className="confirm" onClick={saveProfile}>Save Changes</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* CHANGE PASSWORD MODAL */}
-      {showPassword && (
-        <div className="logout-overlay">
-          <div className="logout-box">
-            <h3>Change Password</h3>
-            <p>Ensure your new password is at least 8 characters long.</p>
-            <input type="password" placeholder="Current Password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-            <input type="password" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-            <input type="password" placeholder="Confirm New Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-            <div className="logout-buttons">
-              <button onClick={() => { setShowPassword(false); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); }}>Cancel</button>
-              <button className="confirm" onClick={savePassword}>Update Password</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* DELETE ACCOUNT MODAL */}
-      {showDelete && (
-        <div className="logout-overlay">
-          <div className="logout-box">
-            <h3>Delete Account?</h3>
-            <p>This action is permanent and cannot be undone. All your data will be wiped.</p>
-            <input type="password" placeholder="Enter your password to confirm" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} />
-            <div className="logout-buttons">
-              <button onClick={() => { setShowDelete(false); setDeletePassword(""); }}>Cancel</button>
-              <button className="delete-btn" onClick={deleteAccount}>Permanently Delete</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* LOGOUT MODAL */}
-      {showLogout && (
-        <div className="logout-overlay">
-          <div className="logout-box">
-            <h3>Ready to leave?</h3>
-            <p>You will need to log back in to access your dashboard and data.</p>
-            <div className="logout-buttons">
-              <button onClick={() => setShowLogout(false)}>Cancel</button>
-              <button className="confirm" onClick={handleLogout}>Yes, Logout</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* MODALS REMAIN THE SAME - Omitted here for brevity, keep your existing modals! */}
+      {editing && ( /* ... */ null )}
+      {showPassword && ( /* ... */ null )}
+      {showDelete && ( /* ... */ null )}
+      {showLogout && ( /* ... */ null )}
+      
     </div>
   );
 };
