@@ -30,7 +30,8 @@ import {
 const Profile = ({ darkMode }) => {
   const navigate = useNavigate();
 
-  const [isLoading, setIsLoading] = useState(false);
+  // ⚡ THE FIX 1: Must start as TRUE so the skeleton renders immediately on page load
+  const [isLoading, setIsLoading] = useState(true); 
   const [showLogout, setShowLogout] = useState(false);
   const [editing, setEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -57,6 +58,7 @@ const Profile = ({ darkMode }) => {
   }, []);
 
   const loadProfile = async () => {
+    setIsLoading(true); // ⚡ THE FIX 2: Ensure skeleton shows if loadProfile is called again
     try {
       const [profileRes, semesterRes] = await Promise.all([
         getProfile(),
@@ -65,14 +67,12 @@ const Profile = ({ darkMode }) => {
 
       const profile = profileRes.data;
       
-      // DEBUG LOG: Check your browser console to see what Django is actually sending!
       console.log("Profile Data from Django:", profile);
 
       setName(profile.name || "");
       setEmail(profile.email || "");
       setPhone(profile.phone || "");
       
-      // Extract the ID safely
       const semData = profile.current_semester;
       const semId = typeof semData === 'object' && semData !== null ? semData.id : semData;
       setCurrentSemester(semId || "");
@@ -85,6 +85,8 @@ const Profile = ({ darkMode }) => {
       setPrivateAccount(profile.private_account || false);
     } catch (err) { 
       console.log(err);
+    } finally {
+      setIsLoading(false); // ⚡ THE FIX 3: Turn off skeleton once Django responds
     }
   };
 
@@ -106,8 +108,6 @@ const Profile = ({ darkMode }) => {
     try {
       const parsedSemester = currentSemester ? parseInt(currentSemester, 10) : null;
 
-      // ⚡ THE DUAL PAYLOAD HACK: 
-      // Sends both field names so Django REST Framework accepts it no matter how your backend is configured!
       const payload = { 
         name, 
         email, 
@@ -120,7 +120,7 @@ const Profile = ({ darkMode }) => {
 
       alert("Profile Updated Successfully");
       setEditing(false);
-      loadProfile(); // Reload from Django
+      loadProfile(); 
     } catch (err) {
       alert("Unable to update profile. Please check your inputs.");
       console.log("Save error:", err.response?.data || err);
@@ -180,7 +180,7 @@ const Profile = ({ darkMode }) => {
 
   const togglePrivacy = () => setPrivateAccount(!privateAccount);
 
-   // ⚡ SKELETON RENDER BLOCK
+  // ⚡ SKELETON RENDER BLOCK: Covers the entire Profile Page container
   if (isLoading) {
     return (
       <div className={`profile-page ${darkMode ? "forced-dark" : ""}`}>
@@ -308,7 +308,6 @@ const Profile = ({ darkMode }) => {
             <input type="text" placeholder="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} />
             
             <div style={{ marginTop: "6px", textAlign: "left" }}>
-              {/* ⚡ STRICT STRING COERCION ON DROPDOWN */}
               <select
                 value={currentSemester ? String(currentSemester) : ""}
                 onChange={(e) => setCurrentSemester(e.target.value)}
