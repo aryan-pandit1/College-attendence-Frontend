@@ -239,9 +239,10 @@
 .navbar.dark .profile-menu button.logout-btn:hover { background-color: rgba(239, 68, 68, 0.15) !important; color: #ef4444 !important; }
 
 /* ==========================================
-   MOBILE RESPONSIVENESS (Retains Floating Effect!)
+   MOBILE & TABLET RESPONSIVENESS (Up to 900px)
    ========================================== */
-@media (max-width: 768px) {
+/* ⚡ CHANGED FROM 768px TO 900px TO CATCH IPADS & TABLETS */
+@media (max-width: 900px) {
   .navbar {
     flex-direction: row;       
     flex-wrap: wrap;           
@@ -256,13 +257,13 @@
     transform: translateX(-50%) translateY(0px); 
   }
 
-  /* ⚡ ROW 1 LEFT: Logo */
+  /* ROW 1 LEFT: Logo */
   .navbar-logo { 
     order: 1; 
     margin-bottom: 0; 
   }
 
-  /* ⚡ ROW 1 RIGHT: Push Profile to the edge */
+  /* ROW 1 RIGHT: Push Profile to the edge */
   .navbar-right {
     order: 2;
     margin-left: auto; 
@@ -276,12 +277,12 @@
     display: none; 
   }
 
-  /* HIDE DESKTOP ICONS ON MOBILE */
+  /* HIDE DESKTOP ICONS ON MOBILE/TABLET */
   .navbar-right > .icon-btn {
     display: none; 
   }
 
-  /* ⚡ ROW 2: Swipeable Links */
+  /* ROW 2: Swipeable Links */
   .navbar-links {
     order: 3;
     width: 100%;
@@ -289,16 +290,19 @@
     justify-content: flex-start;
     flex-wrap: nowrap;         
     overflow-x: auto;          
-    -webkit-overflow-scrolling: touch; 
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px; 
+    gap: 6px;
   }
 
   .navbar-links::-webkit-scrollbar {
-    display: none;
+    display: none; 
   }
 
   .navbar-links a { 
-    padding: 6px 12px; 
+    padding: 8px 14px; 
     font-size: 0.85rem;
+    flex-shrink: 0; 
   }
 
   .profile-menu {
@@ -307,7 +311,6 @@
     transform-origin: top right;
   }
 
-  /* Show the mobile icons inside the dropdown */
   .mobile-dropdown-icons {
     display: flex;
     flex-direction: column;
@@ -321,25 +324,22 @@
   }
 }
 
-/* Hide the mobile dropdown icons when on a laptop/desktop */
 /* ==========================================
-   DESKTOP BEHAVIORS (Auto-Hide & Cleanup)
+   DESKTOP BEHAVIORS (Screens 901px and wider)
    ========================================== */
-@media (min-width: 769px) {
-  /* 1. Hide the mobile-only menu items */
+/* ⚡ CHANGED FROM 769px TO 901px */
+@media (min-width: 901px) {
   .mobile-dropdown-icons {
     display: none;
   }
 
-  /* 2. Ensure smooth physics for the hide/show animation */
   .navbar {
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease !important;
   }
 
-  /* 3. The Auto-Hide state (triggered by React on scroll) */
   .navbar.nav-hidden {
     transform: translateX(-50%) translateY(-150%) !important;
     opacity: 0;
-    pointer-events: none; /* Prevents accidental clicks while hidden */
+    pointer-events: none; 
   }
 }

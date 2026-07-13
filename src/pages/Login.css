@@ -327,3 +327,139 @@
     padding: 24px 14px;
   }
 }
+
+/* ==========================================
+   INLINE OTP VERIFICATION STYLES
+   ========================================== */
+
+/* 1. Smooth fade-in animation when the OTP box appears */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 2. Style for locked/disabled inputs while verifying OTP */
+.login-form input:disabled {
+  background-color: rgba(100, 116, 139, 0.1) !important;
+  color: var(--text-muted, #64748b) !important;
+  cursor: not-allowed;
+  border-color: transparent !important;
+  opacity: 0.7;
+}
+
+/* 3. Hover effect for the "Change Email" link */
+.input-group span:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+/* ==========================================
+   ⚡ HIGH-CONTRAST ALERT BOXES (LIGHT & DARK)
+   ========================================== */
+
+/* Error Message Baseline (Light Mode) */
+.error-message {
+  width: 100%;
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #f87171;
+  box-sizing: border-box;
+  animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* ⚡ FORCE HIGH CONTRAST IN DARK MODE */
+.forced-dark .error-message,
+[data-theme="dark"] .error-message {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;           /* Bright rose text stands out clearly */
+  border: 1px solid #ef4444 !important;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+}
+
+/* Success Message Baseline (Light Mode) */
+.success-message {
+  width: 100%;
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  background-color: #ecfdf5;
+  color: #059669;
+  border: 1px solid #34d399;
+  box-sizing: border-box;
+}
+
+/* ⚡ FORCE HIGH CONTRAST IN DARK MODE */
+.forced-dark .success-message,
+[data-theme="dark"] .success-message {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #6ee7b7 !important;           /* Bright mint text stands out clearly */
+  border: 1px solid #10b981 !important;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+}
+
+/* Subtle animation to grab the user's eye when an error occurs */
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+  40%, 60% { transform: translate3d(3px, 0, 0); }
+}
+
+/* ==========================================
+   ⚡ RESEND OTP BUTTON STYLES
+   ========================================== */
+.resend-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #3b82f6 !important; /* Bright royal blue */
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-top: -8px;
+  margin-bottom: 12px;
+  align-self: flex-end; /* Aligns to the right side of the form */
+  transition: all 0.2s ease-in-out;
+  display: inline-block;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.resend-btn:hover {
+  color: #2563eb !important;
+  transform: translateY(-1px);
+  opacity: 0.85;
+}
+
+.resend-btn:active {
+  transform: translateY(0);
+}
+
+/* Dark Mode Override for high contrast */
+.forced-dark .resend-btn,
+[data-theme="dark"] .resend-btn {
+  color: #60a5fa !important; /* Lighter pastel blue for dark backgrounds */
+}
+
+.forced-dark .resend-btn:hover,
+[data-theme="dark"] .resend-btn:hover {
+  color: #93c5fd !important;
+  text-shadow: 0 0 8px rgba(96, 165, 250, 0.4);
+}

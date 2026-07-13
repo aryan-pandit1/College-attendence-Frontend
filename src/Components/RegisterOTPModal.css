@@ -1,0 +1,314 @@
+/* ===========================
+   OTP Modal Overlay
+=========================== */
+
+.otp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.25s ease;
+}
+
+/* ===========================
+   OTP Modal Card
+=========================== */
+
+.otp-modal {
+  width: 90%;
+  max-width: 430px;
+
+  padding: 35px;
+
+  border-radius: 22px;
+
+  background: rgba(255,255,255,0.82);
+
+  backdrop-filter: blur(25px);
+
+  -webkit-backdrop-filter: blur(25px);
+
+  box-shadow:
+      0 25px 60px rgba(0,0,0,.18);
+
+  text-align: center;
+
+  animation: popup .35s ease;
+}
+
+/* Dark Mode */
+
+[data-theme="dark"] .otp-modal{
+    background: rgba(28,30,37,.88);
+    color:white;
+}
+
+/* ===========================
+   Headings
+=========================== */
+
+.otp-modal h2{
+    margin:0;
+    margin-bottom:12px;
+    font-size:28px;
+    font-weight:700;
+}
+
+.otp-modal p{
+    margin:8px 0;
+    opacity:.8;
+    line-height:1.5;
+}
+
+.otp-modal strong{
+    display:block;
+    margin-bottom:20px;
+    color:#4b6cff;
+    word-break:break-all;
+}
+
+[data-theme="dark"] .otp-modal strong{
+    color:#7ca6ff;
+}
+
+/* ===========================
+   Input
+=========================== */
+
+.otp-modal input{
+
+    width:100%;
+
+    padding:14px 16px;
+
+    border-radius:14px;
+
+    border:2px solid #e2e6ef;
+
+    outline:none;
+
+    font-size:22px;
+
+    letter-spacing:8px;
+
+    text-align:center;
+
+    transition:.25s;
+
+    box-sizing:border-box;
+
+    margin-bottom:18px;
+
+    background:white;
+
+}
+
+[data-theme="dark"] .otp-modal input{
+
+    background:#1f2532;
+
+    color:white;
+
+    border:2px solid #444d61;
+
+}
+
+.otp-modal input:focus{
+
+    border-color:#4b6cff;
+
+    box-shadow:0 0 0 4px rgba(75,108,255,.15);
+
+}
+
+/* ===========================
+   Buttons
+=========================== */
+
+.otp-modal button{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:14px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    margin-top:12px;
+
+    transition:.25s;
+
+}
+
+/* Verify */
+
+.otp-modal button:first-of-type{
+
+    background:#4b6cff;
+
+    color:white;
+
+}
+
+.otp-modal button:first-of-type:hover:not(:disabled){
+
+    background:#3657e5;
+
+    transform:translateY(-2px);
+
+}
+
+/* Resend */
+
+.otp-modal button:nth-of-type(2){
+
+    background:#f3f5fb;
+
+    color:#444;
+
+}
+
+[data-theme="dark"] .otp-modal button:nth-of-type(2){
+
+    background:#343c4d;
+
+    color:white;
+
+}
+
+.otp-modal button:nth-of-type(2):hover:not(:disabled){
+
+    transform:translateY(-2px);
+
+}
+
+/* Cancel */
+
+.otp-modal button:last-of-type{
+
+    background:#ff5a5a;
+
+    color:white;
+
+}
+
+.otp-modal button:last-of-type:hover{
+
+    background:#e44747;
+
+    transform:translateY(-2px);
+
+}
+
+.otp-modal button:disabled{
+
+    cursor:not-allowed;
+
+    opacity:.6;
+
+    transform:none;
+
+}
+
+/* ===========================
+   Messages
+=========================== */
+
+.error-message{
+
+    color:#e53935;
+
+    font-weight:600;
+
+    margin-top:10px;
+
+}
+
+.success-message{
+
+    color:#2e7d32;
+
+    font-weight:600;
+
+    margin-top:10px;
+
+}
+
+/* ===========================
+   Animations
+=========================== */
+
+@keyframes popup{
+
+    from{
+
+        opacity:0;
+
+        transform:scale(.9);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:scale(1);
+
+    }
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+    }
+
+    to{
+
+        opacity:1;
+
+    }
+
+}
+
+/* ===========================
+   Mobile
+=========================== */
+
+@media(max-width:480px){
+
+    .otp-modal{
+
+        padding:25px;
+
+    }
+
+    .otp-modal h2{
+
+        font-size:24px;
+
+    }
+
+    .otp-modal input{
+
+        font-size:20px;
+
+        letter-spacing:6px;
+
+    }
+
+}
