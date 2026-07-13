@@ -5,86 +5,124 @@ const axiosInstance = axios.create({
 });
 
 // ==========================================
+// ⚡ CONCURRENCY LOCK & QUEUE SETUP
+// Prevents race conditions when multiple API calls fail at once
+// ==========================================
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// ==========================================
 // 1. REQUEST INTERCEPTOR
-// Intercepts outbound requests and attaches the Access Token
 // ==========================================
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access") || sessionStorage.getItem("access");
-
     if (token) {
-      // Django usually expects "Bearer". (Some setups expect "Token" instead!)
       config.headers["Authorization"] = `Bearer ${token}`;
     }
-
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // ==========================================
-// 2. RESPONSE INTERCEPTOR (⚡ THE FIX FOR 401 CRASHES)
-// Intercepts incoming 401 errors and silently refreshes the token
+// 2. RESPONSE INTERCEPTOR (With Concurrency Queue)
 // ==========================================
 axiosInstance.interceptors.response.use(
-  (response) => {
-    // If the request succeeds (200 OK), just pass the data through
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Check if Django rejected the request with a 401 AND we haven't already retried this exact request
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true; // Mark as retried to prevent infinite refresh loops
+    // Ignore 401s from the login or refresh endpoints themselves to avoid infinite loops
+    if (originalRequest.url?.includes("login") || originalRequest.url?.includes("token/refresh")) {
+      return Promise.reject(error);
+    }
 
-      // Grab the long-lived refresh token from whichever storage the user chose at login
+    // Check if error is 401 and we haven't already retried this request
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      
+      // ⚡ IF REFRESH IS ALREADY IN PROGRESS: Put this request in the waiting line
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers["Authorization"] = `Bearer ${token}`;
+            return axiosInstance(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      // ⚡ START THE REFRESH PROCESS
+      originalRequest._retry = true;
+      isRefreshing = true;
+
       const refreshToken = localStorage.getItem("refresh") || sessionStorage.getItem("refresh");
 
-      if (refreshToken) {
-        try {
-          // Ask Django's token refresh endpoint for a brand new access token
-          // Note: We use clean 'axios.post' here, NOT 'axiosInstance', to avoid triggering interceptors again!
-          const res = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL}token/refresh/`, 
-            { refresh: refreshToken }
-          );
+      if (!refreshToken) {
+        isRefreshing = false;
+        handleSessionExpired();
+        return Promise.reject(error);
+      }
 
-          const newAccessToken = res.data.access;
+      try {
+        // Request brand new token from Django
+        const res = await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}token/refresh/`, 
+          { refresh: refreshToken }
+        );
 
-          // Save the fresh token back into the correct storage
-          if (localStorage.getItem("access")) {
-            localStorage.setItem("access", newAccessToken);
-          } else {
-            sessionStorage.setItem("access", newAccessToken);
-          }
+        const newAccessToken = res.data.access;
 
-          // Update the failed request's header with the new token and resend it silently
-          originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-          return axiosInstance(originalRequest);
-
-        } catch (refreshError) {
-          // ⚡ FALLBACK: If the refresh token is ALSO expired (e.g., user inactive for 7+ days)
-          // Wipe broken tokens from memory and redirect to login page cleanly
-          console.error("Session expired. Logging out...", refreshError);
-          localStorage.clear();
-          sessionStorage.clear();
-          window.location.href = "/";
-          return Promise.reject(refreshError);
+        // Save into whoever held it originally
+        if (localStorage.getItem("access")) {
+          localStorage.setItem("access", newAccessToken);
+        } else {
+          sessionStorage.setItem("access", newAccessToken);
         }
-      } else {
-        // If there was no refresh token in storage at all, log the user out
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = "/";
+
+        // Update default header for future requests
+        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+        originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+
+        // ⚡ RELEASE THE QUEUE: Tell all waiting requests to proceed with the new token!
+        processQueue(null, newAccessToken);
+        isRefreshing = false;
+
+        return axiosInstance(originalRequest);
+
+      } catch (refreshError) {
+        // ⚡ REFRESH FAILED: Reject all waiting requests and log user out
+        processQueue(refreshError, null);
+        isRefreshing = false;
+        handleSessionExpired();
+        return Promise.reject(refreshError);
       }
     }
 
-    // For any other errors (like 400 Bad Request, 404 Not Found, or 500 Server Error), pass them to React
     return Promise.reject(error);
   }
 );
+
+// Helper to cleanly wipe storage and redirect without hard-reload looping
+const handleSessionExpired = () => {
+  localStorage.clear();
+  sessionStorage.clear();
+  // Prevent redirect loop if we are already on the login page
+  if (window.location.pathname !== "/" && window.location.pathname !== "/login") {
+    window.location.href = "/";
+  }
+};
 
 export default axiosInstance;
