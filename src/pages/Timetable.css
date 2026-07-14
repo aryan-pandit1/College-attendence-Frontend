@@ -88,13 +88,27 @@
    PAGE STRUCTURAL WIREFRAMES
    ========================================== */
 .timetable-page {
-  padding: 48px 5%;
+  padding: 100px 5% 48px 5%; /* ⚡ Increased top padding from 48px to 100px to clear the navbar */
   background: var(--bg-app-resolved);
   min-height: 100vh;
   box-sizing: border-box;
   transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 1;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN SYSTEM MEDIA BREAKPOINTS
+   ========================================== */
+@media (max-width: 768px) {
+  .timetable-page { 
+    padding: 85px 16px 24px 16px; /* ⚡ Adjusted mobile top padding to clear navbar */
+  }
+  .timetable-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .semester-select { flex-direction: column; align-items: flex-start; width: 100%; }
+  .semester-select select { width: 100%; }
+  .lecture-form { grid-template-columns: 1fr; }
+  .week-grid { grid-template-columns: 1fr; }
 }
 
 .timetable-header {

@@ -8,7 +8,6 @@ import {
 } from "../services/internalService";
 import { getCourses } from "../services/courseService";
 import { getProfile } from "../services/profileService";
-// ⚡ ADDED MISSING IMPORT:
 import { getSemesters } from "../services/academicService"; 
 import axiosInstance from "../services/axiosInstance";
 
@@ -56,40 +55,50 @@ const Internals = ({ darkMode }) => {
       const [courseRes, profileRes, semesterRes] = await Promise.all([
         getCourses(),
         getProfile(),
-        getSemesters(), // ⚡ Now cleanly fetched in parallel
+        getSemesters(),
       ]);
 
-      const courses = courseRes.data.results || courseRes.data;
-      const semesters = semesterRes.data.results || semesterRes.data;
+      const courses = courseRes.data.results || courseRes.data || [];
+      const semesters = semesterRes.data.results || semesterRes.data || [];
       
       setSubjects(courses);
 
-      const currentSemesterId = profileRes.data.current_semester;
-      const selectedSemesterObj = semesters.find((s) => s.id === currentSemesterId);
+      // ⚡ GLOBAL DEFAULT SEMESTER EXTRACTION
+      const currentSemData = profileRes.data.current_semester;
+      const currentSemId = typeof currentSemData === "object" && currentSemData !== null ? currentSemData.id : currentSemData;
+      
+      const selectedSemesterObj = semesters.find((s) => String(s.id) === String(currentSemId));
 
       if (selectedSemesterObj) {
+        // 1. Set the horizontal tab selection to their Current Semester
         const semesterNumber = selectedSemesterObj.semester_number;
         setSelectedSemester(semesterNumber);
 
-        const semesterCourse = courses.find((course) => course.semester === semesterNumber);
+        // 2. Select the first subject belonging to that default semester
+        const semesterCourse = courses.find((course) => {
+          const courseSem = course.semester_number || course.semester;
+          return String(courseSem) === String(semesterNumber);
+        });
 
         if (semesterCourse) {
           setSelectedSubjectId(semesterCourse.id);
         }
       } else if (courses.length > 0) {
-        setSelectedSemester(courses[0].semester);
+        // Fallback if no current_semester is configured in Profile yet
+        const fallbackSem = courses[0].semester_number || courses[0].semester;
+        setSelectedSemester(fallbackSem);
         setSelectedSubjectId(courses[0].id);
       }
     } catch (err) {
-      console.log(err);
+      console.log("Failed to load initial data:", err);
     }
   };
 
   const loadInternals = async () => {
     try {
       const res = await getInternals();
-      const data = res.data.results || res.data;
-      const filtered = data.filter((item) => item.course === selectedSubjectId);
+      const data = res.data.results || res.data || [];
+      const filtered = data.filter((item) => String(item.course) === String(selectedSubjectId));
       setEvaluations(filtered);
     } catch (err) {}
   };
@@ -97,25 +106,28 @@ const Internals = ({ darkMode }) => {
   const loadScore = async () => {
     try {
       const res = await getInternalScore(selectedSubjectId);
-      setWeightedScore(res.data.weighted_score);
-    } catch (err) {}
+      setWeightedScore(res.data.weighted_score || 0);
+    } catch (err) {
+      setWeightedScore(0);
+    }
   };
 
-  // ⚡ Ensure calculated arrays exist BEFORE the dependent useEffect runs
+  // ⚡ Extract available semester numbers safely
   const availableSemesters = [
-    ...new Set(subjects.map((s) => s.semester)),
-  ].sort((a, b) => a - b);
+    ...new Set(subjects.map((s) => s.semester_number || s.semester)),
+  ].filter(Boolean).sort((a, b) => Number(a) - Number(b));
 
-  const semesterSubjects = subjects.filter(
-    (subject) => subject.semester === selectedSemester
-  );
+  const semesterSubjects = subjects.filter((subject) => {
+    const subSem = subject.semester_number || subject.semester;
+    return String(subSem) === String(selectedSemester);
+  });
 
-  const selectedSubject = subjects.find((sub) => sub.id === selectedSubjectId);
+  const selectedSubject = subjects.find((sub) => String(sub.id) === String(selectedSubjectId));
 
   useEffect(() => {
     if (
       semesterSubjects.length > 0 &&
-      !semesterSubjects.some((s) => s.id === selectedSubjectId)
+      !semesterSubjects.some((s) => String(s.id) === String(selectedSubjectId))
     ) {
       setSelectedSubjectId(semesterSubjects[0].id);
     }
@@ -134,12 +146,12 @@ const Internals = ({ darkMode }) => {
   if (!selectedSubject && !isLoading) return null;
 
   const totalObtained = evaluations.reduce(
-    (sum, item) => sum + Number(item.marks_obtained),
+    (sum, item) => sum + Number(item.marks_obtained || 0),
     0
   );
 
   const totalMax = evaluations.reduce(
-    (sum, item) => sum + Number(item.total_marks),
+    (sum, item) => sum + Number(item.total_marks || 0),
     0
   );
 
@@ -206,6 +218,7 @@ const Internals = ({ darkMode }) => {
         <h1>Internals</h1>
       </div>
 
+      {/* ⚡ YOUR EXACT SEMESTER TABS (Auto-defaults to Current Semester!) */}
       <div className="semester-tabs">
         {isLoading && availableSemesters.length === 0 ? (
           <Skeleton width="120px" height="38px" borderRadius="20px" />
@@ -213,7 +226,7 @@ const Internals = ({ darkMode }) => {
           availableSemesters.map((sem) => (
             <button
               key={sem}
-              className={selectedSemester === sem ? "semester-btn active" : "semester-btn"}
+              className={String(selectedSemester) === String(sem) ? "semester-btn active" : "semester-btn"}
               onClick={() => setSelectedSemester(sem)}
             >
               Semester {sem}
@@ -232,11 +245,11 @@ const Internals = ({ darkMode }) => {
           semesterSubjects.map((subject) => (
             <button
               key={subject.id}
-              className={`subject-tab ${selectedSubjectId === subject.id ? "active" : ""}`}
+              className={`subject-tab ${String(selectedSubjectId) === String(subject.id) ? "active" : ""}`}
               onClick={() => setSelectedSubjectId(subject.id)}
             >
-              {subject.course_name}
-              <span>{subject.course_code}</span>
+              {subject.course_name || subject.name}
+              <span>{subject.course_code || subject.code}</span>
             </button>
           ))
         )}
@@ -250,7 +263,6 @@ const Internals = ({ darkMode }) => {
 
           {isLoading ? (
             <>
-              {/* Refined text-level inline mock elements */}
               <div style={{ padding: '12px 0' }}><Skeleton width="100%" height="24px" /></div>
               <div style={{ padding: '12px 0' }}><Skeleton width="100%" height="32px" /></div>
               <div style={{ padding: '12px 0' }}><Skeleton width="100%" height="32px" /></div>
@@ -289,7 +301,7 @@ const Internals = ({ darkMode }) => {
                         <div className="progress-bar">
                           <div
                             className="progress-fill"
-                            style={{ width: `${(item.marks_obtained / item.total_marks) * 100}%` }}
+                            style={{ width: `${Math.min(100, (item.marks_obtained / item.total_marks) * 100)}%` }}
                           />
                         </div>
                       </td>
@@ -379,7 +391,7 @@ const Internals = ({ darkMode }) => {
                     fill="none"
                     strokeLinecap="round"
                     strokeDasharray={2 * Math.PI * 70}
-                    strokeDashoffset={2 * Math.PI * 70 * (1 - percentage / 100)}
+                    strokeDashoffset={2 * Math.PI * 70 * (1 - Math.min(100, percentage) / 100)}
                     transform="rotate(-90 85 85)"
                   />
                   <text
@@ -430,7 +442,7 @@ const Internals = ({ darkMode }) => {
                 <h4>Prediction</h4>
                 <p>
                   Current Weighted Score:
-                  <strong> {weightedScore}</strong>
+                  <strong> {Number(weightedScore).toFixed(2)}</strong>
                   <br /><br />
                   Need approximately
                   <strong>

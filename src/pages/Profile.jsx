@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react"; // ⚡ ADDED useContext
 import { useNavigate } from "react-router-dom";
+import { StudentContext } from "../context/StudentContext"; // ⚡ ADDED StudentContext
 
 import {
   FaUserCircle,
@@ -29,6 +30,9 @@ import {
 
 const Profile = ({ darkMode }) => {
   const navigate = useNavigate();
+
+  // ⚡ PULL GLOBAL SETTERS FROM CONTEXT TO BROADCAST SEMESTER CHANGES
+  const { setCurrentSemesterId, refreshStudentProfile } = useContext(StudentContext) || {};
 
   // ⚡ THE FIX 1: Must start as TRUE so the skeleton renders immediately on page load
   const [isLoading, setIsLoading] = useState(true); 
@@ -77,6 +81,11 @@ const Profile = ({ darkMode }) => {
       const semId = typeof semData === 'object' && semData !== null ? semData.id : semData;
       setCurrentSemester(semId || "");
 
+      // ⚡ SYNC WITH GLOBAL CONTEXT ON LOAD
+      if (setCurrentSemesterId) {
+        setCurrentSemesterId(String(semId || ""));
+      }
+
       setSemesters(semesterRes.data.results || semesterRes.data || []);
       setProfileImage(profile.profile_image || "");
 
@@ -118,6 +127,10 @@ const Profile = ({ darkMode }) => {
 
       await updateProfile(payload);
 
+      // ⚡ THE MAGIC LINK: Broadcast the new semester ID to all other pages immediately!
+      if (setCurrentSemesterId) setCurrentSemesterId(String(parsedSemester || ""));
+      if (refreshStudentProfile) await refreshStudentProfile();
+
       alert("Profile Updated Successfully");
       setEditing(false);
       loadProfile(); 
@@ -136,6 +149,7 @@ const Profile = ({ darkMode }) => {
 
     try {
       await uploadProfileImage(formData);
+      if (refreshStudentProfile) await refreshStudentProfile(); // ⚡ Update avatar globally too!
       loadProfile();
     } catch (err) {
       alert("Image upload failed.");
