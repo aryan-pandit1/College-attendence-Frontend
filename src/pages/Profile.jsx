@@ -291,7 +291,7 @@ const Profile = ({ darkMode }) => {
           <div className="profile-options">
             <button onClick={togglePrivacy}><FaShieldAlt /><span>{privateAccount ? "Private Account" : "Public Account"}</span></button>
             <button onClick={() => alert("Help Center Coming Soon.")}><FaQuestionCircle /><span>Help Center</span></button>
-            <button onClick={() => window.open("mailto:support@studentcompanion.com")}><FaHeadset /><span>Contact Support</span></button>
+            <button onClick={() => window.open("mailto:semtreksupport@gmail.com")}><FaHeadset /><span>Contact Support</span></button>
             <button onClick={() => { const fb = prompt("Enter your feedback"); if (fb) alert("Thank you!"); }}><FaCommentDots /><span>Send Feedback</span></button>
             <button onClick={() => { const r = prompt("Rate us (1-5)"); if (r) alert("Thanks!"); }}><FaStar /><span>Rate App</span></button>
           </div>

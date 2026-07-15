@@ -198,8 +198,8 @@ const Login = ({ darkMode }) => {
           <h1>{isSignup ? "Create Account" : "Welcome Back"}</h1>
           <p>
             {isSignup
-              ? "Join Academix and start tracking your academics"
-              : "Sign in to continue to Academix"}
+              ? "Join Semtrek and start treking your Semister journey!"
+              : "Sign in to continue to Semtrek"}
           </p>
         </div>
 
