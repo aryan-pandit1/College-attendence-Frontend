@@ -62,7 +62,7 @@ const Navbar = ({ darkMode, setDarkMode }) => {
         <Link to="/dashboard" className="navbar-logo">
           <span className="logo-icon">🎓</span>
           <div>
-            <h2>Academix</h2>
+            <h2>Semtrek</h2>
             <p>Your Academic Companion</p>
           </div>
         </Link>
