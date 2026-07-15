@@ -22,6 +22,14 @@ function AppContent({ darkMode, setDarkMode }) {
     "/",
     "/forgot-password",
   ];
+  const hideBubblesRoutes = [
+    "/",
+    "/login",
+    "/forgot-password",
+    "/About",
+    "/about"
+  ];
+  const shouldHideBubbles = hideBubblesRoutes.includes(location.pathname);
 
   const shouldHideNavbar =
     hideNavbarRoutes.includes(location.pathname);
