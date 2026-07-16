@@ -2,3 +2,14 @@ body.dark {
   --bg-surface: #1e293b;
   /* ... */
 }
+body.dark .card, 
+body.dark .stat-box, 
+body.dark .schedule-container,
+body.dark .attendance-overview {
+  position: relative !important;
+  z-index: 10 !important; /* Above the layer 0 SpaceStars */
+  background: rgba(30, 41, 59, 0.7) !important; /* Semi-transparent dark slate */
+  backdrop-filter: blur(10px) !important; 
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}

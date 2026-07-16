@@ -14,6 +14,8 @@ import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
 import "./Styles/Global.css";
 import About from "./pages/About";
+import SpaceStars from "./Components/SpaceStars";
+import KnowledgeMesh from "./Components/FludeBubble";
 
 function AppContent({ darkMode, setDarkMode }) {
   const location = useLocation();
@@ -36,13 +38,17 @@ function AppContent({ darkMode, setDarkMode }) {
 
   return (
     <>
-      {/* --- GLOBAL ANIMATED BUBBLE BACKGROUND --- */}
-      <div className="bubble-wrapper">
-        {[...Array(20)].map((_, i) => (
-          <div key={i} className="bubble"></div>
-        ))}
-      </div>
-      {/* ----------------------------------------- */}
+   {/* --- CONDITIONAL BACKGROUND ANIMATION --- */}
+     {/* --- CONDITIONAL BACKGROUND ANIMATIONS --- */}
+      {!shouldHideBubbles && (
+        darkMode ? (
+          /* Dark Mode: Moving Space Stars (on z-index: 0) */
+          <SpaceStars />
+        ) : (
+          /* Light Mode: Interactive Knowledge Mesh (on z-index: 0) */
+          <KnowledgeMesh />
+        )
+      )}
 
       {!shouldHideNavbar && (
         <Navbar

@@ -9,3 +9,14 @@ body {
   --success-bg: #f0fdf4;
   --error-bg: #fef2f2;
 }
+.card, 
+.stat-box, 
+.schedule-container,
+.attendance-overview {
+  position: relative !important;
+  z-index: 9 !important; 
+  background: rgba(255, 255, 255, 0.72) !important; /* Slightly more translucent */
+  backdrop-filter: blur(16px) !important; /* Strong blur for smooth light diffusion */
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
