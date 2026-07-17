@@ -641,3 +641,39 @@
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
+/* ==========================================
+   ⚡ MOBILE SCHEDULE CARD STACKING
+   ========================================== */
+.schedule-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--card-bg, #ffffff);
+  border-radius: 16px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+@media screen and (max-width: 600px) {
+  .schedule-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .schedule-card .attendance-buttons {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .schedule-card .present-btn,
+  .schedule-card .absent-btn {
+    flex: 1; /* Makes both buttons equal width and easy to tap with a thumb */
+    text-align: center;
+  }
+}
+

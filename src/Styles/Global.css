@@ -5,9 +5,9 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
-  z-index: -1; 
+  z-index: 0; 
   overflow: hidden;
   pointer-events: none; 
 }
@@ -117,4 +117,29 @@ html, body, #root {
   pointer-events: none; 
   background-color: #f8fafc; 
   transition: background-color 0.4s ease;
+}
+
+/* =======================================================
+   ⚡ LIGHT MODE CARD TRANSPARENCY UNIFICATION
+   ======================================================= */
+/* Matches all page cards to the Dashboard's exact frosted glass in Light Mode */
+.dashboard:not(.forced-dark) .card,
+.dashboard:not(.forced-dark) .schedule-card,
+.attendance-page:not(.forced-dark) .subject-card,
+.attendance-page:not(.forced-dark) .subject-item,
+.internals-page:not(.forced-dark) .assessment-card,
+.internals-page:not(.forced-dark) .progress-card,
+.internals-page:not(.forced-dark) .subject-tab,
+.timetable-page:not(.forced-dark) .add-lecture-card,
+.timetable-page:not(.forced-dark) .day-card,
+.profile-page:not(.forced-dark) .profile-card,
+.profile-page:not(.forced-dark) .profile-section,
+.gpa-page:not(.forced-dark) .card,
+.profile-page:not(.forced-dark) .profile-card,
+.gpa-page:not(.forced-dark) .subjects-card {
+  background: rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
 }

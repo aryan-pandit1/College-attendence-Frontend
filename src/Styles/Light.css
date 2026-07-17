@@ -20,3 +20,16 @@ body {
   -webkit-backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(255, 255, 255, 0.6);
 }
+/* =======================================================
+   ⚡ LIGHT MODE BACKGROUND TRANSPARENCY FIX
+   ======================================================= */
+/* Forces page wrappers to be transparent in Light Mode so <KnowledgeMesh /> is visible */
+.dashboard:not(.forced-dark),
+.attendance-page:not(.forced-dark),
+.gpa-page:not(.forced-dark),
+.internals-page:not(.forced-dark),
+.timetable-page:not(.forced-dark),
+.profile-page:not(.forced-dark),
+.about-page:not(.forced-dark) {
+  background: transparent !important;
+}

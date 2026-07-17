@@ -128,7 +128,6 @@ const Login = ({ darkMode }) => {
         } catch (err) {
           if (err.response?.data) {
             setError(extractErrorMessage(err));
-            setError(errors);
           } else {
             setError("Failed to send verification email. Please try again.");
           }

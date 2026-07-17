@@ -16,6 +16,7 @@ import "./Styles/Global.css";
 import About from "./pages/About";
 import SpaceStars from "./Components/SpaceStars";
 import KnowledgeMesh from "./Components/FludeBubble";
+import Calandar from "./pages/Calendar";
 
 function AppContent({ darkMode, setDarkMode }) {
   const location = useLocation();
@@ -90,6 +91,10 @@ function AppContent({ darkMode, setDarkMode }) {
               <Internals darkMode={darkMode}/>
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/calendar"
+          element={<Calandar darkMode={darkMode}/>}
         />
         <Route
           path="/gpa"

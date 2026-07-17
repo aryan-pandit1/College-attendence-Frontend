@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import AddSubjectModal from "../pages/AddSubjectModal";
 import { StudentContext } from "../context/StudentContext"; 
@@ -23,11 +23,32 @@ const Navbar = ({ darkMode, setDarkMode }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  // 1. SMART AUTO-HIDE STATES
+  // ⚡ 1. MUST BE INSIDE THE NAVBAR FUNCTION: Create the dropdown reference
+  const dropdownRef = useRef(null);
+
+  // ⚡ 2. MUST BE INSIDE THE NAVBAR FUNCTION: Click-outside listener
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [showMenu]);
+
+  // SMART AUTO-HIDE STATES
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // 2. SCROLL & MOUSE DIRECTION LISTENER ENGINE
+  // SCROLL & MOUSE DIRECTION LISTENER ENGINE
   useEffect(() => {
     if (window.innerWidth <= 768) return;
 
@@ -77,8 +98,6 @@ const Navbar = ({ darkMode, setDarkMode }) => {
 
         {/* Right Section */}
         <div className="navbar-right">
-          
-          {/* ⚡ DESKTOP ICONS (Hidden on mobile via CSS) */}
           <button className="icon-btn" onClick={() => alert("Notifications")}>
             <FaBell />
           </button>
@@ -91,8 +110,8 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             {darkMode ? <FaSun /> : <FaMoon />}
           </button>
 
-          {/* Profile Wrapper */}
-          <div className="profile-wrapper">
+          {/* ⚡ 3. Attach dropdownRef to this profile-wrapper div */}
+          <div className="profile-wrapper" ref={dropdownRef}>
             <div className="profile" onClick={() => setShowMenu(!showMenu)}>
               {student?.profileImage ? (
                 <img
@@ -109,8 +128,6 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             
             {showMenu && (
               <div className="profile-menu">
-                
-                {/* ⚡ MOBILE ONLY ICONS (Visible only on phones via CSS) */}
                 <div className="mobile-dropdown-icons">
                   <button onClick={() => { setDarkMode(!darkMode); setShowMenu(false); }}>
                     {darkMode ? <><FaSun /> Light Mode</> : <><FaMoon /> Dark Mode</>}
@@ -123,7 +140,6 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                   </button>
                 </div>
 
-                {/* DEFAULT MENU ITEMS (Visible everywhere) */}
                 <button onClick={() => { setShowMenu(false); navigate("/profile"); }}>
                   <FaUserCircle /> My Profile
                 </button>

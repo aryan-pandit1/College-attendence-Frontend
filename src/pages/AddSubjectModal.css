@@ -25,6 +25,9 @@
     max-width:90%;
     padding:28px;
     border-radius:18px;
+    max-height: 85vh; /* ⚡ Prevents modal from being taller than the screen */
+  overflow-y: auto; /* ⚡ Enables scrolling inside the modal when keyboards open */
+  box-sizing: border-box;
 }
 
 body.dark .modal-card{
@@ -81,6 +84,7 @@ body.dark .modal-card h2{
   font-size:15px;
 
   transition:.25s;
+  font-size: 16px !important;
 }
 
 .input-group input:focus{

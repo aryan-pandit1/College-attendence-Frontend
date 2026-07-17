@@ -520,3 +520,50 @@ select:hover, select:focus {
     width: 36px;
   }
 }
+
+/* ==========================================
+   ⚡ FLUID GPA GRID LAYOUT
+   ========================================== */
+.gpa-top,
+.gpa-middle {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.target-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.target-row input {
+  width: 100px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px !important; /* Prevents iOS auto-zoom */
+}
+
+@media screen and (max-width: 600px) {
+  .gpa-top,
+  .gpa-middle {
+    grid-template-columns: 1fr; /* Stacks cards vertically on phones */
+  }
+
+  /* Enables horizontal scrolling for the Semester Subjects table on small screens */
+  .subjects-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .subjects-card table {
+    min-width: 480px; /* Ensures columns stay wide enough to read */
+  }
+}
