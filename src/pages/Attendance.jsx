@@ -92,14 +92,38 @@ const Attendance = ({ darkMode }) => {
     }
   };
 
-  const deleteHistory = async (id) => {
-    try {
-      await axiosInstance.delete(`attendance/${id}/`);
-      fetchAttendanceData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const deleteHistory = async (item) => {
+
+  const today = new Date().toISOString().split("T")[0];
+
+  if (item.date === today) {
+
+    alert(
+      "Today's attendance cannot be deleted.\n\nChange its status instead."
+    );
+
+    return;
+  }
+
+  if (!window.confirm("Delete this attendance record?")) {
+    return;
+  }
+
+  try {
+
+    await axiosInstance.delete(`attendance/${item.id}/`);
+
+    fetchAttendanceData();
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Failed to delete attendance.");
+
+  }
+
+};
 
   if (!Array.isArray(subjects) || subjects.length === 0) {
     return (
@@ -253,7 +277,7 @@ const Attendance = ({ darkMode }) => {
                           </td>
                           <td>Regular</td>
                           <td>
-                            <button className="delete-history-btn" onClick={() => deleteHistory(item.id)}>
+                            <button className="delete-history-btn" onClick={() => deleteHistory(item)}>
                               Delete
                             </button>
                           </td>

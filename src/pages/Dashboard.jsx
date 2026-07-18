@@ -179,8 +179,12 @@ const Dashboard = ({ darkMode }) => {
   useEffect(() => {
     const initDashboardData = async () => {
       try {
+        // ⚡ Add .catch() to getDashboard() so a backend 500 error doesn't break the whole screen
         const [dashRes, semRes, eventsRes] = await Promise.all([
-          getDashboard(),
+          getDashboard().catch((err) => {
+            console.error("Backend Dashboard 500 Error:", err);
+            return { data: { today_schedule: [], cgpa: "N/A", average_internals: "N/A", course_count: 0 } };
+          }),
           getSemesters().catch(() => ({ data: [] })),
           CalendarService.fetchEvents().catch(() => ([]))
         ]);
@@ -194,7 +198,7 @@ const Dashboard = ({ darkMode }) => {
         
         const allClasses = dashRes.data?.today_schedule || [];
         
-        // ⚡ Synchronize schedule with actual DB records so new tabs stay accurate
+        // Synchronize schedule with actual DB records
         const dbCounts = await fetchTodayMarkedCounts(subjects);
         const visibleClasses = filterVisibleSchedule(allClasses, subjects, dbCounts);
         
