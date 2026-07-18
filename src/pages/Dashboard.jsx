@@ -2,7 +2,7 @@ import { useEffect, useState, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../services/dashboardService";
 import { addAttendance } from "../services/attendanceService";
-import * as CalendarService from "../services/calendarService"; // ⚡ 1. IMPORT CALENDAR SERVICE
+import * as CalendarService from "../services/calendarService"; 
 import { useSubjects } from "../context/SubjectContext";
 import { StudentContext } from "../context/StudentContext";
 import { getSemesters } from "../services/academicService";
@@ -15,6 +15,19 @@ import { deleteCourse } from "../services/courseService";
 // ==========================================
 // ⚡ BULLETPROOF DAILY MEMORY SYSTEM
 // ==========================================
+// Normalizes time strings (e.g., converts "16:00:00" to "16:00") so new tabs match perfectly
+const normalizeTime = (timeStr) => {
+  if (!timeStr) return "allday";
+  return String(timeStr).toLowerCase().trim().replace(/^(\d{1,2}:\d{2}):\d{2}$/, "$1");
+};
+
+// ⚡ COMPOSITE KEY HELPER: Ignores volatile backend IDs and uses Course + Start Time
+const getSlotId = (item) => {
+  const courseKey = String(item.course || item.course_id || item.name || "course").toLowerCase().trim();
+  const timeKey = normalizeTime(item.start_time);
+  return `${courseKey}_${timeKey}`;
+};
+
 const getDailyDate = () => {
   const d = new Date();
   return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().split("T")[0];
@@ -58,7 +71,7 @@ const Dashboard = ({ darkMode }) => {
   const [error, setError] = useState("");
   const [schedule, setSchedule] = useState([]);
   const [semesters, setSemesters] = useState([]); 
-  const [allEvents, setAllEvents] = useState([]); // ⚡ 2. NEW STATE FOR CALENDAR EVENTS
+  const [allEvents, setAllEvents] = useState([]); 
   
   // CURRENT SEMESTER ATTENDANCE STATE
   const [currentSemStats, setCurrentSemStats] = useState({
@@ -87,7 +100,6 @@ const Dashboard = ({ darkMode }) => {
   useEffect(() => {
     const initDashboardData = async () => {
       try {
-        // ⚡ 3. FETCH CALENDAR EVENTS IN PARALLEL
         const [dashRes, semRes, eventsRes] = await Promise.all([
           getDashboard(),
           getSemesters().catch(() => ({ data: [] })),
@@ -98,15 +110,15 @@ const Dashboard = ({ darkMode }) => {
         const semsList = semRes.data.results || semRes.data || [];
         setSemesters(semsList);
         
-        // Save events safely
         const eventsList = Array.isArray(eventsRes) ? eventsRes : eventsRes.results || [];
         setAllEvents(eventsList);
         
         const allClasses = dashRes.data?.today_schedule || [];
         const hiddenIds = getHiddenClasses();
         
+        // ⚡ Filter out classes matching the exact Course + Start Time key
         const visibleClasses = allClasses.filter((item) => {
-          const uniqueId = item.id ? String(item.id) : String(item.course);
+          const uniqueId = getSlotId(item);
           return item.marked !== true && !hiddenIds.includes(uniqueId);
         });
         
@@ -121,12 +133,11 @@ const Dashboard = ({ darkMode }) => {
     initDashboardData();
   }, []);
 
-  // ⚡ 4. FILTER & SORT UPCOMING EVENTS (NEAREST FIRST, MAX 4)
+  // FILTER & SORT UPCOMING EVENTS (NEAREST FIRST, MAX 4)
   const upcomingEvents = useMemo(() => {
     const today = getDailyDate();
     return allEvents
       .filter((ev) => {
-        // Ignore completed tasks or events from the past
         if (ev.completed) return false;
         return ev.date >= today;
       })
@@ -135,7 +146,7 @@ const Dashboard = ({ darkMode }) => {
         const bDate = new Date(`${b.date || "1970-01-01"}T${b.start_time || "00:00"}`);
         return aDate - bDate;
       })
-      .slice(0, 4); // Show only top 4 events on dashboard
+      .slice(0, 4);
   }, [allEvents]);
 
   // CALCULATE CURRENT SEMESTER ATTENDANCE EXCLUSIVELY
@@ -182,13 +193,15 @@ const Dashboard = ({ darkMode }) => {
     }
   }, [currentSemesterCourses.length, loading, subjects]);
 
+  // ⚡ COMPOSITE ID ATTENDANCE HANDLER
   const markAttendance = async (item, status) => {
-    const uniqueId = item.id ? String(item.id) : String(item.course);
+    const uniqueId = getSlotId(item);
 
     setSchedule((prev) => prev.filter((schedItem) => {
-      const schedId = schedItem.id ? String(schedItem.id) : String(schedItem.course);
+      const schedId = getSlotId(schedItem);
       return schedId !== uniqueId;
     }));
+    
     hideClassForToday(uniqueId);
 
     try {
@@ -218,14 +231,25 @@ const Dashboard = ({ darkMode }) => {
 
       const freshData = await getDashboard();
       setDashboardData(freshData.data);
+      
+      // ⚡ Safely filter updated schedule from backend response
+      if (freshData.data?.today_schedule) {
+        const hiddenIds = getHiddenClasses();
+        const visibleClasses = freshData.data.today_schedule.filter((schedItem) => {
+          const schedUniqueId = getSlotId(schedItem);
+          return schedItem.marked !== true && !hiddenIds.includes(schedUniqueId);
+        });
+        setSchedule(visibleClasses);
+      }
 
     } catch (error) {
       console.error("Dashboard Attendance Error:", error);
       if (error.response) alert(`Backend Error: ${JSON.stringify(error.response.data)}`);
+      
       unhideClass(uniqueId);
       setSchedule((prev) => {
         const restoredSchedule = [...prev, item];
-        return restoredSchedule.sort((a, b) => a.start_time.localeCompare(b.start_time));
+        return restoredSchedule.sort((a, b) => (a.start_time || "").localeCompare(b.start_time || ""));
       });
     }
   };
@@ -368,7 +392,7 @@ const Dashboard = ({ darkMode }) => {
             </>
           ) : schedule.length > 0 ? (
             schedule.map((item, index) => (
-              <div key={item.id || index} className="schedule-card">
+              <div key={getSlotId(item) || index} className="schedule-card">
                 <div>
                   <h4>{item.course}</h4>
                   <p>{item.start_time} - {item.end_time}</p>
@@ -419,7 +443,7 @@ const Dashboard = ({ darkMode }) => {
             )}
           </div>
 
-          {/* ⚡ 5. DYNAMIC UPCOMING EVENTS PANEL */}
+          {/* DYNAMIC UPCOMING EVENTS PANEL */}
           <div className="card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h3 style={{ margin: 0 }}>Upcoming Events</h3>
