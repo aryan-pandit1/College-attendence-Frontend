@@ -13,15 +13,14 @@ import "./Dashboard.css";
 import { deleteCourse } from "../services/courseService";
 
 // ==========================================
-// ⚡ BULLETPROOF DAILY MEMORY SYSTEM
+// ⚡ BULLETPROOF DAILY MEMORY & DB SYNCHRONIZATION
 // ==========================================
-// Normalizes time strings (e.g., converts "16:00:00" to "16:00") so new tabs match perfectly
 const normalizeTime = (timeStr) => {
   if (!timeStr) return "allday";
   return String(timeStr).toLowerCase().trim().replace(/^(\d{1,2}:\d{2}):\d{2}$/, "$1");
 };
 
-// ⚡ COMPOSITE KEY HELPER: Ignores volatile backend IDs and uses Course + Start Time
+// Generates a unique composite key per slot (e.g., "ml_16:03") to separate multiple same-day classes
 const getSlotId = (item) => {
   const courseKey = String(item.course || item.course_id || item.name || "course").toLowerCase().trim();
   const timeKey = normalizeTime(item.start_time);
@@ -56,6 +55,86 @@ const unhideClass = (uniqueId) => {
   
   const hiddenIds = getHiddenClasses().filter(id => id !== strId);
   localStorage.setItem("hiddenClasses", JSON.stringify({ date: today, ids: hiddenIds }));
+};
+
+// Translates a schedule item into its matching numeric course ID
+const getCourseIdFromItem = (item, subjectsList) => {
+  if (item.course_id && !isNaN(Number(item.course_id))) return String(item.course_id);
+  if (item.course && !isNaN(Number(item.course))) return String(item.course);
+  
+  const cleanName = String(item.course || item.name || "").toLowerCase().trim();
+  const matched = (subjectsList || []).find((sub) => {
+    return String(sub.name).toLowerCase().trim() === cleanName || 
+           String(sub.code).toLowerCase().trim() === cleanName ||
+           String(sub.id) === cleanName;
+  });
+  
+  return matched ? String(matched.id) : cleanName;
+};
+
+// ⚡ BACKEND DB SYNC: Checks actual attendance table so new tabs remember marked classes
+const fetchTodayMarkedCounts = async (subjectsList) => {
+  const todayStr = getDailyDate();
+  const counts = {}; // Maps course ID to count of attendances marked today
+
+  try {
+    const res = await axiosInstance.get("attendance/").catch(() => null);
+    if (res && res.data) {
+      const logs = Array.isArray(res.data) ? res.data : res.data.results || [];
+      logs.forEach(log => {
+        if (String(log.date || "").slice(0, 10) === todayStr) {
+          const cId = String(log.course || log.course_id || "");
+          if (cId) counts[cId] = (counts[cId] || 0) + 1;
+        }
+      });
+    }
+  } catch (e) {}
+
+  // If general endpoint returned nothing, query individual course logs
+  if (Object.keys(counts).length === 0 && subjectsList && subjectsList.length > 0) {
+    try {
+      const logPromises = subjectsList.map(sub => 
+        axiosInstance.get(`attendance/course/${sub.id}/`).catch(() => ({ data: [] }))
+      );
+      const results = await Promise.all(logPromises);
+      results.forEach((res, idx) => {
+        const subId = String(subjectsList[idx].id);
+        const logs = Array.isArray(res.data) ? res.data : res.data.results || [];
+        logs.forEach(log => {
+          if (String(log.date || "").slice(0, 10) === todayStr) {
+            counts[subId] = (counts[subId] || 0) + 1;
+          }
+        });
+      });
+    } catch (e) {}
+  }
+
+  return counts;
+};
+
+// Filters schedule combining localStorage (instant feedback) + DB logs (cross-tab sync)
+const filterVisibleSchedule = (allClasses, subjectsList, dbMarkedCounts) => {
+  const hiddenIds = getHiddenClasses();
+  const availableCounts = { ...dbMarkedCounts };
+
+  const sortedClasses = [...allClasses].sort((a, b) => 
+    (a.start_time || "").localeCompare(b.start_time || "")
+  );
+
+  return sortedClasses.filter((item) => {
+    if (item.marked === true) return false;
+
+    const slotId = getSlotId(item);
+    if (hiddenIds.includes(slotId)) return false;
+
+    const courseId = getCourseIdFromItem(item, subjectsList);
+    if (availableCounts[courseId] > 0) {
+      availableCounts[courseId] -= 1; // Consume one DB record for this slot
+      return false; 
+    }
+
+    return true;
+  });
 };
 
 // ==========================================
@@ -114,13 +193,10 @@ const Dashboard = ({ darkMode }) => {
         setAllEvents(eventsList);
         
         const allClasses = dashRes.data?.today_schedule || [];
-        const hiddenIds = getHiddenClasses();
         
-        // ⚡ Filter out classes matching the exact Course + Start Time key
-        const visibleClasses = allClasses.filter((item) => {
-          const uniqueId = getSlotId(item);
-          return item.marked !== true && !hiddenIds.includes(uniqueId);
-        });
+        // ⚡ Synchronize schedule with actual DB records so new tabs stay accurate
+        const dbCounts = await fetchTodayMarkedCounts(subjects);
+        const visibleClasses = filterVisibleSchedule(allClasses, subjects, dbCounts);
         
         setSchedule(visibleClasses);
       } catch (err) {
@@ -131,7 +207,7 @@ const Dashboard = ({ darkMode }) => {
       }
     };
     initDashboardData();
-  }, []);
+  }, [subjects.length]); // Re-runs once subjects finish loading to ensure exact ID matching
 
   // FILTER & SORT UPCOMING EVENTS (NEAREST FIRST, MAX 4)
   const upcomingEvents = useMemo(() => {
@@ -193,52 +269,40 @@ const Dashboard = ({ darkMode }) => {
     }
   }, [currentSemesterCourses.length, loading, subjects]);
 
-  // ⚡ COMPOSITE ID ATTENDANCE HANDLER
+  // ATTENDANCE MARKING HANDLER
   const markAttendance = async (item, status) => {
     const uniqueId = getSlotId(item);
 
+    // 1. Instant UI update
     setSchedule((prev) => prev.filter((schedItem) => {
       const schedId = getSlotId(schedItem);
       return schedId !== uniqueId;
     }));
-    
     hideClassForToday(uniqueId);
 
     try {
       const localDate = getDailyDate();
-      let targetCourseId = item.course_id;
-      
-      if (!targetCourseId || isNaN(Number(targetCourseId))) {
-        const cleanItemName = String(item.course).toLowerCase().trim();
-        const matchedSubject = subjects.find((sub) => {
-          const cleanSubName = String(sub.name).toLowerCase().trim();
-          const cleanSubCode = String(sub.code).toLowerCase().trim();
-          return cleanSubName === cleanItemName || cleanSubCode === cleanItemName;
-        });
-        if (matchedSubject) targetCourseId = matchedSubject.id;
-      }
+      let targetCourseId = getCourseIdFromItem(item, subjects);
 
       if (isNaN(Number(targetCourseId))) {
         alert(`Frontend Error: I cannot find the ID for "${item.course}".`);
         throw new Error("Missing Numeric ID"); 
       }
 
+      // 2. Save record to backend database
       await addAttendance({
         course: targetCourseId,
         date: localDate,
         status: status === "present" ? "Present" : "Absent",
       });
 
+      // 3. Refresh dashboard & re-verify DB logs
       const freshData = await getDashboard();
       setDashboardData(freshData.data);
       
-      // ⚡ Safely filter updated schedule from backend response
       if (freshData.data?.today_schedule) {
-        const hiddenIds = getHiddenClasses();
-        const visibleClasses = freshData.data.today_schedule.filter((schedItem) => {
-          const schedUniqueId = getSlotId(schedItem);
-          return schedItem.marked !== true && !hiddenIds.includes(schedUniqueId);
-        });
+        const dbCounts = await fetchTodayMarkedCounts(subjects);
+        const visibleClasses = filterVisibleSchedule(freshData.data.today_schedule, subjects, dbCounts);
         setSchedule(visibleClasses);
       }
 
