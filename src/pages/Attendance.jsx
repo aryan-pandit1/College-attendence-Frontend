@@ -10,13 +10,13 @@ import { getSemesters } from "../services/academicService"; // ⚡ CRITICAL IMPO
 const Attendance = ({ darkMode }) => {
   const { subjects } = useSubjects();
   const { currentSemesterId } = useContext(StudentContext) || {};
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [attendanceLogs, setAttendanceLogs] = useState([]);
   const [prediction, setPrediction] = useState(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [showAllHistory, setShowAllHistory] = useState(false);
-  
+
   // ⚡ 1. FETCH SEMESTERS TO MAP ID TO NUMBER (Fixes the ID 3 vs Sem 2 bug)
   const [semesters, setSemesters] = useState([]);
 
@@ -38,11 +38,11 @@ const Attendance = ({ darkMode }) => {
   const targetSemNumber = activeSemObj ? activeSemObj.semester_number : currentSemesterId;
 
   // ⚡ 3. UNIVERSAL COURSE FILTER (Matches either ID 3 or Number 2)
-  const displayedSubjects = currentSemesterId 
+  const displayedSubjects = currentSemesterId
     ? subjects.filter((s) => {
-        const semVal = s.semester_number || s.semester?.semester_number || s.semester || s.semester_id || s.semester?.id;
-        return String(semVal) === String(currentSemesterId) || String(semVal) === String(targetSemNumber);
-      })
+      const semVal = s.semester_number || s.semester?.semester_number || s.semester || s.semester_id || s.semester?.id;
+      return String(semVal) === String(currentSemesterId) || String(semVal) === String(targetSemNumber);
+    })
     : subjects;
 
   // ⚡ 4. AUTO-SELECT FIRST SUBJECT OF THE CURRENT SEMESTER
@@ -80,6 +80,7 @@ const Attendance = ({ darkMode }) => {
   };
 
   const markAttendance = async (status) => {
+
     try {
       await addAttendance({
         course: selectedSubjectId,
@@ -94,36 +95,54 @@ const Attendance = ({ darkMode }) => {
 
   const deleteHistory = async (item) => {
 
-  const today = new Date().toISOString().split("T")[0];
+    const updateAttendanceStatus = async (item) => {
+      try {
+        const newStatus =
+          item.status === "Present" ? "Absent" : "Present";
 
-  if (item.date === today) {
+        await axiosInstance.patch(`attendance/${item.id}/`, {
+          status: newStatus,
+        });
 
-    alert(
-      "Today's attendance cannot be deleted.\n\nChange its status instead."
-    );
+        fetchAttendanceData();
 
-    return;
-  }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update attendance.");
+      }
+    };
 
-  if (!window.confirm("Delete this attendance record?")) {
-    return;
-  }
+    const today = new Date().toISOString().split("T")[0];
 
-  try {
+    if (item.date === today) {
 
-    await axiosInstance.delete(`attendance/${item.id}/`);
+      alert(
+        "Today's attendance cannot be deleted.\n\nChange its status instead."
+      );
 
-    fetchAttendanceData();
+      return;
+    }
 
-  } catch (err) {
+    if (!window.confirm("Delete this attendance record?")) {
+      return;
+    }
 
-    console.error(err);
+    try {
 
-    alert("Failed to delete attendance.");
+      await axiosInstance.delete(`attendance/${item.id}/`);
 
-  }
+      fetchAttendanceData();
 
-};
+    } catch (err) {
+
+      console.error(err);
+
+      alert("Failed to delete attendance.");
+
+    }
+
+  };
+
 
   if (!Array.isArray(subjects) || subjects.length === 0) {
     return (
@@ -144,16 +163,16 @@ const Attendance = ({ darkMode }) => {
 
   return (
     <div className={`attendance-page ${darkMode ? "forced-dark" : ""}`}>
-      <div 
-        className="attendance-header" 
+      <div
+        className="attendance-header"
         style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}
       >
         <div>
           <h1>Attendance</h1>
           {currentSemesterId && (
-            <span style={{ 
-              fontSize: "0.85rem", 
-              color: darkMode ? "#38bdf8" : "#2563eb", 
+            <span style={{
+              fontSize: "0.85rem",
+              color: darkMode ? "#38bdf8" : "#2563eb",
               fontWeight: "600",
               background: darkMode ? "rgba(56, 189, 248, 0.1)" : "rgba(37, 99, 235, 0.1)",
               padding: "4px 12px",
@@ -194,7 +213,7 @@ const Attendance = ({ darkMode }) => {
               <br />
               <Skeleton width="100%" height="70px" borderRadius="12px" />
               <br />
-              
+
               <div className="progress-wrapper">
                 <Skeleton width="100%" height="12px" borderRadius="20px" />
               </div>
@@ -275,11 +294,35 @@ const Attendance = ({ darkMode }) => {
                               {item.status}
                             </div>
                           </td>
-                          <td>Regular</td>
                           <td>
-                            <button className="delete-history-btn" onClick={() => deleteHistory(item)}>
-                              Delete
-                            </button>
+                            {item.start_time
+                              ? `${item.start_time.slice(0, 5)} - ${item.end_time.slice(0, 5)}`
+                              : "Manual"}
+                          </td>
+                          <td>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "8px",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <button
+                                className="edit-history-btn"
+                                onClick={() => updateAttendanceStatus(item)}
+                              >
+                                {item.status === "Present"
+                                  ? "Mark Absent"
+                                  : "Mark Present"}
+                              </button>
+
+                              <button
+                                className="delete-history-btn"
+                                onClick={() => deleteHistory(item)}
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
