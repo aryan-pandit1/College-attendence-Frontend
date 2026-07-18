@@ -1,17 +1,37 @@
+// src/services/calendarService.js
+
 import axiosInstance from "./axiosInstance";
 
-// Get all timetable entries
-export const getCalendar = () =>
-  axiosInstance.get("timetable/");
+// Get all events
+export const fetchEvents = async (params = {}) => {
+  const response = await axiosInstance.get("calendar/events/", {
+    params,
+  });
+  return response.data;
+};
 
-// Add a new class
-export const addClass = (data) =>
-  axiosInstance.post("timetable/", data);
+// Create event
+export const createEvent = async (eventData) => {
+  const response = await axiosInstance.post(
+    "calendar/events/",
+    eventData
+  );
+  return response.data;
+};
 
-// Update a class
-export const updateClass = (id, data) =>
-  axiosInstance.put(`timetable/${id}/`, data);
+// Update event
+export const updateEvent = async (id, eventData) => {
+  const response = await axiosInstance.patch(
+    `calendar/events/${id}/`,
+    eventData
+  );
+  return response.data;
+};
 
-// Delete a class
-export const deleteClass = (id) =>
-  axiosInstance.delete(`timetable/${id}/`);
+// Delete event
+export const deleteEvent = async (id) => {
+  await axiosInstance.delete(
+    `calendar/events/${id}/`
+  );
+  return id;
+};

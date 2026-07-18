@@ -1,12 +1,14 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../services/dashboardService";
 import { addAttendance } from "../services/attendanceService";
+import * as CalendarService from "../services/calendarService"; // ⚡ 1. IMPORT CALENDAR SERVICE
 import { useSubjects } from "../context/SubjectContext";
-import { StudentContext } from "../context/StudentContext"; // ⚡ 1. Import Global Context
-import { getSemesters } from "../services/academicService"; // ⚡ 2. Import Academic Service
-import axiosInstance from "../services/axiosInstance"; // ⚡ 3. Imported to fetch course logs
+import { StudentContext } from "../context/StudentContext";
+import { getSemesters } from "../services/academicService";
+import axiosInstance from "../services/axiosInstance";
 import Skeleton from "../Components/Skeleton"; 
-import { FaTrash, FaTimes } from "react-icons/fa";
+import { FaTrash, FaTimes, FaCalendarAlt } from "react-icons/fa";
 import "./Dashboard.css";
 import { deleteCourse } from "../services/courseService";
 
@@ -47,6 +49,7 @@ const unhideClass = (uniqueId) => {
 // MAIN COMPONENT
 // ==========================================
 const Dashboard = ({ darkMode }) => {
+  const navigate = useNavigate();
   const { subjects } = useSubjects();
   const { currentSemesterId } = useContext(StudentContext) || {}; 
   
@@ -55,8 +58,9 @@ const Dashboard = ({ darkMode }) => {
   const [error, setError] = useState("");
   const [schedule, setSchedule] = useState([]);
   const [semesters, setSemesters] = useState([]); 
+  const [allEvents, setAllEvents] = useState([]); // ⚡ 2. NEW STATE FOR CALENDAR EVENTS
   
-  // ⚡ CURRENT SEMESTER ATTENDANCE STATE
+  // CURRENT SEMESTER ATTENDANCE STATE
   const [currentSemStats, setCurrentSemStats] = useState({
     percentage: 0,
     present: 0,
@@ -68,17 +72,11 @@ const Dashboard = ({ darkMode }) => {
   // Modal State
   const [showCourseModal, setShowCourseModal] = useState(false);
 
-  const [deadlines] = useState([
-    { title: "DBMS Assignment", date: "May 18" },
-    { title: "CN Lab Record", date: "May 20" },
-    { title: "OS Quiz", date: "May 21" },
-  ]);
-
-  // ⚡ TRANSLATE DATABASE ID TO PHYSICAL NUMBER
+  // TRANSLATE DATABASE ID TO PHYSICAL NUMBER
   const activeSemObj = semesters.find(sem => String(sem.id) === String(currentSemesterId));
   const targetSemNumber = activeSemObj ? activeSemObj.semester_number : currentSemesterId;
 
-  // ⚡ FILTER SUBJECTS STRICTLY FOR CURRENT SEMESTER
+  // FILTER SUBJECTS STRICTLY FOR CURRENT SEMESTER
   const currentSemesterCourses = currentSemesterId
     ? subjects.filter((s) => {
         const semVal = s.semester_number || s.semester?.semester_number || s.semester || s.semester_id || s.semester?.id;
@@ -89,14 +87,20 @@ const Dashboard = ({ darkMode }) => {
   useEffect(() => {
     const initDashboardData = async () => {
       try {
-        const [dashRes, semRes] = await Promise.all([
+        // ⚡ 3. FETCH CALENDAR EVENTS IN PARALLEL
+        const [dashRes, semRes, eventsRes] = await Promise.all([
           getDashboard(),
-          getSemesters().catch(() => ({ data: [] }))
+          getSemesters().catch(() => ({ data: [] })),
+          CalendarService.fetchEvents().catch(() => ([]))
         ]);
         
         setDashboardData(dashRes.data);
         const semsList = semRes.data.results || semRes.data || [];
         setSemesters(semsList);
+        
+        // Save events safely
+        const eventsList = Array.isArray(eventsRes) ? eventsRes : eventsRes.results || [];
+        setAllEvents(eventsList);
         
         const allClasses = dashRes.data?.today_schedule || [];
         const hiddenIds = getHiddenClasses();
@@ -117,7 +121,24 @@ const Dashboard = ({ darkMode }) => {
     initDashboardData();
   }, []);
 
-  // ⚡ CALCULATE CURRENT SEMESTER ATTENDANCE EXCLUSIVELY
+  // ⚡ 4. FILTER & SORT UPCOMING EVENTS (NEAREST FIRST, MAX 4)
+  const upcomingEvents = useMemo(() => {
+    const today = getDailyDate();
+    return allEvents
+      .filter((ev) => {
+        // Ignore completed tasks or events from the past
+        if (ev.completed) return false;
+        return ev.date >= today;
+      })
+      .sort((a, b) => {
+        const aDate = new Date(`${a.date || "1970-01-01"}T${a.start_time || "00:00"}`);
+        const bDate = new Date(`${b.date || "1970-01-01"}T${b.start_time || "00:00"}`);
+        return aDate - bDate;
+      })
+      .slice(0, 4); // Show only top 4 events on dashboard
+  }, [allEvents]);
+
+  // CALCULATE CURRENT SEMESTER ATTENDANCE EXCLUSIVELY
   useEffect(() => {
     const calculateActiveAttendance = async () => {
       if (!currentSemesterCourses || currentSemesterCourses.length === 0) {
@@ -126,7 +147,6 @@ const Dashboard = ({ darkMode }) => {
       }
 
       try {
-        // Fetch logs for all current semester courses in parallel
         const logPromises = currentSemesterCourses.map(course => 
           axiosInstance.get(`attendance/course/${course.id}/`).catch(() => ({ data: [] }))
         );
@@ -233,7 +253,6 @@ const Dashboard = ({ darkMode }) => {
 
   if (error) return <h2 className="error-state">{error}</h2>;
 
-  // ⚡ USE EXCLUSIVELY CURRENT SEMESTER STATS FOR THE DASHBOARD
   const attendanceRate = currentSemStats.percentage;
   const isLowAttendance = attendanceRate < 75;
   const cgpaValue = parseFloat(dashboardData?.cgpa) || 0;
@@ -400,28 +419,75 @@ const Dashboard = ({ darkMode }) => {
             )}
           </div>
 
+          {/* ⚡ 5. DYNAMIC UPCOMING EVENTS PANEL */}
           <div className="card">
-            <h3>Upcoming Deadlines</h3>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0 }}>Upcoming Events</h3>
+              <span 
+                onClick={() => navigate("/calendar")} 
+                style={{ fontSize: "0.8rem", color: "var(--color-primary, #3b82f6)", cursor: "pointer", fontWeight: "700" }}
+              >
+                View All ➔
+              </span>
+            </div>
+
             {loading ? (
               <ul className="deadlines">
                 {[1, 2].map(i => (
-                  <li key={i}>
+                  <li key={i} style={{ padding: "12px 0", borderBottom: "1px solid var(--border-color)" }}>
                     <Skeleton width="140px" height="18px" style={{ marginBottom: "6px" }} />
-                    <br />
-                    <Skeleton width="80px" height="14px" />
+                    <Skeleton width="90px" height="14px" />
                   </li>
                 ))}
               </ul>
-            ) : deadlines.length > 0 ? (
-              <ul className="deadlines">
-                {deadlines.map((item, index) => (
-                  <li key={index}><strong>{item.title}</strong><br /><small>{item.date}</small></li>
-                ))}
+            ) : upcomingEvents.length > 0 ? (
+              <ul className="deadlines" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {upcomingEvents.map((ev) => {
+                  const safeTime = ev.start_time ? String(ev.start_time).slice(0, 5) : "All day";
+                  return (
+                    <li 
+                      key={ev.id} 
+                      onClick={() => navigate("/calendar")}
+                      style={{ 
+                        padding: "12px 0", 
+                        borderBottom: "1px dashed var(--border-color)", 
+                        cursor: "pointer",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        gap: "8px"
+                      }}
+                    >
+                      <div>
+                        <strong style={{ fontSize: "0.95rem", color: "var(--text-main)", display: "block" }}>{ev.title}</strong>
+                        <small style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                          📅 {ev.date} • ⏰ {safeTime}
+                        </small>
+                      </div>
+                      <span style={{
+                        fontSize: "0.7rem",
+                        fontWeight: "800",
+                        padding: "4px 8px",
+                        borderRadius: "8px",
+                        textTransform: "uppercase",
+                        backgroundColor: darkMode ? "rgba(99, 102, 241, 0.15)" : "#eff6ff",
+                        color: darkMode ? "#818cf8" : "#2563eb",
+                        whiteSpace: "nowrap"
+                      }}>
+                        {ev.category || "Event"}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
-              <p>No upcoming deadlines.</p>
+              <div style={{ textAlign: "center", padding: "24px 0", opacity: 0.8 }}>
+                <FaCalendarAlt style={{ fontSize: "28px", color: "var(--text-muted)", marginBottom: "8px" }} />
+                <p style={{ margin: 0, fontSize: "0.9rem", color: "var(--text-muted)" }}>No upcoming deadlines or events scheduled.</p>
+              </div>
             )}
           </div>
+
         </div>
       </div>
 

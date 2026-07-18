@@ -343,3 +343,137 @@
     pointer-events: none; 
   }
 }
+
+@media (max-width: 900px) {
+  .navbar-links {
+    order: 3;
+    width: 100%;
+    margin-top: 12px;           
+    justify-content: flex-start;
+    flex-wrap: nowrap;         
+    overflow-x: auto;          
+    -webkit-overflow-scrolling: touch;
+    
+    /* ⚡ Add right padding so the last item peeps out, hinting at scrollability */
+    padding-bottom: 6px; 
+    padding-right: 24px;
+    gap: 8px;
+  }
+}
+
+/* =======================================================
+   ⚡ NAVBAR CALENDAR LOGO PILL
+   ======================================================= */
+.navbar-calendar-logo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(99, 102, 241, 0.15) 100%);
+  border: 1.5px solid rgba(59, 130, 246, 0.4);
+  border-radius: 20px;
+  text-decoration: none;
+  color: #2563eb;
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+  position: relative;
+}
+
+.navbar-calendar-logo-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  color: #ffffff !important;
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.cal-logo-icon {
+  font-size: 1.1rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.cal-logo-text {
+  font-weight: 800;
+}
+
+/* Tiny live pulsing indicator dot */
+.cal-pulse-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #10b981;
+  animation: calPulse 2s infinite;
+}
+
+@keyframes calPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* ⚡ Dark Mode Override */
+.navbar.dark .navbar-calendar-logo-btn {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(129, 140, 248, 0.15) 100%);
+  border-color: rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.navbar.dark .navbar-calendar-logo-btn:hover {
+  background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+  color: #0f172a !important;
+  box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3);
+}
+
+@media (max-width: 900px) {
+  .cal-logo-text { display: none; } /* Shows only the sleek icon + dot on mobile screens */
+  .navbar-calendar-logo-btn { padding: 8px 12px; }
+}
+
+/* =======================================================
+   ⚡ 100% SOLID OPAQUE CALENDAR BACKGROUNDS
+   ======================================================= */
+/* Overrides frosted glass to ensure ambient waves never bleed through */
+:root {
+  --cal-card-bg: #ffffff !important; /* 100% Solid White */
+  --cal-border: #cbd5e1 !important;
+  --cal-grid-border: #e2e8f0 !important;
+  --cal-today-bg: #eff6ff !important; /* Solid crisp blue tint for Today */
+}
+
+.calendar-page.forced-dark {
+  --cal-card-bg: #1e293b !important; /* 100% Solid Dark Slate */
+  --cal-border: #334155 !important;
+  --cal-grid-border: #0f172a !important;
+  --cal-today-bg: #0f172a !important;
+}
+
+/* Force every container, toolbar, and date cell to be solid and opaque */
+.calendar-card,
+.day-cell,
+.calendar-toolbar,
+.calendar-controls,
+.view-switch,
+.event-list-view,
+.event-list-item {
+  background: var(--cal-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Ensure empty cells don't show the background mesh */
+.day-cell.empty-cell {
+  background: #f8fafc !important;
+}
+
+.calendar-page.forced-dark .day-cell.empty-cell {
+  background: #0f172a !important;
+}
+
+/* Highlight today's date cleanly without transparency */
+.day-cell.today {
+  background: var(--cal-today-bg) !important;
+}

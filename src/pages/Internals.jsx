@@ -11,7 +11,6 @@ import { getProfile } from "../services/profileService";
 import { getSemesters } from "../services/academicService"; 
 import axiosInstance from "../services/axiosInstance";
 
-
 const Internals = ({ darkMode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -160,23 +159,41 @@ const Internals = ({ darkMode }) => {
 
   const remaining = totalMax - totalObtained;
 
+  // ⚡ ERGONOMIC HANDLER: Prevents typing errors and allows empty backspaces while editing
   const handleMarksChange = async (evaluation, field, value) => {
+    // If the user clears the input box, hold it locally without sending a NaN request to the backend yet
+    if (value === "") {
+      setEvaluations((prev) =>
+        prev.map((item) => (item.id === evaluation.id ? { ...item, [field]: "" } : item))
+      );
+      return;
+    }
+
     let updatedValue = Number(value);
+    if (isNaN(updatedValue)) return;
+
     if (field === "marks_obtained") {
-      updatedValue = Math.max(0, Math.min(updatedValue, evaluation.total_marks));
+      // Prevent scores below 0 or scores higher than total_marks
+      updatedValue = Math.max(0, Math.min(updatedValue, Number(evaluation.total_marks || 0)));
     }
     if (field === "total_marks") {
       updatedValue = Math.max(1, updatedValue);
     }
+
+    // Optimistic UI Update
+    setEvaluations((prev) =>
+      prev.map((item) => (item.id === evaluation.id ? { ...item, [field]: updatedValue } : item))
+    );
 
     try {
       await axiosInstance.put(`internals/${evaluation.id}/`, {
         ...evaluation,
         [field]: updatedValue,
       });
-      loadInternals();
       loadScore();
-    } catch (err) {}
+    } catch (err) {
+      loadInternals(); // Revert on failure
+    }
   };
 
   const addAssessment = async () => {
@@ -218,7 +235,7 @@ const Internals = ({ darkMode }) => {
         <h1>Internals</h1>
       </div>
 
-      {/* ⚡ YOUR EXACT SEMESTER TABS (Auto-defaults to Current Semester!) */}
+      {/* ⚡ SEMESTER TABS */}
       <div className="semester-tabs">
         {isLoading && availableSemesters.length === 0 ? (
           <Skeleton width="120px" height="38px" borderRadius="20px" />
@@ -235,6 +252,7 @@ const Internals = ({ darkMode }) => {
         )}
       </div>
 
+      {/* ⚡ SUBJECT TABS */}
       <div className="subject-tabs">
         {isLoading && semesterSubjects.length === 0 ? (
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -273,84 +291,103 @@ const Internals = ({ darkMode }) => {
                  <Skeleton width="30%" height="38px" borderRadius="6px" />
               </div>
             </>
+          ) : evaluations.length === 0 ? (
+            /* ⚡ INVITING EMPTY STATE FOR NEW SUBJECTS */
+            <div className="empty-internals-state" style={{ textAlign: "center", padding: "40px 10px", opacity: 0.8 }}>
+              <span style={{ fontSize: "36px", display: "block", marginBottom: "10px" }}>📝</span>
+              <h3>No Assessments Added Yet</h3>
+              <p style={{ fontSize: "0.9rem", marginTop: "4px" }}>
+                Add your first quiz, midterm, or assignment below to start tracking your grades!
+              </p>
+            </div>
           ) : (
             <>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Assessment</th>
-                    <th>Max Marks</th>
-                    <th>Progress</th>
-                    <th>Obtained</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {evaluations.map((item) => (
-                    <tr key={item.id}>
-                      <td>{item.assessment_name}</td>
-                      <td>
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.total_marks}
-                          onChange={(e) => handleMarksChange(item, "total_marks", e.target.value)}
-                        />
-                      </td>
-                      <td>
-                        <div className="progress-bar">
-                          <div
-                            className="progress-fill"
-                            style={{ width: `${Math.min(100, (item.marks_obtained / item.total_marks) * 100)}%` }}
-                          />
-                        </div>
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          min="0"
-                          max={item.total_marks}
-                          value={item.marks_obtained}
-                          onChange={(e) => {
-                            let value = Number(e.target.value);
-                            if (value > item.total_marks) value = item.total_marks;
-                            if (value < 0) value = 0;
-                            handleMarksChange(item, "marks_obtained", value);
-                          }}
-                        />
-                      </td>
-                      <td>
-                        <button className="delete-assessment-btn" onClick={() => deleteAssessment(item.id)}>
-                          Delete
-                        </button>
-                      </td>
+              <div style={{ width: "100%", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                <table style={{ minWidth: "500px", width: "100%" }}>
+                  <thead>
+                    <tr>
+                      <th>Assessment</th>
+                      <th>Max Marks</th>
+                      <th>Progress</th>
+                      <th>Obtained</th>
+                      <th>Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {evaluations.map((item) => {
+                      const obt = Number(item.marks_obtained) || 0;
+                      const max = Number(item.total_marks) || 1;
+                      const prog = Math.min(100, Math.max(0, (obt / max) * 100));
 
-              <div className="add-assessment">
-                <input
-                  type="text"
-                  placeholder="Assessment Name"
-                  value={newAssessmentName}
-                  onChange={(e) => setNewAssessmentName(e.target.value)}
-                />
-                <input
-                  type="number"
-                  placeholder="Max Marks"
-                  value={newAssessmentMarks}
-                  onChange={(e) => setNewAssessmentMarks(e.target.value)}
-                />
-                <input
-                  type="number"
-                  placeholder="Weightage (%)"
-                  value={newWeightage}
-                  onChange={(e) => setNewWeightage(e.target.value)}
-                />
-                <button onClick={addAssessment}>+ Add Assessment</button>
+                      return (
+                        <tr key={item.id}>
+                          <td>{item.assessment_name}</td>
+                          <td>
+                            <input
+                              type="number"
+                              min="1"
+                              value={item.total_marks}
+                              onFocus={(e) => e.target.select()} /* ⚡ Highlight on tap */
+                              onChange={(e) => handleMarksChange(item, "total_marks", e.target.value)}
+                            />
+                          </td>
+                          <td>
+                            <div className="progress-bar">
+                              <div
+                                className="progress-fill"
+                                style={{ width: `${prog}%` }}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <input
+                              type="number"
+                              min="0"
+                              max={item.total_marks}
+                              value={item.marks_obtained}
+                              onFocus={(e) => e.target.select()} /* ⚡ Highlight on tap */
+                              onChange={(e) => handleMarksChange(item, "marks_obtained", e.target.value)}
+                            />
+                          </td>
+                          <td>
+                            <button className="delete-assessment-btn" onClick={() => deleteAssessment(item.id)}>
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </>
+          )}
+
+          {/* ADD ASSESSMENT CONTROLS */}
+          {!isLoading && (
+            <div className="add-assessment">
+              <input
+                type="text"
+                placeholder="Assessment Name (e.g. Quiz 1)"
+                value={newAssessmentName}
+                onChange={(e) => setNewAssessmentName(e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Max Marks"
+                value={newAssessmentMarks}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setNewAssessmentMarks(e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Weightage (%)"
+                value={newWeightage}
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setNewWeightage(e.target.value)}
+              />
+              <button onClick={addAssessment}>+ Add Assessment</button>
+            </div>
           )}
         </div>
 
@@ -434,24 +471,33 @@ const Internals = ({ darkMode }) => {
                 <input
                   type="number"
                   value={targetScore}
-                  onChange={(e) => setTargetScore(Number(e.target.value))}
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => setTargetScore(Number(e.target.value) || 0)}
                 />
               </div>
 
+              {/* ⚡ SMART PREDICTION BOX */}
               <div className="success-box">
                 <h4>Prediction</h4>
-                <p>
-                  Current Weighted Score:
-                  <strong> {Number(weightedScore).toFixed(2)}</strong>
-                  <br /><br />
-                  Need approximately
-                  <strong>
-                    {" "}
-                    {Math.max(0, targetScore - weightedScore).toFixed(2)}
-                  </strong>
-                  {" "}more weighted marks to reach
-                  <strong> {targetScore}</strong>.
-                </p>
+                {weightedScore >= targetScore ? (
+                  <p style={{ color: "var(--color-success-text, #059669)", fontWeight: "bold" }}>
+                    🎉 You have already achieved your target of <strong>{targetScore}</strong>! 
+                    Your current weighted score sits at <strong>{Number(weightedScore).toFixed(2)}</strong>.
+                  </p>
+                ) : (
+                  <p>
+                    Current Weighted Score:
+                    <strong> {Number(weightedScore).toFixed(2)}</strong>
+                    <br /><br />
+                    You need approximately
+                    <strong>
+                      {" "}
+                      {Math.max(0, targetScore - weightedScore).toFixed(2)}
+                    </strong>
+                    {" "}more weighted marks to reach your target of
+                    <strong> {targetScore}</strong>.
+                  </p>
+                )}
               </div>
             </>
           )}

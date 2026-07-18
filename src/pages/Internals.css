@@ -527,3 +527,108 @@ table tr:last-child td { border-bottom: none; }
     padding: 6px;
   }
 }
+
+/* =======================================================
+   ⚡ INTERACTIVE GRADE SIMULATOR BANNER
+   ======================================================= */
+.status-banner {
+  padding: 16px;
+  border-radius: var(--radius-md, 12px);
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.3s ease;
+}
+
+.status-banner span {
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.status-banner small {
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+/* Success State (Target Hit) */
+.status-banner.target-hit {
+  background-color: var(--color-success-bg, #ecfdf5);
+  color: var(--color-success-text, #059669);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Pending State (Needs More Marks) */
+.status-banner.target-pending {
+  background-color: rgba(99, 102, 241, 0.08);
+  color: var(--color-primary, #4f46e5);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.forced-dark .status-banner.target-pending {
+  background-color: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+  border-color: rgba(129, 140, 248, 0.3);
+}
+
+/* =======================================================
+   ⚡ INVITING EMPTY STATE
+   ======================================================= */
+.empty-internals-state {
+  text-align: center;
+  padding: 48px 20px;
+  background: var(--pill-bg-tint, #f8fafc);
+  border: 2px dashed var(--border-resolved, #e2e8f0);
+  border-radius: var(--radius-lg, 16px);
+  margin: 16px 0 24px 0;
+}
+
+.empty-icon {
+  font-size: 42px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.empty-internals-state h3 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  color: var(--text-main);
+}
+
+.empty-internals-state p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+/* =======================================================
+   ⚡ TABLE ROW HOVER FOCUS (EASY SCANNABILITY)
+   ======================================================= */
+table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+table tbody tr:hover {
+  background-color: rgba(99, 102, 241, 0.04);
+}
+
+.forced-dark table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Focus glow on active table input cell */
+.assessment-card input:focus {
+  border-color: var(--color-primary, #4f46e5) !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+}
+
+.forced-dark .assessment-card input:focus {
+  background-color: #0f172a !important;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.25) !important;
+}

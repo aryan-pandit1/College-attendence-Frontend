@@ -83,7 +83,8 @@
   .profile-page,
   .internals-page,
   .gpa-page,
-  .about-page {
+  .about-page 
+  .calendar-page{
     padding-top: 190px !important; 
   }
 }
@@ -142,4 +143,59 @@ html, body, #root {
   -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
   border: 1px solid rgba(255, 255, 255, 0.6) !important;
   box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* =======================================================
+   ⚡ LIGHT MODE ACTIVE SUBJECT & SEMESTER BORDER HIGHLIGHT
+   ======================================================= */
+/* Higher specificity ensures this overrides the global frosted glass borders */
+.internals-page:not(.forced-dark) .subject-tab.active,
+.internals-page:not(.forced-dark) .semester-btn.active,
+.attendance-page:not(.forced-dark) .subject-item.active-subject {
+  border: 2px solid #2465f0 !important; /* ⚡ Vibrant royal blue border */
+  background: rgba(144, 177, 244, 0.368) !important; /* ⚡ Noticeable blue background tint */
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18), 0 8px 20px rgba(37, 99, 235, 0.15) !important; /* ⚡ Glowing outer ring */
+  transform: translateY(-2px) !important;
+}
+
+/* Force text colors inside active cards to turn bold blue */
+.internals-page:not(.forced-dark) .subject-tab.active h4,
+.internals-page:not(.forced-dark) .subject-tab.active span,
+.internals-page:not(.forced-dark) .semester-btn.active,
+.attendance-page:not(.forced-dark) .subject-item.active-subject h3 {
+  color: #496ccf !important;
+  font-weight: 800 !important;
+}
+
+.attendance-page:not(.forced-dark) .subject-item.active-subject p {
+  color: #366ff4 !important;
+  font-weight: 700 !important;
+}
+
+/* =======================================================
+   ⚡ TAB CONTAINER OVERFLOW CLIPPING FIX
+   ======================================================= */
+.semester-tabs,
+.subject-tabs {
+  display: flex;
+  gap: 16px;
+  margin: 16px 0 24px 0;
+  overflow-x: auto;
+  
+  /* ⚡ Add 6px top padding so translateY(-3px) has room to float without getting clipped */
+  padding: 6px 4px 12px 4px !important; 
+  
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Find your active highlight rule at the bottom of Global.css and update the transform: */
+.internals-page:not(.forced-dark) .subject-tab.active,
+.internals-page:not(.forced-dark) .semester-btn.active,
+.attendance-page:not(.forced-dark) .subject-item.active-subject {
+  border: 2px solid #2563eb !important; 
+  background: rgba(37, 99, 235, 0.12) !important; 
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18), 0 8px 20px rgba(37, 99, 235, 0.15) !important; 
+  
+  /* ⚡ Use scale(1.02) instead of translateY(-2px) so it stays centered without hitting container edges */
+  transform: scale(1.02) !important; 
 }

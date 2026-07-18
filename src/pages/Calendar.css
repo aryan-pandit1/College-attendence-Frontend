@@ -1,218 +1,658 @@
+/* =======================================================
+   1. PAGE LAYOUT & NAVBAR COMPATIBILITY
+   ======================================================= */
 .calendar-page {
+  width: 100%;
+  max-width: 100% !important;
   min-height: 100vh;
-  background: #f5f7fb;
-  padding: 25px;
+  margin: 0;
+  box-sizing: border-box;
+  /* ⚡ 120px top padding pushes the title down below the desktop navbar */
+  padding: 120px 4% 3rem 4% !important; 
+  color: var(--text-primary, #1e293b);
+  position: relative;
+  z-index: 1; /* Sits below navbar but above background animations */
+  transition: padding 0.4s ease;
 }
 
-/* HEADER */
+/* ⚡ Adjusted mobile padding to prevent excessive top gaps */
+@media (max-width: 768px) {
+  .calendar-page {
+    padding: 120px 0.75rem 3rem 0.75rem !important; 
+  }
+}
 
+/* =======================================================
+   2. HEADER & CONTROLS
+   ======================================================= */
 .calendar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  background: var(--card-bg, rgba(255, 255, 255, 0.8));
+  backdrop-filter: blur(8px);
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-.calendar-header h1 {
-  color: #1e293b;
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.header-title h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
 }
 
 .calendar-controls {
   display: flex;
   align-items: center;
-  gap: 15px;
-}
-
-.calendar-controls button {
-  width: 35px;
-  height: 35px;
-
-  border: 1px solid #dbe2ea;
-  background: white;
-
-  border-radius: 8px;
-  cursor: pointer;
+  gap: 1rem;
+  background: var(--bg-secondary, #f1f5f9);
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color, #cbd5e1);
 }
 
 .calendar-controls h3 {
-  color: #334155;
+  margin: 0;
+  min-width: 140px;
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--text-primary, #1e293b);
 }
 
-/* VIEW SWITCH */
+.calendar-controls button {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--text-primary, #334155);
+  padding: 0.2rem 0.5rem;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.calendar-controls button:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
 
 .view-switch {
   display: flex;
-  gap: 8px;
+  background: var(--bg-secondary, #f1f5f9);
+  border-radius: 10px;
+  padding: 0.25rem;
+  border: 1px solid var(--border-color, #cbd5e1);
 }
 
 .view-switch button {
   border: none;
-  background: white;
-
-  padding: 10px 16px;
-
+  background: none;
+  padding: 0.5rem 1.2rem;
   border-radius: 8px;
-
   cursor: pointer;
-  color: #475569;
+  font-weight: 600;
+  color: var(--text-secondary, #64748b);
+  transition: all 0.2s;
 }
 
-.view-switch .active {
-  background: #2563eb;
+.view-switch button.active {
+  background: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.add-event-btn {
+  background: #3b82f6;
   color: white;
+  border: none;
+  padding: 0.65rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  transition: all 0.2s ease;
 }
 
-/* CALENDAR */
+.add-event-btn:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
 
+/* =======================================================
+   3. TOOLBAR (SEARCH & FILTERS)
+   ======================================================= */
+.calendar-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 260px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--card-bg, #ffffff);
+  color: var(--text-primary, #1e293b);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.filters-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--card-bg, #ffffff);
+  color: var(--text-primary, #1e293b);
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+/* =======================================================
+   4. CALENDAR GRID (MONTH VIEW)
+   ======================================================= */
 .calendar-card {
-  background: white;
-
+  background: var(--card-bg, #ffffff);
   border-radius: 16px;
-
-  border: 1px solid #e5e7eb;
-
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  border: 1px solid var(--border-color, #e2e8f0);
 }
 
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-
-  background: #f8fafc;
-
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.weekdays div {
-  padding: 15px;
+  background: var(--bg-secondary, #f8fafc);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
   text-align: center;
-  font-weight: 600;
-  color: #475569;
+  font-weight: 700;
+  padding: 1rem 0;
+  color: var(--text-secondary, #64748b);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
 }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(120px, auto);
 }
 
 .day-cell {
-  min-height: 110px;
-
-  border-right: 1px solid #eef2f7;
-  border-bottom: 1px solid #eef2f7;
-
-  padding: 10px;
-
-  position: relative;
+  border-right: 1px solid var(--border-color, #e2e8f0);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  padding: 0.6rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg, #ffffff);
 }
 
 .day-cell:nth-child(7n) {
   border-right: none;
 }
 
-.date {
-  color: #334155;
-  font-weight: 600;
+.day-cell:hover:not(.empty-cell) {
+  background: var(--hover-bg, #f1f5f9);
 }
 
-/* TODAY */
+.day-cell.empty-cell {
+  background: var(--bg-empty, #f8fafc);
+  cursor: default;
+  opacity: 0.5;
+}
 
-.today .date {
-  background: #2563eb;
+.day-cell.today {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.day-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.date-number {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary, #334155);
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.2s;
+}
+
+.day-cell.today .date-number {
+  background: #3b82f6;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+}
+
+/* =======================================================
+   5. EVENT PILLS & COLOR CATEGORIES
+   ======================================================= */
+.day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.event-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: white;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s;
+}
 
-  width: 30px;
-  height: 30px;
+.event-pill:hover {
+  transform: scale(1.02);
+}
 
+.event-pill.completed {
+  opacity: 0.5;
+  text-decoration: line-through;
+  filter: grayscale(40%);
+}
+
+.complete-check {
+  cursor: pointer;
+  font-weight: 800;
+}
+
+/* Color Coding */
+.cat-exam { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.cat-assignment { background: linear-gradient(135deg, #f97316, #ea580c); }
+.cat-study { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.cat-goal { background: linear-gradient(135deg, #10b981, #059669); }
+.cat-holiday { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.cat-personal { background: linear-gradient(135deg, #ec4899, #db2777); }
+.cat-other { background: linear-gradient(135deg, #64748b, #475569); }
+
+/* =======================================================
+   6. LIST VIEW & MODALS
+   ======================================================= */
+.event-list-view {
+  background: var(--card-bg, #ffffff);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color, #e2e8f0);
+}
+
+.list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+}
+
+.event-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem;
+  border-radius: 12px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.event-list-item:hover {
+  transform: translateX(4px);
+}
+
+.list-item-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.list-check-btn {
+  background: rgba(255, 255, 255, 0.25);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border-radius: 50%;
 }
 
-/* EVENTS */
-
-.event {
-  margin-top: 10px;
-
-  padding: 6px 10px;
-
-  border-radius: 8px;
-
-  font-size: 12px;
+.list-meta {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  margin: 0.35rem 0;
   font-weight: 500;
 }
 
-/* COLORS */
-
-.purple {
-  background: #f3e8ff;
-  color: #7c3aed;
+.priority-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.25);
+  letter-spacing: 0.5px;
 }
 
-.green {
-  background: #dcfce7;
-  color: #15803d;
+/* Modal Overlay Layering */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
 }
 
-.orange {
-  background: #fed7aa;
-  color: #c2410c;
+.modal-content {
+  background: var(--card-bg, #ffffff);
+  padding: 2rem;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-primary, #0f172a);
 }
 
-.blue {
-  background: #dbeafe;
-  color: #2563eb;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  padding-bottom: 1rem;
 }
 
-.pink {
-  background: #fce7f3;
-  color: #db2777;
-}
-
-/* RESPONSIVE */
-
-@media (max-width: 992px) {
-  .calendar-header {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
-  }
-}
-
-@media (max-width: 768px) {
-  .calendar-card {
-    overflow-x: auto;
-  }
-
-  .weekdays,
-  .calendar-grid {
-    min-width: 900px;
-  }
-}
-
-.add-event-btn {
-  padding: 10px 18px;
+.close-btn {
+  background: none;
   border: none;
-  border-radius: 8px;
+  font-size: 1.75rem;
   cursor: pointer;
-  margin-bottom: 20px;
+  color: var(--text-secondary, #64748b);
 }
 
-.event-list {
+.form-group {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
-.event-item {
-  padding: 15px;
+.form-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary, #334155);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 0.75rem 1rem;
   border-radius: 10px;
-  background: var(--card-bg);
+  border: 1px solid var(--border-color, #cbd5e1);
+  background: var(--bg-secondary, #f8fafc);
+  color: var(--text-primary, #0f172a);
+  font-size: 0.95rem;
+  outline: none;
 }
 
-.day-cell {
-  min-height: 90px;
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #3b82f6;
+  background: var(--card-bg, #ffffff);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color, #f1f5f9);
+}
+
+.right-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.btn-cancel, .btn-delete, .btn-save {
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+}
+
+.btn-cancel { background: var(--bg-secondary, #f1f5f9); color: var(--text-secondary, #475569); }
+.btn-delete { background: #fee2e2; color: #dc2626; }
+.btn-save { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25); }
+
+/* =======================================================
+   7. RESPONSIVE MOBILE BREAKPOINTS
+   ======================================================= */
+@media (max-width: 768px) {
+  .calendar-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+  }
+
+  .header-title {
+    justify-content: space-between;
+  }
+
+  .calendar-controls {
+    justify-content: space-between;
+  }
+
+  .view-switch {
+    width: 100%;
+  }
+
+  .view-switch button {
+    flex: 1;
+  }
+
+  .weekdays {
+    font-size: 0.7rem;
+    padding: 0.5rem 0;
+  }
+
+  .calendar-grid {
+    grid-auto-rows: minmax(85px, auto);
+  }
+
+  .day-cell {
+    padding: 0.25rem;
+  }
+
+  .event-pill {
+    padding: 0.15rem 0.35rem;
+    font-size: 0.65rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+/* =======================================================
+   ⚡ 8. COMPLETE DARK MODE & GLASS OVERRIDE
+   ======================================================= */
+/* 1. Force the page container to turn dark slate */
+.calendar-page.forced-dark,
+.dark .calendar-page,
+body.dark .calendar-page {
+  background-color: var(--bg-main, #0f172a) !important;
+  color: #f8fafc !important;
+}
+
+/* 2. Fix the weekdays header bar (MON TUE WED...) */
+.calendar-page.forced-dark .weekdays,
+.dark .calendar-page .weekdays {
+  background: rgba(15, 23, 42, 0.9) !important;
+  background-color: rgba(15, 23, 42, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #94a3b8 !important;
+}
+
+/* 3. Force Dark Slate Glass on every calendar box, controls, and card */
+.calendar-page.forced-dark .calendar-card,
+.calendar-page.forced-dark .calendar-header,
+.calendar-page.forced-dark .calendar-toolbar,
+.calendar-page.forced-dark .calendar-controls,
+.calendar-page.forced-dark .view-switch,
+.calendar-page.forced-dark .day-cell,
+.calendar-page.forced-dark .event-list-view,
+.calendar-page.forced-dark .event-list-item,
+.calendar-page.forced-dark .modal-content,
+.dark .calendar-page .calendar-card,
+.dark .calendar-page .calendar-header,
+.dark .calendar-page .calendar-toolbar,
+.dark .calendar-page .calendar-controls,
+.dark .calendar-page .view-switch,
+.dark .calendar-page .day-cell,
+.dark .calendar-page .event-list-view,
+.dark .calendar-page .event-list-item,
+.dark .calendar-page .modal-content {
+  background: rgba(30, 41, 59, 0.85) !important;
+  background-color: rgba(30, 41, 59, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f8fafc !important;
+  backdrop-filter: blur(16px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+}
+
+/* 4. Force All Text, Headings, Dates, and Labels to White */
+.calendar-page.forced-dark h1,
+.calendar-page.forced-dark h2,
+.calendar-page.forced-dark h3,
+.calendar-page.forced-dark h4,
+.calendar-page.forced-dark p,
+.calendar-page.forced-dark span,
+.calendar-page.forced-dark .date-number,
+.calendar-page.forced-dark .weekdays div,
+.calendar-page.forced-dark .list-meta,
+.calendar-page.forced-dark .list-desc,
+.dark .calendar-page h1,
+.dark .calendar-page h2,
+.dark .calendar-page h3,
+.dark .calendar-page h4,
+.dark .calendar-page p,
+.dark .calendar-page span,
+.dark .calendar-page .date-number,
+.dark .calendar-page .weekdays div {
+  color: #f8fafc !important;
+}
+
+/* 5. Preserve Vibrant Priority Badge Colors */
+.calendar-page.forced-dark .priority-high, .dark .calendar-page .priority-high { color: #ef4444 !important; }
+.calendar-page.forced-dark .priority-medium, .dark .calendar-page .priority-medium { color: #f59e0b !important; }
+.calendar-page.forced-dark .priority-low, .dark .calendar-page .priority-low { color: #10b981 !important; }
+
+/* 6. Dark Mode Grid Lines & Empty Cells */
+.calendar-page.forced-dark .calendar-grid,
+.dark .calendar-page .calendar-grid {
+  background: rgba(255, 255, 255, 0.08) !important;
+  gap: 1px !important;
+}
+
+.calendar-page.forced-dark .day-cell.empty-cell,
+.dark .calendar-page .day-cell.empty-cell {
+  background: rgba(15, 23, 42, 0.6) !important;
+  background-color: rgba(15, 23, 42, 0.6) !important;
+}
+
+/* 7. Dark Mode Today Cell Highlight */
+.calendar-page.forced-dark .day-cell.today,
+.dark .calendar-page .day-cell.today {
+  background: rgba(56, 189, 248, 0.15) !important;
+  background-color: rgba(56, 189, 248, 0.15) !important;
+  border: 2px solid #38bdf8 !important;
+}
+
+/* 8. Dark Mode Inputs & Dropdowns */
+.calendar-page.forced-dark .search-input,
+.calendar-page.forced-dark .filter-select,
+.dark .calendar-page .search-input,
+.dark .calendar-page .filter-select {
+  background: rgba(15, 23, 42, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+}
+
+/* =======================================================
+   ⚡ 9. UNIVERSAL VIEWPORT DARK BACKGROUND FALLBACK
+   ======================================================= */
+/* Forces the browser window itself to turn dark slate so white edges never appear */
+html.dark,
+body.dark,
+body:has(.forced-dark),
+html:has(.forced-dark) {
+  background-color: #0f172a !important;
+  background: #0f172a !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }

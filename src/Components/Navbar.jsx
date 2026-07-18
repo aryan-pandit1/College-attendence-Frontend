@@ -11,7 +11,8 @@ import {
   FaSun,
   FaCog,
   FaTable,
-  FaInfoCircle 
+  FaInfoCircle, 
+  FaCalendar
 } from "react-icons/fa";
 
 import "./Navbar.css";
@@ -102,11 +103,16 @@ const Navbar = ({ darkMode, setDarkMode }) => {
             <FaBell />
           </button>
 
-          <Link to="/timetable" className="icon-btn calendar-link">
+          {/* ⚡ PREMIUM CALENDAR LOGO PILL IN NAVBAR */}
+         <Link to="/calendar" className="icon-btn" title="Academic Calendar">
+    <FaCalendar />
+  </Link>
+
+          <Link to="/timetable" className="icon-btn calendar-link" title="Timetable">
             <FaTable />
           </Link>
 
-          <button className="icon-btn" onClick={() => setDarkMode(!darkMode)}>
+          <button className="icon-btn" onClick={() => setDarkMode(!darkMode)} title="Toggle Theme">
             {darkMode ? <FaSun /> : <FaMoon />}
           </button>
 
@@ -131,6 +137,10 @@ const Navbar = ({ darkMode, setDarkMode }) => {
                 <div className="mobile-dropdown-icons">
                   <button onClick={() => { setDarkMode(!darkMode); setShowMenu(false); }}>
                     {darkMode ? <><FaSun /> Light Mode</> : <><FaMoon /> Dark Mode</>}
+                  </button>
+                  {/* ⚡ Added Mobile Calendar Link */}
+                  <button onClick={() => { navigate("/calendar"); setShowMenu(false); }}>
+                    <FaCalendar /> Calendar
                   </button>
                   <button onClick={() => { navigate("/timetable"); setShowMenu(false); }}>
                     <FaTable /> Timetable
