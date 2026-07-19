@@ -5,7 +5,7 @@ import "./Attendance.css";
 import { addAttendance, getPrediction } from "../services/attendanceService";
 import axiosInstance from "../services/axiosInstance";
 import Skeleton from "../Components/Skeleton";
-import { getSemesters } from "../services/academicService"; // ⚡ CRITICAL IMPORT ADDED
+import { getSemesters } from "../services/academicService";
 
 const Attendance = ({ darkMode }) => {
   const { subjects } = useSubjects();
@@ -17,7 +17,7 @@ const Attendance = ({ darkMode }) => {
   const [selectedSubjectId, setSelectedSubjectId] = useState(null);
   const [showAllHistory, setShowAllHistory] = useState(false);
 
-  // ⚡ 1. FETCH SEMESTERS TO MAP ID TO NUMBER (Fixes the ID 3 vs Sem 2 bug)
+  // 1. FETCH SEMESTERS TO MAP ID TO NUMBER
   const [semesters, setSemesters] = useState([]);
 
   useEffect(() => {
@@ -33,11 +33,11 @@ const Attendance = ({ darkMode }) => {
     fetchSemestersList();
   }, []);
 
-  // ⚡ 2. TRANSLATE DATABASE ID TO PHYSICAL SEMESTER NUMBER
+  // 2. TRANSLATE DATABASE ID TO PHYSICAL SEMESTER NUMBER
   const activeSemObj = semesters.find(sem => String(sem.id) === String(currentSemesterId));
   const targetSemNumber = activeSemObj ? activeSemObj.semester_number : currentSemesterId;
 
-  // ⚡ 3. UNIVERSAL COURSE FILTER (Matches either ID 3 or Number 2)
+  // 3. UNIVERSAL COURSE FILTER (Matches either ID or Number)
   const displayedSubjects = currentSemesterId
     ? subjects.filter((s) => {
       const semVal = s.semester_number || s.semester?.semester_number || s.semester || s.semester_id || s.semester?.id;
@@ -45,7 +45,7 @@ const Attendance = ({ darkMode }) => {
     })
     : subjects;
 
-  // ⚡ 4. AUTO-SELECT FIRST SUBJECT OF THE CURRENT SEMESTER
+  // 4. AUTO-SELECT FIRST SUBJECT OF THE CURRENT SEMESTER
   useEffect(() => {
     if (displayedSubjects?.length > 0) {
       const exists = displayedSubjects.some((s) => String(s.id) === String(selectedSubjectId));
@@ -79,8 +79,8 @@ const Attendance = ({ darkMode }) => {
     }
   };
 
+  // Create Manual Attendance (timetable == null on backend)
   const markAttendance = async (status) => {
-
     try {
       await addAttendance({
         course: selectedSubjectId,
@@ -93,56 +93,34 @@ const Attendance = ({ darkMode }) => {
     }
   };
 
-  const deleteHistory = async (item) => {
-
-    const updateAttendanceStatus = async (item) => {
-      try {
-        const newStatus =
-          item.status === "Present" ? "Absent" : "Present";
-
-        await axiosInstance.patch(`attendance/${item.id}/`, {
-          status: newStatus,
-        });
-
-        fetchAttendanceData();
-
-      } catch (err) {
-        console.error(err);
-        alert("Failed to update attendance.");
-      }
-    };
-
-    const today = new Date().toISOString().split("T")[0];
-
-    if (item.date === today) {
-
-      alert(
-        "Today's attendance cannot be deleted.\n\nChange its status instead."
-      );
-
-      return;
+  // Toggle status via PATCH (Present <-> Absent) without creating a new record
+  const updateAttendanceStatus = async (item) => {
+    try {
+      const newStatus = item.status === "Present" ? "Absent" : "Present";
+      await axiosInstance.patch(`attendance/${item.id}/`, {
+        status: newStatus,
+      });
+      fetchAttendanceData();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update attendance status.");
     }
+  };
 
-    if (!window.confirm("Delete this attendance record?")) {
+  // Delete attendance record cleanly via DELETE
+  const deleteHistory = async (item) => {
+    if (!window.confirm("Are you sure you want to delete this attendance record?")) {
       return;
     }
 
     try {
-
       await axiosInstance.delete(`attendance/${item.id}/`);
-
       fetchAttendanceData();
-
     } catch (err) {
-
       console.error(err);
-
-      alert("Failed to delete attendance.");
-
+      alert("Failed to delete attendance record.");
     }
-
   };
-
 
   if (!Array.isArray(subjects) || subjects.length === 0) {
     return (
@@ -280,54 +258,56 @@ const Attendance = ({ darkMode }) => {
                       <th>Day</th>
                       <th>Status</th>
                       <th>Type</th>
-                      <th>Action</th>
+                      <th className="action-header">Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {displayedHistory.length > 0 ? (
-                      displayedHistory.map((item) => (
-                        <tr key={item.id}>
-                          <td>{item.date}</td>
-                          <td>{new Date(item.date).toLocaleDateString("en-US", { weekday: "short" })}</td>
-                          <td>
-                            <div className={`status-badge ${item.status === "Present" ? "present" : "absent"}`}>
-                              {item.status}
-                            </div>
-                          </td>
-                          <td>
-                            {item.start_time
-                              ? `${item.start_time.slice(0, 5)} - ${item.end_time.slice(0, 5)}`
-                              : "Manual"}
-                          </td>
-                          <td>
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "8px",
-                                justifyContent: "center",
-                              }}
-                            >
-                              <button
-                                className="edit-history-btn"
-                                onClick={() => updateAttendanceStatus(item)}
-                              >
-                                {item.status === "Present"
-                                  ? "Mark Absent"
-                                  : "Mark Present"}
-                              </button>
+                      displayedHistory.map((item) => {
+                        const isAuto = item.timetable !== null && item.timetable !== undefined;
+                        const timeDisplay = isAuto && item.start_time && item.end_time
+                          ? `Automatic (${item.start_time.slice(0, 5)} - ${item.end_time.slice(0, 5)})`
+                          : "Manual";
 
-                              <button
-                                className="delete-history-btn"
-                                onClick={() => deleteHistory(item)}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
+                        return (
+                          <tr key={item.id}>
+                            <td>{item.date}</td>
+                            <td>{new Date(item.date).toLocaleDateString("en-US", { weekday: "short" })}</td>
+                            <td>
+                              <div className={`status-badge ${item.status === "Present" ? "present" : "absent"}`}>
+                                {item.status}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`type-badge ${isAuto ? "auto-type" : "manual-type"}`}>
+                                {isAuto ? "⚡ " : "✍️ "}
+                                {timeDisplay}
+                              </span>
+                            </td>
+                            <td className="action-cell">
+                              <div className="action-button-group">
+                                <button
+                                  className="edit-history-btn"
+                                  onClick={() => updateAttendanceStatus(item)}
+                                  title={`Change status to ${item.status === "Present" ? "Absent" : "Present"}`}
+                                >
+                                  {item.status === "Present" ? "Mark Absent" : "Mark Present"}
+                                </button>
+
+                                <button
+                                  className="delete-history-btn"
+                                  onClick={() => deleteHistory(item)}
+                                  title="Delete this record"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     ) : (
-                      <tr><td colSpan="5">No attendance records available.</td></tr>
+                      <tr><td colSpan="5" style={{ textAlign: "center", padding: "2rem" }}>No attendance records available.</td></tr>
                     )}
                   </tbody>
                 </table>
