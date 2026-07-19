@@ -1,20 +1,20 @@
 import { useEffect, useState, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../services/dashboardService";
-import { addAttendance } from "../services/attendanceService";
+import { addAttendance, markAllAbsentToday } from "../services/attendanceService";
 import * as CalendarService from "../services/calendarService"; 
 import { useSubjects } from "../context/SubjectContext";
 import { StudentContext } from "../context/StudentContext";
 import { getSemesters } from "../services/academicService";
 import axiosInstance from "../services/axiosInstance";
 import Skeleton from "../Components/Skeleton"; 
-import { FaTrash, FaTimes, FaCalendarAlt } from "react-icons/fa";
+import { FaTrash, FaTimes, FaCalendarAlt, FaCheckCircle, FaMapMarkerAlt, FaClock } from "react-icons/fa";
 import "./Dashboard.css";
 import { deleteCourse } from "../services/courseService";
 
-// ==========================================
+// ==============================================
 // ⚡ BULLETPROOF DAILY MEMORY & DB SYNCHRONIZATION
-// ==========================================
+// ==============================================
 const normalizeTime = (timeStr) => {
   if (!timeStr) return "allday";
   return String(timeStr).toLowerCase().trim().replace(/^(\d{1,2}:\d{2}):\d{2}$/, "$1");
@@ -152,6 +152,10 @@ const Dashboard = ({ darkMode }) => {
   const [semesters, setSemesters] = useState([]); 
   const [allEvents, setAllEvents] = useState([]); 
   
+  // ⚡ Schedule Loading States for Double-Click Protection
+  const [processingSlots, setProcessingSlots] = useState(new Set());
+  const [isMarkingAll, setIsMarkingAll] = useState(false);
+
   // CURRENT SEMESTER ATTENDANCE STATE
   const [currentSemStats, setCurrentSemStats] = useState({
     percentage: 0,
@@ -179,7 +183,6 @@ const Dashboard = ({ darkMode }) => {
   useEffect(() => {
     const initDashboardData = async () => {
       try {
-        // ⚡ Add .catch() to getDashboard() so a backend 500 error doesn't break the whole screen
         const [dashRes, semRes, eventsRes] = await Promise.all([
           getDashboard().catch((err) => {
             console.error("Backend Dashboard 500 Error:", err);
@@ -211,7 +214,7 @@ const Dashboard = ({ darkMode }) => {
       }
     };
     initDashboardData();
-  }, [subjects.length]); // Re-runs once subjects finish loading to ensure exact ID matching
+  }, [subjects.length]); 
 
   // FILTER & SORT UPCOMING EVENTS (NEAREST FIRST, MAX 4)
   const upcomingEvents = useMemo(() => {
@@ -273,15 +276,16 @@ const Dashboard = ({ darkMode }) => {
     }
   }, [currentSemesterCourses.length, loading, subjects]);
 
-  // ATTENDANCE MARKING HANDLER
+  // ⚡ ENHANCED ATTENDANCE MARKING WITH PER-SLOT LOADING STATE
   const markAttendance = async (item, status) => {
     const uniqueId = getSlotId(item);
+    if (processingSlots.has(uniqueId) || isMarkingAll) return;
 
-    // 1. Instant UI update
-    setSchedule((prev) => prev.filter((schedItem) => {
-      const schedId = getSlotId(schedItem);
-      return schedId !== uniqueId;
-    }));
+    // 1. Lock slot to prevent double-clicks
+    setProcessingSlots(prev => new Set(prev).add(uniqueId));
+
+    // 2. Optimistic UI update
+    setSchedule((prev) => prev.filter((schedItem) => getSlotId(schedItem) !== uniqueId));
     hideClassForToday(uniqueId);
 
     try {
@@ -293,14 +297,12 @@ const Dashboard = ({ darkMode }) => {
         throw new Error("Missing Numeric ID"); 
       }
 
-      // 2. Save record to backend database
       await addAttendance({
         course: targetCourseId,
         date: localDate,
         status: status === "present" ? "Present" : "Absent",
       });
 
-      // 3. Refresh dashboard & re-verify DB logs
       const freshData = await getDashboard();
       setDashboardData(freshData.data);
       
@@ -309,16 +311,59 @@ const Dashboard = ({ darkMode }) => {
         const visibleClasses = filterVisibleSchedule(freshData.data.today_schedule, subjects, dbCounts);
         setSchedule(visibleClasses);
       }
-
     } catch (error) {
       console.error("Dashboard Attendance Error:", error);
       if (error.response) alert(`Backend Error: ${JSON.stringify(error.response.data)}`);
       
+      // Restore card on error
       unhideClass(uniqueId);
       setSchedule((prev) => {
         const restoredSchedule = [...prev, item];
         return restoredSchedule.sort((a, b) => (a.start_time || "").localeCompare(b.start_time || ""));
       });
+    } finally {
+      setProcessingSlots(prev => {
+        const next = new Set(prev);
+        next.delete(uniqueId);
+        return next;
+      });
+    }
+  };
+
+  // ⚡ ENHANCED ABSENT ALL WITH SAFE OPTIMISTIC ROLLBACK
+  const handleAbsentAll = async () => {
+    if (schedule.length === 0 || isMarkingAll) return;
+
+    if (!window.confirm("Mark ALL remaining classes today as Absent?")) return;
+
+    setIsMarkingAll(true);
+    const backupSchedule = [...schedule];
+
+    // Hide all currently visible slots in local storage immediately
+    backupSchedule.forEach(item => hideClassForToday(getSlotId(item)));
+    setSchedule([]);
+
+    try {
+      await markAllAbsentToday();
+      const freshData = await getDashboard();
+      setDashboardData(freshData.data);
+
+      const dbCounts = await fetchTodayMarkedCounts(subjects);
+      const visibleClasses = filterVisibleSchedule(
+        freshData.data?.today_schedule || [],
+        subjects,
+        dbCounts
+      );
+      setSchedule(visibleClasses);
+    } catch (err) {
+      console.error("Absent All Error:", err);
+      alert("Failed to mark all classes absent. Restoring schedule.");
+      
+      // Roll back local storage and state if API fails
+      backupSchedule.forEach(item => unhideClass(getSlotId(item)));
+      setSchedule(backupSchedule);
+    } finally {
+      setIsMarkingAll(false);
     }
   };
 
@@ -439,13 +484,54 @@ const Dashboard = ({ darkMode }) => {
       {/* Main Content Area */}
       <div className="dashboard-content">
         
-        {/* Left Side: Schedule */}
+        {/* ⚡ REVAMPED TODAY'S SCHEDULE SECTION */}
         <div className="schedule-section">
-          <h2>Today's Schedule</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
+            <h2 style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>Today's Schedule</span>
+              {!loading && schedule.length > 0 && (
+                <span style={{ 
+                  fontSize: "0.75rem", 
+                  background: darkMode ? "rgba(56, 189, 248, 0.15)" : "#eff6ff", 
+                  color: darkMode ? "#38bdf8" : "#2563eb", 
+                  padding: "2px 8px", 
+                  borderRadius: "999px",
+                  fontWeight: "700" 
+                }}>
+                  {schedule.length} Remaining
+                </span>
+              )}
+            </h2>
+
+            {!loading && schedule.length > 0 && (
+              <button
+                onClick={handleAbsentAll}
+                disabled={isMarkingAll}
+                style={{
+                  background: isMarkingAll ? "#94a3b8" : "linear-gradient(135deg, #ef4444, #dc2626)",
+                  color: "#ffffff",
+                  border: "none",
+                  padding: "8px 16px",
+                  borderRadius: "10px",
+                  cursor: isMarkingAll ? "not-allowed" : "pointer",
+                  fontWeight: "700",
+                  fontSize: "0.85rem",
+                  boxShadow: isMarkingAll ? "none" : "0 4px 12px rgba(239, 68, 68, 0.25)",
+                  transition: "all 0.2s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}
+              >
+                {isMarkingAll ? "Marking..." : "Absent All"}
+              </button>
+            )}
+          </div>
+
           {loading ? (
             <>
               {[1, 2].map((i) => (
-                <div key={i} className="schedule-card">
+                <div key={i} className="schedule-card" style={{ marginBottom: "16px" }}>
                   <div>
                     <Skeleton width="160px" height="24px" style={{ marginBottom: "8px" }} />
                     <Skeleton width="120px" height="16px" style={{ marginBottom: "12px" }} />
@@ -459,23 +545,96 @@ const Dashboard = ({ darkMode }) => {
               ))}
             </>
           ) : schedule.length > 0 ? (
-            schedule.map((item, index) => (
-              <div key={getSlotId(item) || index} className="schedule-card">
-                <div>
-                  <h4>{item.course}</h4>
-                  <p>{item.start_time} - {item.end_time}</p>
-                  <small>{item.room}</small>
+            schedule.map((item, index) => {
+              const slotId = getSlotId(item);
+              const isProcessing = processingSlots.has(slotId) || isMarkingAll;
+
+              return (
+                <div 
+                  key={slotId || index} 
+                  className="schedule-card"
+                  style={{
+                    opacity: isProcessing ? 0.6 : 1,
+                    pointerEvents: isProcessing ? "none" : "auto",
+                    transition: "all 0.2s ease",
+                    marginBottom: "16px",
+                    border: `1px solid ${darkMode ? "rgba(255, 255, 255, 0.08)" : "#e2e8f0"}`
+                  }}
+                >
+                  <div>
+                    <h4 style={{ fontSize: "1.15rem", fontWeight: "800", margin: "0 0 6px 0", color: "var(--text-main)" }}>
+                      {item.course}
+                    </h4>
+                    <p style={{ display: "flex", alignItems: "center", gap: "6px", margin: "0 0 8px 0", color: "var(--text-muted)", fontSize: "0.9rem", fontWeight: "600" }}>
+                      <FaClock style={{ fontSize: "0.8rem", opacity: 0.8 }} />
+                      <span>{item.start_time || "All Day"} - {item.end_time || ""}</span>
+                    </p>
+                    <small style={{ 
+                      display: "inline-flex", 
+                      alignItems: "center", 
+                      gap: "5px", 
+                      background: darkMode ? "rgba(255, 255, 255, 0.05)" : "#f8fafc", 
+                      padding: "4px 10px", 
+                      borderRadius: "6px", 
+                      color: "var(--text-muted)", 
+                      fontSize: "0.8rem", 
+                      fontWeight: "700",
+                      border: `1px solid ${darkMode ? "rgba(255, 255, 255, 0.05)" : "#e2e8f0"}`
+                    }}>
+                      <FaMapMarkerAlt style={{ color: darkMode ? "#38bdf8" : "#3b82f6" }} />
+                      <span>{item.room || "Online / TBD"}</span>
+                    </small>
+                  </div>
+
+                  <div className="attendance-buttons" style={{ display: "flex", gap: "10px" }}>
+                    <button 
+                      className="present-btn" 
+                      onClick={() => markAttendance(item, "present")}
+                      disabled={isProcessing}
+                      style={{
+                        background: isProcessing ? "#94a3b8" : "linear-gradient(135deg, #10b981, #059669)",
+                        opacity: isProcessing ? 0.7 : 1,
+                        cursor: isProcessing ? "wait" : "pointer"
+                      }}
+                    >
+                      {isProcessing ? "..." : "Present"}
+                    </button>
+                    <button 
+                      className="absent-btn" 
+                      onClick={() => markAttendance(item, "absent")}
+                      disabled={isProcessing}
+                      style={{
+                        background: isProcessing ? "#94a3b8" : "linear-gradient(135deg, #ef4444, #dc2626)",
+                        opacity: isProcessing ? 0.7 : 1,
+                        cursor: isProcessing ? "wait" : "pointer"
+                      }}
+                    >
+                      {isProcessing ? "..." : "Absent"}
+                    </button>
+                  </div>
                 </div>
-                <div className="attendance-buttons">
-                  <button className="present-btn" onClick={() => markAttendance(item, "present")}>Present</button>
-                  <button className="absent-btn" onClick={() => markAttendance(item, "absent")}>Absent</button>
-                </div>
-              </div>
-            ))
+              );
+            })
           ) : (
-            <p style={{ color: "var(--text-muted)", fontWeight: "600", fontSize: "1.1rem" }}>
-              All caught up! No more classes scheduled for today. 🎉
-            </p>
+            <div 
+              style={{ 
+                background: darkMode ? "rgba(30, 41, 59, 0.4)" : "#ffffff", 
+                border: `1px dashed ${darkMode ? "rgba(255, 255, 255, 0.15)" : "#cbd5e1"}`, 
+                borderRadius: "16px", 
+                padding: "36px 20px", 
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "10px"
+              }}
+            >
+              <FaCheckCircle style={{ fontSize: "36px", color: "#10b981", opacity: 0.9 }} />
+              <strong style={{ fontSize: "1.1rem", color: "var(--text-main)" }}>All caught up!</strong>
+              <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "0.9rem", maxWidth: "280px" }}>
+                You have marked attendance for all classes scheduled for today. 🎉
+              </p>
+            </div>
           )}
         </div>
 

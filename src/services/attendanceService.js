@@ -14,3 +14,6 @@ export const deleteAttendance = (id) =>
 
 export const getCourseAttendance = (courseId) =>
   axiosInstance.get(`attendance/course/${courseId}/`);
+
+export const markAllAbsentToday = () =>
+  axiosInstance.post("attendance/mark-today-absent/");
