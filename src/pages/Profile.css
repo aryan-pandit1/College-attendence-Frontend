@@ -2,21 +2,21 @@
    THEME VARIABLES & PREMIUM TOKENS
    ========================================== */
 :root {
-  /* Light Mode (Default) */
-  --profile-bg: #f8fafc;
-  --profile-card-bg: #ffffff;
-  --profile-section-bg: #f8fafc;
+  /* ⚡ Light Mode (Solid Opaque Colors) */
+  --profile-bg: transparent;
+  --profile-card-bg: #ffffff !important; 
+  --profile-section-bg: #f1f5f9 !important; 
   --text-main: #0f172a;
   --text-muted: #64748b;
-  --border-color: #e2e8f0;
+  --border-color: #cbd5e1;
   
-  --btn-bg: #ffffff;
-  --btn-hover-bg: #2563eb;
-  --btn-hover-text: #ffffff;
+  --btn-bg: #ffffff !important;
+  --btn-hover-bg: #2563eb !important;
+  --btn-hover-text: #ffffff !important;
   
-  --shadow-flat: 0 20px 40px -15px rgba(15, 23, 42, 0.05);
-  --shadow-elevated: 0 12px 30px rgba(37, 99, 235, 0.15);
-  --shadow-inner: inset 0 0 0 rgba(0,0,0,0);
+  --shadow-flat: 0 12px 32px -4px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+  --shadow-elevated: 0 12px 24px -4px rgba(37, 99, 235, 0.2);
+  --shadow-inner: inset 0 1px 2px rgba(0, 0, 0, 0.02);
   
   --ring-color: #2563eb;
 }
@@ -24,22 +24,20 @@
 /* ==========================================
    BULLETPROOF DARK MODE (MIDNIGHT VOID)
    ========================================== */
-/* Catches forced-dark, body.dark, and data-theme="dark" globally */
 html[data-theme="dark"] .profile-page,
 body.dark .profile-page,
 .profile-page.forced-dark {
-  --profile-bg: #050814;
-  /* Glassmorphic Gradient for Cards */
-  --profile-card-bg: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
-  --profile-section-bg: rgba(255, 255, 255, 0.03);
+  --profile-bg: #050814 !important;
+  --profile-card-bg: linear-gradient(145deg, #1e293b 0%, #0f172a 100%) !important;
+  --profile-section-bg: rgba(255, 255, 255, 0.032) !important; 
   
   --text-main: #f8fafc;
   --text-muted: #cbd5e1;
   --border-color: rgba(255, 255, 255, 0.08);
   
-  --btn-bg: rgba(30, 41, 59, 0.5);
-  --btn-hover-bg: #3b82f6;
-  --btn-hover-text: #ffffff;
+  --btn-bg: rgba(30, 41, 59, 0.5) !important;
+  --btn-hover-bg: #3b82f6 !important;
+  --btn-hover-text: #ffffff !important;
 
   --shadow-flat: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
   --shadow-elevated: 0 8px 24px rgba(59, 130, 246, 0.3);
@@ -67,9 +65,10 @@ body.dark .profile-page,
 .profile-card {
   width: 100%;
   max-width: 680px;
-  background: var(--profile-card-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--profile-card-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  
   border-radius: 24px;
   padding: 48px;
   border: 1px solid var(--border-color);
@@ -100,14 +99,13 @@ body.dark .profile-page,
   justify-content: center;
   align-items: center;
   margin-bottom: 24px;
-  /* Soft glowing ring effect */
-  box-shadow: 0 0 0 4px var(--profile-bg), 0 0 0 8px var(--ring-color), 0 8px 24px rgba(0,0,0,0.2);
+  box-shadow: 0 0 0 4px var(--profile-bg), 0 0 0 8px var(--ring-color), 0 8px 24px rgba(0,0,0,0.15);
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .profile-image:hover {
   transform: scale(1.05) translateY(-4px);
-  box-shadow: 0 0 0 4px var(--profile-bg), 0 0 0 10px var(--ring-color), 0 16px 32px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 0 4px var(--profile-bg), 0 0 0 10px var(--ring-color), 0 16px 32px rgba(59, 130, 246, 0.35);
 }
 
 .profile-photo {
@@ -141,7 +139,10 @@ body.dark .profile-page,
    SEMANTIC UX LAYOUT SECTIONS
    ========================================== */
 .profile-section {
-  background: var(--profile-section-bg);
+  background: var(--profile-section-bg) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  
   border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 24px;
@@ -173,7 +174,7 @@ body.dark .profile-page,
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
-  background: var(--btn-bg);
+  background: var(--btn-bg) !important;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   color: var(--text-main);
@@ -184,6 +185,7 @@ body.dark .profile-page,
   text-align: left;
   min-width: 0;
   width: 100%;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.02);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -196,7 +198,7 @@ body.dark .profile-page,
 /* Standard Button UX Interactive Transformations */
 .profile-options button:not(.delete-btn):not(.logout-btn):hover {
   border-color: var(--btn-hover-bg);
-  background: var(--btn-hover-bg);
+  background: var(--btn-hover-bg) !important;
   color: var(--btn-hover-text);
   transform: translateY(-3px);
   box-shadow: var(--shadow-elevated);
@@ -235,13 +237,13 @@ body.dark .profile-page,
 /* Soft Alert (Logout Option) */
 .profile-options button.logout-btn {
   justify-content: center;
-  background: rgba(245, 158, 11, 0.1);
+  background: rgba(245, 158, 11, 0.1) !important;
   border: 1px solid rgba(245, 158, 11, 0.3);
   color: #d97706;
 }
 
 .profile-options button.logout-btn:hover {
-  background: #f59e0b;
+  background: #f59e0b !important;
   border-color: #f59e0b;
   color: #ffffff;
   transform: translateY(-2px);
@@ -251,13 +253,13 @@ body.dark .profile-page,
 /* Critical Action (Delete Option) */
 .profile-options button.delete-btn {
   justify-content: center;
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.1) !important;
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #ef4444;
 }
 
 .profile-options button.delete-btn:hover {
-  background: #ef4444;
+  background: #ef4444 !important;
   border-color: #ef4444;
   color: #ffffff;
   transform: translateY(-2px);
@@ -287,7 +289,7 @@ body.dark .profile-page,
 .logout-box {
   width: 100%;
   max-width: 420px;
-  background: var(--profile-card-bg);
+  background: var(--profile-card-bg) !important;
   border: 1px solid var(--border-color);
   border-radius: 24px;
   padding: 40px;
@@ -349,35 +351,35 @@ body.dark .profile-page,
 }
 
 .logout-buttons button:not(.confirm):not(.delete-btn) {
-  background: var(--btn-bg);
+  background: var(--btn-bg) !important;
   border: 1px solid var(--border-color);
   color: var(--text-main);
 }
 
 .logout-buttons button:not(.confirm):not(.delete-btn):hover {
-  background: var(--border-color);
+  background: var(--border-color) !important;
 }
 
 .logout-buttons button.confirm {
-  background: #3b82f6;
+  background: #3b82f6 !important;
   border: none;
   color: white;
 }
 
 .logout-buttons button.confirm:hover {
-  background: #2563eb;
+  background: #2563eb !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
 .logout-buttons button.delete-btn {
-  background: #ef4444;
+  background: #ef4444 !important;
   border: none;
   color: white;
 }
 
 .logout-buttons button.delete-btn:hover {
-  background: #dc2626;
+  background: #dc2626 !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
 }
@@ -405,4 +407,46 @@ body.dark .profile-page,
   }
   
   .logout-buttons { flex-direction: column; gap: 12px; }
+}
+
+/* =========================================================================
+   ⚡ ABSOLUTE OVERRIDE: FORCE SOLID LIGHT MODE (CRUSHES GLOBAL .card RULES)
+   ========================================================================= */
+/* 1. Force the Main Card to be 100% Solid White and above background waves */
+html:not([data-theme="dark"]) body:not(.dark) .profile-page:not(.forced-dark) .profile-card,
+.profile-page:not(.forced-dark) .profile-card {
+  background: #ffffffb2 !important;
+  background-color: #ffffffa6 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  z-index: 10 !important;
+  position: relative !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.2), 0 4px 12px -2px rgba(15, 23, 42, 0.03) !important;
+}
+
+/* 2. Force the Inner Sections to be Solid Slate */
+html:not([data-theme="dark"]) body:not(.dark) .profile-page:not(.forced-dark) .profile-section,
+.profile-page:not(.forced-dark) .profile-section {
+  background: #f1f5f9de !important;
+  background-color: #f1f5f9f9 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* 3. Force the Buttons to be Solid White */
+html:not([data-theme="dark"]) body:not(.dark) .profile-page:not(.forced-dark) .profile-options button:not(.delete-btn):not(.logout-btn),
+.profile-page:not(.forced-dark) .profile-options button:not(.delete-btn):not(.logout-btn) {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  backdrop-filter: none !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+/* 4. Ensure the Profile Image Ring Background is Solid */
+html:not([data-theme="dark"]) body:not(.dark) .profile-page:not(.forced-dark) .profile-image,
+.profile-page:not(.forced-dark) .profile-image {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
 }
