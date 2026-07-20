@@ -1,7 +1,7 @@
 import { useEffect, useState, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDashboard } from "../services/dashboardService";
-import { addAttendance, markAllAbsentToday } from "../services/attendanceService";
+import { addAttendance, markAllAbsentToday,markTodayCancelled } from "../services/attendanceService";
 import * as CalendarService from "../services/calendarService"; 
 import { useSubjects } from "../context/SubjectContext";
 import { StudentContext } from "../context/StudentContext";
@@ -367,6 +367,62 @@ const Dashboard = ({ darkMode }) => {
     }
   };
 
+  const handleDayOff = async () => {
+  if (schedule.length === 0 || isMarkingAll) return;
+
+  if (
+    !window.confirm(
+      "Mark all today's remaining classes as CANCELLED (Day Off)?"
+    )
+  )
+    return;
+
+  setIsMarkingAll(true);
+
+  const backupSchedule = [...schedule];
+
+  backupSchedule.forEach((item) =>
+    hideClassForToday(getSlotId(item))
+  );
+
+  setSchedule([]);
+
+  try {
+    await markTodayCancelled();
+
+    const freshData = await getDashboard();
+
+    setDashboardData(freshData.data);
+
+    const dbCounts = await fetchTodayMarkedCounts(subjects);
+
+    const visibleClasses = filterVisibleSchedule(
+      freshData.data?.today_schedule || [],
+      subjects,
+      dbCounts
+    );
+
+    setSchedule(visibleClasses);
+
+  } catch (err) {
+
+    console.error("Day Off Error:", err);
+
+    alert("Failed to mark today's classes as cancelled.");
+
+    backupSchedule.forEach((item) =>
+      unhideClass(getSlotId(item))
+    );
+
+    setSchedule(backupSchedule);
+
+  } finally {
+
+    setIsMarkingAll(false);
+
+  }
+};
+
   const coursesBySemester = subjects.reduce((acc, course) => {
     const sem = course.semester_number || course.semester?.semester_number || course.semester || "Other";
     if (!acc[sem]) acc[sem] = [];
@@ -504,27 +560,47 @@ const Dashboard = ({ darkMode }) => {
             </h2>
 
             {!loading && schedule.length > 0 && (
-              <button
-                onClick={handleAbsentAll}
-                disabled={isMarkingAll}
-                style={{
-                  background: isMarkingAll ? "#94a3b8" : "linear-gradient(135deg, #ef4444, #dc2626)",
-                  color: "#ffffff",
-                  border: "none",
-                  padding: "8px 16px",
-                  borderRadius: "10px",
-                  cursor: isMarkingAll ? "not-allowed" : "pointer",
-                  fontWeight: "700",
-                  fontSize: "0.85rem",
-                  boxShadow: isMarkingAll ? "none" : "0 4px 12px rgba(239, 68, 68, 0.25)",
-                  transition: "all 0.2s ease",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px"
-                }}
-              >
-                {isMarkingAll ? "Marking..." : "Absent All"}
-              </button>
+              <div
+  style={{
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+  }}
+>
+
+  <button
+    onClick={handleDayOff}
+    disabled={isMarkingAll}
+    style={{
+      background: "#f59e0b",
+      color: "#fff",
+      border: "none",
+      padding: "8px 16px",
+      borderRadius: "10px",
+      fontWeight: "700",
+      cursor: isMarkingAll ? "not-allowed" : "pointer",
+    }}
+  >
+    {isMarkingAll ? "Processing..." : "Day Off"}
+  </button>
+
+  <button
+    onClick={handleAbsentAll}
+    disabled={isMarkingAll}
+    style={{
+      background: "linear-gradient(135deg,#ef4444,#dc2626)",
+      color: "#fff",
+      border: "none",
+      padding: "8px 16px",
+      borderRadius: "10px",
+      fontWeight: "700",
+      cursor: isMarkingAll ? "not-allowed" : "pointer",
+    }}
+  >
+    {isMarkingAll ? "Processing..." : "Absent All"}
+  </button>
+
+</div>
             )}
           </div>
 

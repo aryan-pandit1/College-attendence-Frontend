@@ -17,3 +17,6 @@ export const getCourseAttendance = (courseId) =>
 
 export const markAllAbsentToday = () =>
   axiosInstance.post("attendance/mark-today-absent/");
+
+export const markTodayCancelled = () =>
+  axiosInstance.post("attendance/mark-day-off/");
