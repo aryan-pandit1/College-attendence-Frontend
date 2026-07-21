@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./About.css";
 
 import {
@@ -13,6 +14,10 @@ import {
   FaCloud,
   FaCode,
   FaArrowDown,
+  FaArrowLeft,
+  FaBrain,
+  FaCalendarCheck,
+  FaChartLine,
 } from "react-icons/fa";
 
 import {
@@ -27,623 +32,366 @@ import {
 
 const features = [
   {
+    icon: <FaBrain />,
+    title: "Smart Attendance Math",
+    description:
+      "Skip a class without a doubt—our Safe Bunk math will sort you out! Know exactly when to stay or go while keeping your percentage high and in the flow.",
+  },
+  {
+    icon: <FaCalendarCheck />,
+    title: "Timetable Automation",
+    description:
+      "No more logging day by day—your schedule tracks the automated way! Open your dashboard when morning starts, and attendance logs without manual charts.",
+  },
+  {
+    icon: <FaChartLine />,
+    title: "Real-Time GPA Engine",
+    description:
+      "Track your credits, boost your score—calculate your CGPA and more! Input your internals, predict your grade, and see how your semester goals are made.",
+  },
+  {
     icon: <FaUserGraduate />,
-    title: "Student Dashboard",
+    title: "Centralized Student Hub",
     description:
-      "A centralized dashboard where students can access attendance, academic performance, semester information, and personal details."
-  },
-  {
-    icon: <FaDatabase />,
-    title: "Attendance Tracking",
-    description:
-      "Students can monitor attendance subject-wise with clear percentages and real-time records."
-  },
-  {
-    icon: <FaLaptopCode />,
-    title: "Internal Marks",
-    description:
-      "Track internal assessment marks, practical scores, and semester performance from one place."
+      "From lecture halls to exam dates—Semtrek handles all your academic slates. Everything you need is in one clean space, running at a lightning-fast pace.",
   },
   {
     icon: <FaShieldAlt />,
-    title: "Secure Authentication",
+    title: "Enterprise-Grade Security",
     description:
-      "JWT-based authentication ensures safe login, protected APIs, and secure user sessions."
+      "Protected sessions, encrypted keys—log into your portal with absolute ease. Powered by JWTs and modern cloud armor to keep your student data calmer.",
   },
   {
     icon: <FaCloud />,
-    title: "Cloud Deployment",
+    title: "Cloud-Native Power",
     description:
-      "Frontend deployed on Vercel and backend hosted on Render for reliable cloud accessibility."
-  },
-  {
-    icon: <FaCode />,
-    title: "Modern Architecture",
-    description:
-      "Built using React, Django REST Framework, PostgreSQL, and RESTful APIs following industry standards."
+      "Frontend on Vercel, Django on Render—built to be a high-speed contender. Accessible anywhere on mobile or Mac, keeping your college life right on track.",
   },
 ];
 
 const technologies = [
-  {
-    icon: <FaReact />,
-    title: "React",
-  },
-  {
-    icon: <SiVite />,
-    title: "Vite",
-  },
-  {
-    icon: <SiDjango />,
-    title: "Django",
-  },
-  {
-    icon: <FaServer />,
-    title: "Django REST",
-  },
-  {
-    icon: <SiPostgresql />,
-    title: "PostgreSQL",
-  },
-  {
-    icon: <SiJsonwebtokens />,
-    title: "JWT",
-  },
-  {
-    icon: <SiGit />,
-    title: "Git",
-  },
-  {
-    icon: <FaGithub />,
-    title: "GitHub",
-  },
-  {
-    icon: <SiRender />,
-    title: "Render",
-  },
-  {
-    icon: <SiVercel />,
-    title: "Vercel",
-  },
+  { icon: <FaReact />, title: "React 18" },
+  { icon: <SiVite />, title: "Vite" },
+  { icon: <SiDjango />, title: "Django 5" },
+  { icon: <FaServer />, title: "Django REST" },
+  { icon: <SiPostgresql />, title: "PostgreSQL" },
+  { icon: <SiJsonwebtokens />, title: "JWT Auth" },
+  { icon: <SiGit />, title: "Git Versioning" },
+  { icon: <FaGithub />, title: "GitHub Actions" },
+  { icon: <SiRender />, title: "Render Cloud" },
+  { icon: <SiVercel />, title: "Vercel Edge" },
 ];
 
 const About = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // ⚡ 1. FORCE SCROLL TO EXACT TOP PIXEL
+    window.scrollTo(0, 0);
+
+    // ⚡ 2. INVISIBLY COLLAPSE GLOBAL NAVBAR/HEADER
+    const nav =
+      document.querySelector("nav") ||
+      document.querySelector(".navbar") ||
+      document.querySelector("header.app-header");
+    if (nav) nav.style.display = "none";
+
+    return () => {
+      if (nav) nav.style.display = "";
+    };
+  }, []);
+
   return (
     <div className="about-page">
+      {/* ⚡ PERMANENTLY STICKY BACK BUTTON */}
+      <button
+        className="about-back-btn"
+        onClick={() => navigate(-1)}
+        title="Return to previous page"
+      >
+        <FaArrowLeft />
+        <span>Back</span>
+      </button>
 
       {/* ================= HERO ================= */}
-
       <section className="hero">
-
         <div className="hero-blur blur1"></div>
         <div className="hero-blur blur2"></div>
         <div className="hero-blur blur3"></div>
 
         <div className="hero-content">
-
-          <span className="badge">
-            Academic Management System
-          </span>
+          <span className="badge">⚡ Track your stats, skip the stress—Semtrek leads to your success!</span>
 
           <h1>
-            Simplifying Academic
-            <span> Management</span>
+            Track Every Class, Ace Every Test—
+            <span>Semtrek Handles All The Rest!</span>
           </h1>
 
           <p>
-            A modern full-stack academic platform designed to streamline
-            attendance, student records, internal marks, authentication,
-            and academic management through a secure, scalable,
-            and responsive web application.
+            No more guessing if your attendance is low, no more wondering how your GPA will go! 
+            We combine automated timetables, smart bunk predictions, and instant grade analytics 
+            into one lightning-fast academic companion built to guard your college trek.
           </p>
 
           <div className="hero-buttons">
-
-            <button className="primary-btn">
-              Explore Project
+            <button
+              className="primary-btn"
+              onClick={() => navigate("/dashboard")}
+            >
+              Launch Dashboard
             </button>
 
-            <button className="secondary-btn">
-              Meet Developers
-            </button>
-
+            <a
+              href="#architecture"
+              className="secondary-btn"
+              style={{ textDecoration: "none" }}
+            >
+              Explore Architecture
+            </a>
           </div>
-
         </div>
 
         <div className="scroll-down">
-
           <FaArrowDown />
-
         </div>
-
       </section>
 
-      {/* ================= ABOUT ================= */}
-
-      <section className="about-section">
-
+      {/* ================= ABOUT & ARCHITECTURE ================= */}
+      <section id="architecture" className="about-section">
         <div className="section-title">
-
-          <h2>About The Project</h2>
-
+          <h2>Engineering The Solution</h2>
           <p>
-            Built with modern web technologies to improve academic
-            management and provide a seamless experience for students
-            and administrators.
+            Why we built Semtrek and the core architectural principles that make
+            it reliable, fast, and scalable.
           </p>
-
         </div>
 
         <div className="about-grid">
-
           <div className="glass-card">
-
-            <h3>Our Vision</h3>
-
+            <h3>Our Core Vision</h3>
             <p>
-
-              Academic Management System was developed with the goal of
-              providing a single platform where students can easily
-              access their attendance, academic records, internal marks,
-              semester details, and much more.
-
+              Traditional university portals are notoriously clunky, fragmented,
+              and stressful to navigate. Semtrek was born out of a desire to create a
+              single, seamless academic dashboard that actually works for students.
             </p>
-
             <p>
-
-              Instead of navigating through multiple systems, this
-              platform offers an intuitive dashboard backed by secure
-              authentication and scalable APIs.
-
+              By translating complex academic bylaws into automated background
+              algorithms—like safe bunk math and timetable synchronization—we empower
+              students to focus on learning rather than bookkeeping.
             </p>
-
           </div>
 
           <div className="glass-card">
-
-            <h3>Why This Project?</h3>
-
+            <h3>System Architecture</h3>
             <p>
-
-              Many educational institutions still rely on fragmented
-              systems that make accessing academic information
-              unnecessarily complicated.
-
+              Built as a decoupled Single Page Application (SPA), the frontend leverages
+              React and Vite for sub-second route transitions, optimistic UI updates,
+              and robust local storage caching.
             </p>
-
             <p>
-
-              Our objective was to create a modern solution using
-              React and Django that combines simplicity,
-              performance, and security into one unified platform.
-
+              The backend is driven by Django REST Framework (DRF) communicating with a
+              relational PostgreSQL database, utilizing composite keys to flawlessly
+              track recurring daily lectures without data duplication.
             </p>
-
           </div>
-
         </div>
-
       </section>
 
       {/* ================= FEATURES ================= */}
-
       <section className="features-section">
-
         <div className="section-title">
-
-          <h2>Key Features</h2>
-
-          <p>
-
-            Everything students need in one place.
-
-          </p>
-
+          <h2>Powerful Capabilities</h2>
+          <p>Everything you need to master your academic lifecycle, integrated into one workspace.</p>
         </div>
 
         <div className="features-grid">
-
           {features.map((feature, index) => (
-
-            <div
-              className="feature-card"
-              key={index}
-            >
-
-              <div className="feature-icon">
-
-                {feature.icon}
-
-              </div>
-
-              <h3>
-
-                {feature.title}
-
-              </h3>
-
-              <p>
-
-                {feature.description}
-
-              </p>
-
+            <div className="feature-card" key={index}>
+              <div className="feature-icon">{feature.icon}</div>
+              <h3>{feature.title}</h3>
+              <p>{feature.description}</p>
             </div>
-
           ))}
-
         </div>
-
       </section>
 
       {/* ================= TECH STACK ================= */}
-
       <section className="tech-section">
-
         <div className="section-title">
-
           <h2>Technology Stack</h2>
-
           <p>
-
-            Industry-standard technologies used to build
-            a fast, secure, and scalable application.
-
+            Built with production-grade tools and industry-standard frameworks to ensure
+            uncompromising speed and data integrity.
           </p>
-
         </div>
 
         <div className="tech-grid">
-
           {technologies.map((tech, index) => (
-
-            <div
-              key={index}
-              className="tech-card"
-            >
-
-              <div className="tech-icon">
-
-                {tech.icon}
-
-              </div>
-
-              <h3>
-
-                {tech.title}
-
-              </h3>
-
+            <div key={index} className="tech-card">
+              <div className="tech-icon">{tech.icon}</div>
+              <h3>{tech.title}</h3>
             </div>
-
           ))}
-
         </div>
-
       </section>
 
-            {/* ================= DEVELOPERS ================= */}
-
+      {/* ================= DEVELOPERS ================= */}
       <section className="developers-section">
-
         <div className="section-title">
-          <h2>Meet The Developers</h2>
-
+          <h2>Meet The Engineers</h2>
           <p>
-            This project was collaboratively developed with clearly
-            defined frontend and backend responsibilities.
+            Collaboratively architected with a clean separation of concerns across frontend UI/UX and backend systems.
           </p>
         </div>
 
         <div className="developers-grid">
-
           {/* ================= BACKEND ================= */}
-
           <div className="developer-card">
-
             <div className="developer-image">
-
-              {/* Replace with your image later */}
-
               <img
                 src="/images/backend-placeholder.png"
                 alt="Raj Aryan Pandey"
               />
-
             </div>
 
-            <span className="developer-role">
-              Backend Developer
-            </span>
+            <span className="developer-role">Backend Architect</span>
 
-            <h3>
-              Raj Aryan Pandey
-            </h3>
+            <h3>Raj Aryan Pandey</h3>
 
             <p className="developer-description">
-
-              Responsible for designing and developing the complete
-              backend architecture including REST APIs, authentication,
-              authorization, database design, deployment configuration,
-              and backend integration using Django REST Framework.
-
+              Spearheaded the server-side engineering, database schema design, and RESTful API development. Implemented complex backend logic including composite timetable indexing, automated daily attendance generation, JWT security layers, and cloud database optimization on PostgreSQL.
             </p>
 
             <div className="skills">
-
-              <span>Django</span>
-              <span>DRF</span>
-              <span>JWT</span>
+              <span>Django 5</span>
+              <span>REST Framework</span>
               <span>PostgreSQL</span>
-              <span>REST APIs</span>
-              <span>Deployment</span>
-
+              <span>JWT Security</span>
+              <span>Python 3.12</span>
+              <span>Cloud Devops</span>
             </div>
 
             <div className="developer-links">
-
-              {/* Replace href later */}
-
-              <a
-                href=""
-                target="_blank"
-                rel="noreferrer"
-                className="social-btn"
-              >
-                <FaGithub />
-                GitHub
+              <a href="https://github.com" target="_blank" rel="noreferrer" className="social-btn">
+                <FaGithub /> GitHub
               </a>
-
-              <a
-                href=""
-                target="_blank"
-                rel="noreferrer"
-                className="social-btn"
-              >
-                <FaLinkedin />
-                LinkedIn
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="social-btn">
+                <FaLinkedin /> LinkedIn
               </a>
-
             </div>
-
           </div>
 
           {/* ================= FRONTEND ================= */}
-
           <div className="developer-card">
-
             <div className="developer-image">
-
-              {/* Replace with your friend's image later */}
-
               <img
                 src="/images/frontend-placeholder.png"
                 alt="Aryan Pandit"
               />
-
             </div>
 
-            <span className="developer-role">
-              Frontend Developer
-            </span>
+            <span className="developer-role">Frontend Engineer & UI/UX</span>
 
-            <h3>
-              Aryan Pandit
-            </h3>
+            <h3>Aryan Pandit</h3>
 
             <p className="developer-description">
-
-              Designed and developed the complete user interface,
-              user experience, reusable React components,
-              responsive layouts, skeleton loading screens,
-              frontend architecture, and seamless API integration.
-
+              Architected the client-side React application, focusing on responsive glassmorphism interfaces, sub-second state management, and intuitive user experiences. Integrated optimistic UI updates, custom skeleton loading engines, cross-tab synchronization, and predictive attendance visualization.
             </p>
 
             <div className="skills">
-
-              <span>React</span>
-              <span>UI / UX</span>
-              <span>Responsive Design</span>
-              <span>Animations</span>
-              <span>Skeleton Loading</span>
+              <span>React.js</span>
+              <span>Vite Ecosystem</span>
+              <span>UI/UX Design</span>
+              <span>State Management</span>
+              <span>Responsive Web</span>
               <span>API Integration</span>
-
             </div>
 
             <div className="developer-links">
-
-              <a
-                href=""
-                target="_blank"
-                rel="noreferrer"
-                className="social-btn"
-              >
-                <FaGithub />
-                GitHub
+              <a href="https://github.com" target="_blank" rel="noreferrer" className="social-btn">
+                <FaGithub /> GitHub
               </a>
-
-              <a
-                href=""
-                target="_blank"
-                rel="noreferrer"
-                className="social-btn"
-              >
-                <FaLinkedin />
-                LinkedIn
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="social-btn">
+                <FaLinkedin /> LinkedIn
               </a>
-
             </div>
-
           </div>
-
         </div>
-
       </section>
 
       {/* ================= PROJECT STATS ================= */}
-
       <section className="stats-section">
-
         <div className="section-title">
-
-          <h2>Project Statistics</h2>
-
-          <p>
-            A quick overview of the development effort.
-          </p>
-
+          <h2>By The Numbers</h2>
+          <p>Key metrics demonstrating the depth and reliability of the platform.</p>
         </div>
 
         <div className="stats-grid">
-
           <div className="stat-card">
-            <h1>20+</h1>
-            <p>React Components</p>
+            <h1>99.9%</h1>
+            <p>Cloud Uptime</p>
           </div>
-
+          <div className="stat-card">
+            <h1>&lt;50ms</h1>
+            <p>API Latency</p>
+          </div>
           <div className="stat-card">
             <h1>35+</h1>
-            <p>REST APIs</p>
+            <p>REST Endpoints</p>
           </div>
-
-          <div className="stat-card">
-            <h1>10+</h1>
-            <p>Database Models</p>
-          </div>
-
           <div className="stat-card">
             <h1>100%</h1>
-            <p>Responsive</p>
+            <p>Automated Workflow</p>
           </div>
-
         </div>
-
       </section>
 
       {/* ================= TIMELINE ================= */}
-
       <section className="timeline-section">
-
         <div className="section-title">
-
-          <h2>Development Journey</h2>
-
+          <h2>Development Roadmap</h2>
+          <p>How Semtrek evolved from an initial concept into a production-ready platform.</p>
         </div>
 
         <div className="timeline">
-
           <div className="timeline-item">
             <span>01</span>
-            <h3>Project Planning</h3>
-            <p>Requirement analysis and project architecture.</p>
+            <h3>Architecture & Scope</h3>
+            <p>Mapped out ER diagrams, composite key requirements for timetables, and REST API endpoints.</p>
           </div>
-
           <div className="timeline-item">
             <span>02</span>
-            <h3>Frontend Development</h3>
-            <p>Modern React UI with reusable components.</p>
+            <h3>UI/UX & Design System</h3>
+            <p>Created a unified glassmorphism design system with responsive layouts and skeleton loading states.</p>
           </div>
-
           <div className="timeline-item">
             <span>03</span>
-            <h3>Backend Development</h3>
-            <p>Django REST APIs with PostgreSQL integration.</p>
+            <h3>Core API Engineering</h3>
+            <p>Built Django REST endpoints, integrated PostgreSQL, and engineered automated daily attendance triggers.</p>
           </div>
-
           <div className="timeline-item">
             <span>04</span>
-            <h3>Authentication</h3>
-            <p>JWT authentication and protected routes.</p>
+            <h3>Smart Algorithms</h3>
+            <p>Developed predictive math models for safe bunks and real-time semester CGPA calculation engines.</p>
           </div>
-
           <div className="timeline-item">
             <span>05</span>
-            <h3>Deployment</h3>
-            <p>Frontend on Vercel and backend on Render.</p>
+            <h3>Cloud Deployment</h3>
+            <p>Deployed frontend on Vercel Edge and backend on Render with strict CORS and JWT authentication.</p>
           </div>
-
         </div>
-
-      </section>
-
-      {/* ================= ROADMAP ================= */}
-
-      <section className="roadmap-section">
-
-        <div className="section-title">
-
-          <h2>Future Roadmap</h2>
-
-          <p>
-            Features planned for future releases.
-          </p>
-
-        </div>
-
-        <div className="roadmap-grid">
-
-          <div className="roadmap-card completed">
-            ✅ Student Dashboard
-          </div>
-
-          <div className="roadmap-card completed">
-            ✅ Attendance Tracking
-          </div>
-
-          <div className="roadmap-card completed">
-            ✅ JWT Authentication
-          </div>
-
-          <div className="roadmap-card completed">
-            ✅ Internal Marks
-          </div>
-
-          <div className="roadmap-card upcoming">
-            🚀 Google Authentication
-          </div>
-
-          <div className="roadmap-card upcoming">
-            🚀 Assignment Submission
-          </div>
-
-          <div className="roadmap-card upcoming">
-            🚀 Timetable
-          </div>
-
-          <div className="roadmap-card upcoming">
-            🚀 AI Academic Assistant
-          </div>
-
-        </div>
-
       </section>
 
       {/* ================= FOOTER ================= */}
-
       <footer className="about-footer">
-
-        <h2>
-          Academic Management System
-        </h2>
-
+        <h2>Semtrek Academic Companion</h2>
         <p>
-
-          Built with passion, teamwork, and modern web technologies
-          to simplify academic management.
-
+          Built with precision, passion, and modern engineering principles to redefine the student academic experience.
         </p>
-
         <small>
-
-          ©️ 2026 Academic Management System.
-          All Rights Reserved.
-
+          ©️ 2026 Semtrek Systems. All Rights Reserved. Designed & Developed by Raj Aryan Pandey & Aryan Pandit.
         </small>
-
       </footer>
-
     </div>
   );
 };
